@@ -18,6 +18,7 @@ def init():
 
 @app.command()
 def verify():
+    """Verify all resources in the workspace which are created by the otoolbox."""
     # check if verification is performed by the system
     if env.context.get('pre_check', False) or env.context.get('post_check', False):
         return
@@ -30,22 +31,30 @@ def verify():
 
 @app.command()
 def delete():
+    """Delete all resources from the workspace.
+    
+    This command will delete all resources from the workspace. Folder, files and
+    other resources will be deleted if they are created by the otoolbox. Other
+    resources will not be deleted.
+    
+    Some resources may not be deleted if they are not created by the otoolbox, or if
+    they are not empty."""
     resources = env.context.get('resources')
     resources.destroy()
 
 
-# TODO: maso, 2025: add info command
-#
-# Info command displayes information about the current workspace such as
-# - version
-# - creation time
-# - last update time
-# - acvite moduals
-#
-# @app.command()
-# def info():
-#     """Display information about the workspace"""
-#     pass
+@app.command()
+def info():
+    """Display information about the workspace"""
+    # TODO: maso, 2025: add info command
+    #
+    # Info command displayes information about the current workspace such as
+    # - version
+    # - creation time
+    # - last update time
+    # - acvite moduals
+    #
+    pass
 
 @app.command()
 def update():
