@@ -24,10 +24,27 @@ def init():
     """
     (env
         .add_resource(
-            priority=100,
+            priority=2000,
             path=".otoolbox",
             title="Workspace configuration directory",
             description="All configuration related to current workspace are located in this folder",
+            constructors=[
+                utils.makedir
+            ],
+            destructors=[
+                utils.delete_dir
+            ],
+            validators=[
+                utils.is_dir, 
+                utils.is_readable
+            ]
+        )
+        
+        .add_resource(
+            priority=2001,
+            path=".",
+            title="Workspace directory",
+            description="The current workspace directory",
             constructors=[
                 utils.makedir
             ],

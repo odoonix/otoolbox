@@ -21,7 +21,7 @@ def init():
             title="List of managed repositories",
             description="""Adding, removing, and updating repositories in the workspace is done through this file""",
             constructors=[
-                utils.constructor_copy_resource("data/vscode-workspace.json")
+                utils.constructor_copy_resource("addons/vscode/data/workspace.json")
             ],
             destructors=[
                 utils.delete_file

@@ -100,6 +100,9 @@ def is_file(context: WorkspaceResource):
 ###################################################################
 
 def delete_file(context: WorkspaceResource):
+    """
+    Delete a file
+    """
     file_path = get_workspace_path(context.path)
     # Check if the file exists before attempting to delete it
     if os.path.exists(file_path):
@@ -110,4 +113,7 @@ def delete_file(context: WorkspaceResource):
 
 
 def delete_dir(context: WorkspaceResource):
+    """
+    Delete a directory and its contents
+    """
     pass
