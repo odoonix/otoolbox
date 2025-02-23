@@ -94,8 +94,8 @@ class WorkspaceResourceGroup(WorkspaceResource):
 
     def __init__(self,
                  path,
-                 resources=None, 
-                 root=None, 
+                 resources=None,
+                 root=None,
                  **kargs):
         super().__init__(path, **kargs)
         self.resources = resources if resources else []

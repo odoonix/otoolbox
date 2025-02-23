@@ -8,15 +8,17 @@ app = typer.Typer(
     pretty_exceptions_show_locals=False
 )
 
+
 @app.command()
 def init():
     """Initialize all resources from addons into the current workspace"""
     resources = env.context.get('resources')
     resources.build()
 
+
 @app.command()
 def verify():
-    # check if verification is performed by the system 
+    # check if verification is performed by the system
     if env.context.get('pre_check', False) or env.context.get('post_check', False):
         return
     result, verified, total = utils.verify_all_resource(should_exit=False)
@@ -24,6 +26,7 @@ def verify():
         print(f"Verification fail (Verified: {verified}, Total:{total})")
     else:
         print("Success")
+
 
 @app.command()
 def delete():
@@ -51,14 +54,13 @@ def update():
     resources.update()
 
 
-
 # def init_cli(parent_parser):
 #     """Init CLI to support maintainer tools
 #     """
 #     init_parseer = parent_parser.add_parser(
 #         'init',
 #         description="""
-#             Tools and Utilites to help developers and maintainers. It makes simple to 
+#             Tools and Utilites to help developers and maintainers. It makes simple to
 #             keep dev repositories up to date.
 #         """)
 #     init_parseer.set_defaults(func=_init_resources)
@@ -81,6 +83,11 @@ def update():
 #     return parent_parser
 
 
+def run():
+    """Run the application"""
+    app()
+
+
 # Launch application if called directly
 if __name__ == "__main__":
-    app()
+    run()

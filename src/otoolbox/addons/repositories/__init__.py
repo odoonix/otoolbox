@@ -33,7 +33,7 @@ def _load_repositories():
 
     if not data:
         data = env.resource_string(
-            RESOURCE_REPOSITORIES_PATH, 
+            RESOURCE_REPOSITORIES_PATH,
             packag_name=__name__
         )
     repo_list = json.loads(data)
@@ -42,7 +42,7 @@ def _load_repositories():
         env.add_resource(
             path="{}/{}".format(item["workspace"], item["name"]),
             parent=item["workspace"],
-            title="Git repository: {}/{}".format(item["workspace"], item["name"]),
+            title=item["name"],
             description="""Automaticaly added resources from git.""",
             constructors=[
                 git.git_clone

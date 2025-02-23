@@ -12,9 +12,9 @@ from otoolbox import env
 from otoolbox import utils
 
 from otoolbox.constants import (
-    
-ERROR_CODE_PRE_VERIFICATION,
-ERROR_CODE_POST_VERIFICATION
+
+    ERROR_CODE_PRE_VERIFICATION,
+    ERROR_CODE_POST_VERIFICATION
 
 )
 
@@ -35,24 +35,20 @@ finally:
     del version, PackageNotFoundError
 
 
-
-
-
-
 # def init_cli():
 #     """Initialize the command-line interface for the Odoo Toolbox."""
 #     arg_parser = argparse.ArgumentParser(
 #         prog='odoo-util',
 #         description="""
-#             Odoonix Toolbox is a comprehensive suite of tools designed to streamline 
-#             the workflows of developers and maintainers working with Odoo. It 
-#             simplifies tasks such as tracking changes in addons, cloning 
-#             repositories, managing databases, and configuring development 
-#             environments. With its user-friendly interface and automation 
-#             features, Odoonix Toolbox enables teams to maintain consistency, 
-#             reduce manual effort, and speed up development cycles. By integrating 
-#             essential functionalities into one cohesive package, it empowers 
-#             developers to focus on creating and maintaining high-quality Odoo 
+#             Odoonix Toolbox is a comprehensive suite of tools designed to streamline
+#             the workflows of developers and maintainers working with Odoo. It
+#             simplifies tasks such as tracking changes in addons, cloning
+#             repositories, managing databases, and configuring development
+#             environments. With its user-friendly interface and automation
+#             features, Odoonix Toolbox enables teams to maintain consistency,
+#             reduce manual effort, and speed up development cycles. By integrating
+#             essential functionalities into one cohesive package, it empowers
+#             developers to focus on creating and maintaining high-quality Odoo
 #             solutions efficiently.
 #         """,
 #         epilog='Developer toolbox'
@@ -95,8 +91,8 @@ def _load_resources(*args):
             package.init()
 
 
-
-if __name__ == '__main__':
+def run():
+    """Run the application"""
     _load_resources(
         'otoolbox.addons.help',
         'otoolbox.addons.workspace',
@@ -105,20 +101,19 @@ if __name__ == '__main__':
         'otoolbox.addons.repositories'
     )
 
-
     def callback_common_arguments(
-            odoo:str='18.0',
-            path:str='.',
-            silent:bool=False,
-            pre_check:bool=False,
-            post_check:bool=False,
-            continue_on_exception:bool=True
-            ):
+            odoo: str = '18.0',
+            path: str = '.',
+            silent: bool = False,
+            pre_check: bool = False,
+            post_check: bool = False,
+            continue_on_exception: bool = True
+    ):
         env.context.update({
             'odoo_version': odoo,
             'path': path,
             'silent': silent,
-            'pre_check':pre_check,
+            'pre_check': pre_check,
             'post_check': post_check,
             'continue_on_exception': continue_on_exception
         })
@@ -133,7 +128,7 @@ if __name__ == '__main__':
     def result_callback(*args, **kargs):
         if env.context.get('post_check', False):
             utils.verify_all_resource()
-    
+
     # Launch the CLI application
     app = typer.Typer(
         callback=callback_common_arguments,
@@ -144,3 +139,7 @@ if __name__ == '__main__':
     app.add_typer(repositories.app, name="repo")
     app.add_typer(developer.app, name="dev")
     app()
+
+
+if __name__ == '__main__':
+    run()

@@ -7,6 +7,10 @@ from otoolbox import utils
 
 _logger = logging.getLogger(__name__)
 
+# GIT
+GIT_ADDRESS_HTTPS = "https://github.com/{path}.git"
+GIT_ADDRESS_SSH = "git@github.com:{path}.git"
+
 GIT_ERROR_TABLE = {
     2: {
         'level': 'fatal',
@@ -18,6 +22,7 @@ GIT_ERROR_TABLE = {
     }
 }
 
+
 def _rais_git_error(context, error_code):
     if not error_code:
         return
@@ -26,13 +31,13 @@ def _rais_git_error(context, error_code):
         'message': "Unknown GIT error for distination path {path}. Error code is {error_code}. "
         "See .otoolbox/logs.text for more information."
     })
-    message = error['message'].format(error_code=error_code,**context.__dict__)
+    message = error['message'].format(error_code=error_code, **context.__dict__)
     if env.context.get('continue_on_exception'):
         _logger.error(message)
         env.errors.append(message)
     else:
         raise RuntimeError(
-            error['message'].format(error_code=error_code,**context.__dict__)
+            error['message'].format(error_code=error_code, **context.__dict__)
         )
 
 
@@ -48,11 +53,11 @@ def git_clone(context):
         'clone',
         '--branch', branch_name,
         '--depth', depth,
-        f"git@github.com:{context.path}.git"
+        (GIT_ADDRESS_HTTPS if not env.context.get('ssh_git', False)
+         else GIT_ADDRESS_SSH).format(path=context.path),
     ], cwd=cwd)
 
     _rais_git_error(context=context, error_code=result)
-
 
 
 def git_pull(context):
