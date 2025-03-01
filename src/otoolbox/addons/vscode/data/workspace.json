@@ -1,128 +1,127 @@
 {
-    "folders": [
-        {
-            "name": "Odoo",
-            "path": "odoo"
-        },
-        {
-            "name": "OCA",
-            "path": "oca"
-        },
-        {
-            "name": "MoonSun",
-            "path": "moonsunsoft"
-        },
-        {
-            "name": "Odoonix",
-            "path": "odoonix"
-        }
-    ],
-    "launch": {
-        "version": "0.2.0",
-        "inputs": [
-            {
-                "id": "databaseName",
-                "type": "command",
-                "command": "extension.commandvariable.number",
-                "args": {
-                    "name": "databaseName",
-                    "range": [
-                        1500,
-                        60000000
-                    ],
-                    "random": true,
-                    "uniqueCount": 10
-                }
-            },
-            {
-                "id": "modulesTest",
-                "type": "pickString",
-                "description": "List of Module to test, leave empty for all module",
-                "options": [
-                    "exchange,base_model_validation,australia_austrac,base_model_validation",
-                ],
-                "default": "web"
-            }
-        ],
-        "configurations": [
-            {
-                "name": "Odoo Run",
-                "type": "debugpy",
-                "request": "launch",
-                "program": "${config:odoo.bin}",
-                "console": "integratedTerminal",
-                "justMyCode": true,
-                "args": [
-                    "--db_host",
-                    "localhost",
-                    "--db_password",
-                    "odoo",
-                    "--db_user",
-                    "odoo",
-                    "--database",
-                    "odoo1-main-103",
-                    "--addons-path",
-                    "${config:odoo.addons.path}",
-                    "--update",
-                    "product_sale_list,sale,product",
-                    "--dev",
-                    "all"
-                ]
-            },
-            {
-                "name": "Odoo Test",
-                "type": "debugpy",
-                "request": "launch",
-                "program": "${config:odoo.bin}",
-                "console": "integratedTerminal",
-                "justMyCode": true,
-                "args": [
-                    "--db_host",
-                    "localhost",
-                    "--db_password",
-                    "odoo",
-                    "--db_user",
-                    "odoo",
-                    "--database",
-                    "odooiottest${input:databaseName}",
-                    "--addons-path",
-                    "${config:odoo.addons.path}",
-                    "--init",
-                    "${input:modulesTest}",
-                    "--test-tag",
-                    "vw",
-                    "--stop-after-init"
-                ]
-            }
-        ]
+  "folders": [
+    {
+      "name": "Odoo",
+      "path": "odoo"
     },
-    "settings": {
-        "odoo.bin": "${workspaceFolder:Odoo}/odoo/odoo-bin",
-        "odoo.addons.path": "${workspaceFolder:Odoo}/odoo/addons,${workspaceFolder:Odoonix}//odoo/design-themes",
-        "git.ignoreLimitWarning": true,
-        "python.defaultInterpreterPath": ".venv/bin/python3"
+    {
+      "name": "OCA",
+      "path": "oca"
     },
-    "tasks": {
-        "version": "2.0.0",
-        "tasks": [
-            {
-                "label": "Dev Update",
-                "command": "python3",
-                "type": "shell",
-                "args": [
-                    "odoonix/utils/main.py",
-                    "dev",
-                    "update"
-                ],
-                "problemMatcher": [],
-                "presentation": {
-                    "reveal": "always"
-                },
-                "group": "build",
-                "options": {
-                    "cwd": "${workspaceFolder:Odoonix}/.."
-                }
-            }
-        ]
+    {
+      "name": "MoonSun",
+      "path": "moonsunsoft"
+    },
+    {
+      "name": "Odoonix",
+      "path": "odoonix"
     }
+  ],
+  "launch": {
+    "version": "0.2.0",
+    "inputs": [
+      {
+        "id": "databaseName",
+        "type": "command",
+        "command": "extension.commandvariable.number",
+        "args": {
+          "name": "databaseName",
+          "range": [1500, 60000000],
+          "random": true,
+          "uniqueCount": 10
+        }
+      },
+      {
+        "id": "modulesTest",
+        "type": "pickString",
+        "description": "List of Module to test, leave empty for all module",
+        "options": [
+          "exchange,base_model_validation,australia_austrac,base_model_validation"
+        ],
+        "default": "web"
+      }
+    ],
+    "configurations": [
+      {
+        "name": "Odoo Run",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${config:odoo.bin}",
+        "console": "integratedTerminal",
+        "justMyCode": true,
+        "args": [
+          "--db_host",
+          "localhost",
+          "--db_password",
+          "odoo",
+          "--db_user",
+          "odoo",
+          "--database",
+          "odoo1-main-103",
+          "--limit-time-real",
+          "6000",
+          "--limit-time-cpu",
+          "6000",
+          "--limit-time-worker-cron",
+          "0",
+          "--addons-path",
+          "${config:odoo.addons.path}",
+          "--update",
+          "product_sale_list,sale,product",
+          "--dev",
+          "all"
+        ]
+      },
+      {
+        "name": "Odoo Test",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${config:odoo.bin}",
+        "console": "integratedTerminal",
+        "justMyCode": true,
+        "args": [
+          "--db_host",
+          "localhost",
+          "--db_password",
+          "odoo",
+          "--db_user",
+          "odoo",
+          "--database",
+          "odooiottest${input:databaseName}",
+          "--addons-path",
+          "${config:odoo.addons.path}",
+          "--init",
+          "${input:modulesTest}",
+          "--test-tag",
+          "vw",
+          "--stop-after-init"
+        ]
+      }
+    ]
+  },
+  "settings": {
+    "odoo.bin": "${workspaceFolder:Odoo}/odoo/odoo-bin",
+    "odoo.addons.path": "${workspaceFolder:Odoo}/odoo/addons,${workspaceFolder:Odoonix}//odoo/design-themes",
+    "git.ignoreLimitWarning": true,
+    "python.defaultInterpreterPath": ".venv/bin/python3"
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Dev Update",
+        "command": "python3",
+        "type": "shell",
+        "args": ["odoonix/utils/main.py", "dev", "update"],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder:Odoonix}/.."
+        }
+      }
+    ]
+  }
 }
