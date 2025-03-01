@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 import typer
+import sys
 
 from otoolbox.base import (WorkspaceResource)
 from otoolbox import env
@@ -30,6 +31,8 @@ def verify_all_resource(should_exit=True):
 ###################################################################
 # constructors
 ###################################################################
+
+
 def call_process_safe(command, shell=False, cwd=None):
     """Execute a command in a subprocess and log the output"""
     try:
@@ -37,10 +40,10 @@ def call_process_safe(command, shell=False, cwd=None):
             cwd = env.get_workspace()
         with open(get_workspace_path(".otoolbox/logs.txt"), "a", encoding="utf8") as log:
             ret = subprocess.call(
-                command, 
+                command,
                 shell=shell,
-                cwd=cwd, 
-                stdout=log, 
+                cwd=cwd,
+                stdout=log,
                 stderr=log
             )
             return ret
@@ -49,22 +52,67 @@ def call_process_safe(command, shell=False, cwd=None):
         return 2
 
 
+def run_command_in_venv(venv_path, command, shell=False, cwd=None):
+    """
+    Runs a command in a specified virtual environment using subprocess.
+
+    Args:
+        venv_path (str): Path to the virtual environment directory (e.g., './myenv').
+        command (list): Command to run as a list (e.g., ['python', '-c', 'print("Hello")']).
+    """
+    if sys.platform == "win32":
+        python_executable = os.path.join(venv_path, "Scripts", "python.exe")
+    else:
+        python_executable = os.path.join(venv_path, "bin", "python")
+
+    if not cwd:
+        cwd = env.get_workspace()
+    if not os.path.isfile(python_executable):
+        print(
+            f"Error: Python executable not found at '{python_executable}'. Is '{venv_path}' a valid venv?")
+        return
+
+    if command[0] == 'python':
+        command[0] = python_executable
+    else:
+        command = [python_executable] + command
+
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            text=True,
+            capture_output=True,
+            shell=shell,
+            cwd=cwd
+        )
+        print("Output:", result.stdout)
+        if result.stderr:
+            print("Errors:", result.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with error: {e.stderr}")
+    except FileNotFoundError:
+        print(f"Error: '{command[0]}' not found.")
+
 ###################################################################
 # constructors
 ###################################################################
+
+
 def makedir(context: WorkspaceResource):
     """Create new directory in the current workspace.
-    
+
     Parameters:
     context (WorkspaceResource): The resource detail"""
     path = get_workspace_path(context.path)
     if not os.path.exists(path):
         os.makedirs(path)
 
-def constructor_copy_resource(path, packag_name:str="otoolbox"):
+
+def constructor_copy_resource(path, packag_name: str = "otoolbox"):
     """Create a constructor to copy resource with path"""
     def copy_resource(context: WorkspaceResource):
-        stream = resource_stream(path,packag_name=packag_name)
+        stream = resource_stream(path, packag_name=packag_name)
         # Open the output file in write-binary mode
         out_file_path = get_workspace_path(context.path)
         with open(out_file_path, 'wb') as out_file:

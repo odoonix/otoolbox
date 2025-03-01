@@ -36,7 +36,14 @@ def info():
 
 
 @app.command()
-def init(ssh_git: bool = False):
+def init(
+    ssh_git: bool = typer.Argument(
+        default=False,
+        help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
+        "The default ssh key is used.",
+        envvar="OTOOLBOX_SSH_GIT"
+    )
+):
     """Initialize all resources from addons into the current workspace"""
     env.context.update({
         'ssh_git': ssh_git
@@ -66,7 +73,14 @@ def list_repo():
 
 
 @app.command()
-def add(organization: str, project: str, branch: str, title: str = None, description: str = None, tags: str = None):
+def add(
+    organization: str, 
+    project: str, 
+    branch: str, 
+    title: str = None, 
+    description: str = None, 
+    tags: str = None
+):
     """Add a new repository to the workspace"""
     return _filter_resources().build()
 

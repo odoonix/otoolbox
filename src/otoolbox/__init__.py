@@ -93,13 +93,6 @@ def _load_resources(*args):
 
 def run():
     """Run the application"""
-    _load_resources(
-        'otoolbox.addons.help',
-        'otoolbox.addons.workspace',
-        'otoolbox.addons.ubuntu',
-        'otoolbox.addons.vscode',
-        'otoolbox.addons.repositories'
-    )
 
     def callback_common_arguments(
             odoo: str = '18.0',
@@ -124,6 +117,14 @@ def run():
             ))
         if pre_check:
             utils.verify_all_resource()
+
+        _load_resources(
+            'otoolbox.addons.help',
+            'otoolbox.addons.workspace',
+            'otoolbox.addons.ubuntu',
+            'otoolbox.addons.vscode',
+            'otoolbox.addons.repositories'
+        )
 
     def result_callback(*args, **kargs):
         if env.context.get('post_check', False):

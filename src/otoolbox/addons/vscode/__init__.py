@@ -16,7 +16,7 @@ def init():
     """
     (env
         .add_resource(
-            path=".otoolbox/{}-workspace.json".format(
+            path="./odoo-{}.code-workspace".format(
                 env.context.get("odoo_version", "18.0")),
             title="List of managed repositories",
             description="""Adding, removing, and updating repositories in the workspace is done through this file""",

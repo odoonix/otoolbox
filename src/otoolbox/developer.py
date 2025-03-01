@@ -12,21 +12,67 @@ ensuring a seamless development experience in Odoo projects.
 """
 import typer
 
+from otoolbox import env
+from otoolbox import utils
+
 # from otoolbox.args import common
 # from otoolbox.repositories import develop
 
 app = typer.Typer()
 
 
+@app.command()
+def init():
+    """
+    Initialize the development environment.
+
+    It install and init .venv to the workspace. It also install all required
+    tools for the development environment. All odoo dependencies are installed
+    in the .venv.
+
+
+    """
+    utils.call_process_safe([
+        'python3',
+        '-m', 'venv',
+        env.get_workspace_path('.venv'),
+    ], cwd=env.get_workspace())
+
+    utils.run_command_in_venv(env.get_workspace_path('.venv'), [
+        'python',
+        '-m',
+        'pip',
+        'install',
+        '-r',
+        env.get_workspace_path('odoo/odoo/requirements.txt'),
+    ], cwd=env.get_workspace())
+
+    # TODO: check if need to update settings
+    pass
+
 
 @app.command()
-def update():
+def start():
+    """Check and start development tools.
+
+    Our default development envirenment is based on docker and vscode. This command
+    run vscode and docker if they are not running.
+
+    """
     # # 1- load all repositories
     # admin.update_repositories(**kargs)
 
     # # TODO: check if need to update settings
-    pass
+    path = "./odoo-{}.code-workspace".format(
+        env.context.get("odoo_version", "18.0"))
+    worksapce_file = env.get_workspace_path(path)
 
+    result = utils.call_process_safe([
+        'code',
+        worksapce_file,
+    ], cwd=env.get_workspace())
+
+    pass
 
 
 # def init_cli(parent_parser):
@@ -37,7 +83,7 @@ def update():
 #     dev = developer_cli_parser.add_subparsers(
 #         title='Developer Tools',
 #         description="""
-#             Tools and Utilites to help developer. It makes simple to 
+#             Tools and Utilites to help developer. It makes simple to
 #             keep dev environment up to date.""")
 
 #     # dev init

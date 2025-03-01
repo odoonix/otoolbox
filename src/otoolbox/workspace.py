@@ -10,8 +10,18 @@ app = typer.Typer(
 
 
 @app.command()
-def init():
+def init(
+    ssh_git: bool = typer.Argument(
+        default=False,
+        help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
+        "The default ssh key is used.",
+        envvar="OTOOLBOX_SSH_GIT"
+    )
+):
     """Initialize all resources from addons into the current workspace"""
+    env.context.update({
+        'ssh_git': ssh_git
+    })
     resources = env.context.get('resources')
     resources.build()
 

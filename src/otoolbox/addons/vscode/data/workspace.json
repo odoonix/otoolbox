@@ -101,9 +101,9 @@
   },
   "settings": {
     "odoo.bin": "${workspaceFolder:Odoo}/odoo/odoo-bin",
-    "odoo.addons.path": "${workspaceFolder:Odoo}/odoo/addons,${workspaceFolder:Odoonix}//odoo/design-themes",
+    "odoo.addons.path": "${workspaceFolder:Odoo}/odoo/addons,${workspaceFolder:Odoo}/design-themes",
     "git.ignoreLimitWarning": true,
-    "python.defaultInterpreterPath": ".venv/bin/python3"
+    "python.defaultInterpreterPath": "${workspaceFolder:Odoo}/../.venv/bin/python"
   },
   "tasks": {
     "version": "2.0.0",
@@ -112,14 +112,14 @@
         "label": "Dev Update",
         "command": "python3",
         "type": "shell",
-        "args": ["odoonix/utils/main.py", "dev", "update"],
+        "args": ["otoolbox", "repo", "update"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
         },
         "group": "build",
         "options": {
-          "cwd": "${workspaceFolder:Odoonix}/.."
+          "cwd": "${workspaceFolder:Odoo}/.."
         }
       }
     ]
