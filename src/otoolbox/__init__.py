@@ -140,7 +140,8 @@ def command_list():
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
+
+def main():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
     for addon in addons_list:
@@ -155,3 +156,7 @@ if __name__ == "__main__":
 
     # Load the application
     app()
+
+
+if __name__ == "__main__":
+    main()
