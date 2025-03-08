@@ -29,7 +29,7 @@ def _rais_git_error(context, error_code):
     error = GIT_ERROR_TABLE.get(error_code, {
         'level': 'fatal',
         'message': "Unknown GIT error for distination path {path}. Error code is {error_code}. "
-        "See .otoolbox/logs.text for more information."
+        "See .logs.text for more information."
     })
     message = error['message'].format(error_code=error_code, **context.__dict__)
     if env.context.get('continue_on_exception'):
@@ -53,7 +53,7 @@ def git_clone(context):
         'clone',
         '--branch', branch_name,
         '--depth', depth,
-        (GIT_ADDRESS_HTTPS if not env.context.get('ssh_git', False)
+        (GIT_ADDRESS_HTTPS if not env.context.get('ssh_git', True)
          else GIT_ADDRESS_SSH).format(path=context.path),
     ], cwd=cwd)
 

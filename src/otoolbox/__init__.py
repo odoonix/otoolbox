@@ -1,29 +1,27 @@
 """Load general CLI and tools related to odoo"""
+
 import sys
 import importlib
-import typer
+from importlib.metadata import PackageNotFoundError, version
 import chevron
+import dotenv
 
 
-from otoolbox import workspace
-from otoolbox import developer
-from otoolbox import repositories
+import typer
+from typing_extensions import Annotated
+
+
 from otoolbox import env
 from otoolbox import utils
 
 from otoolbox.constants import (
-
     ERROR_CODE_PRE_VERIFICATION,
-    ERROR_CODE_POST_VERIFICATION
-
+    ERROR_CODE_POST_VERIFICATION,
+    RESOURCE_TAGS_AUTO_UPDATE,
+    RESOURCE_TAGS_AUTO_VERIFY,
 )
+import otoolbox.addons as addons
 
-
-if sys.version_info[:2] >= (3, 8):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -35,112 +33,125 @@ finally:
     del version, PackageNotFoundError
 
 
-# def init_cli():
-#     """Initialize the command-line interface for the Odoo Toolbox."""
-#     arg_parser = argparse.ArgumentParser(
-#         prog='odoo-util',
-#         description="""
-#             Odoonix Toolbox is a comprehensive suite of tools designed to streamline
-#             the workflows of developers and maintainers working with Odoo. It
-#             simplifies tasks such as tracking changes in addons, cloning
-#             repositories, managing databases, and configuring development
-#             environments. With its user-friendly interface and automation
-#             features, Odoonix Toolbox enables teams to maintain consistency,
-#             reduce manual effort, and speed up development cycles. By integrating
-#             essential functionalities into one cohesive package, it empowers
-#             developers to focus on creating and maintaining high-quality Odoo
-#             solutions efficiently.
-#         """,
-#         epilog='Developer toolbox'
-#     )
-
-#     arg_parser.add_argument(
-#         "--path",
-#         help="""The workspace directory, default is current directory""",
-#         action="store",
-#         dest="path",
-#         required=False,
-#         default=".")
-
-#     arg_parser.add_argument(
-#         "--verbose",
-#         help="""The workspace directory, default is current directory""",
-#         action="count",
-#         dest="verbose",
-#         required=False,
-#         default=0)
-
-#     arg_parser.add_argument(
-#         "--silent",
-#         help="""Do not print extra information""",
-#         action="count",
-#         dest="silent",
-#         required=False,
-#         default=0)
-
-#     return arg_parser, arg_parser.add_subparsers()
+###################################################################
+# cli
+###################################################################
+# Launch the CLI application
 
 
-def _load_resources(*args):
-    # Example usage
-    for path in args:
-        # Import the package dynamically
-        package = importlib.import_module(path)
-        # Check if the package has an __init__ method and call it if it exists
-        if hasattr(package, 'init'):
+def result_callback(*args, **kwargs):
+    # Automatically update resources after the application is run
+    env.context.get("resources").filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
+    ).update()
+
+    # Automatically verify resources after the application is run
+    env.context.get("resources").filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
+    ).verify()
+
+
+app = typer.Typer(
+    result_callback=result_callback,
+    pretty_exceptions_show_locals=False,
+    help="Odoonix Toolbox is a comprehensive suite of tools designed to streamline "
+    "the workflows of developers and maintainers working with Odoo. It "
+    "simplifies tasks such as tracking changes in addons, cloning "
+    "repositories, managing databases, and configuring development "
+    "environments. With its user-friendly interface and automation "
+    "features, Odoonix Toolbox enables teams to maintain consistency, "
+    "reduce manual effort, and speed up development cycles. By integrating "
+    "essential functionalities into one cohesive package, it empowers "
+    "developers to focus on creating and maintaining high-quality Odoo "
+    "solutions efficiently.",
+)
+
+
+@app.callback()
+def callback_common_arguments(
+    odoo_version: Annotated[
+        str,
+        typer.Option(
+            prompt="Wiche version of odoo?",
+            help="The version of odoo to use.",
+            envvar="ODOO_VERSION",
+        ),
+    ],
+    silent: Annotated[
+        bool,
+        typer.Option(
+            help="Do not show info more.",
+            envvar="SILENT",
+        ),
+    ] = False,
+    pre_check: Annotated[
+        bool,
+        typer.Option(
+            help="Do not show info more.",
+            envvar="PRE_CHECK",
+        ),
+    ] = False,
+    post_check: Annotated[
+        bool,
+        typer.Option(
+            help="Do not show info more.",
+            envvar="POST_CHECK",
+        ),
+    ] = False,
+    continue_on_exception: Annotated[
+        bool,
+        typer.Option(
+            help="Do not show info more.",
+            envvar="CONTINUE_ON_EXCEPTION",
+        ),
+    ] = True,
+):
+    env.context.update(
+        {
+            "odoo_version": odoo_version,
+            "path": ".",
+            "silent": silent,
+            "pre_check": pre_check,
+            "post_check": post_check,
+            "continue_on_exception": continue_on_exception,
+        }
+    )
+    if not silent:
+        print(
+            chevron.render(
+                template=env.resource_string("data/banner.txt"), data=env.context
+            )
+        )
+    if pre_check:
+        utils.verify_all_resource()
+
+
+@app.command(name="list")
+def command_list():
+    """
+    List all available addons.
+    """
+    root = env.context.get("resources")
+    for resource in root.resources:
+        print(resource.path)
+
+
+###################################################################
+# Application entry point
+# Launch application if called directly
+###################################################################
+if __name__ == "__main__":
+    dotenv.load_dotenv(".env")
+    addons_list = addons.get_all_addons()
+    for addon in addons_list:
+        package = importlib.import_module(addon)
+        # Initialize the addon
+        if hasattr(package, "init"):
             package.init()
 
+        # Load the CLI for the addon
+        if hasattr(package, "app"):
+            app.add_typer(package.app, name=package.app.__cli_name__)
 
-def run():
-    """Run the application"""
-
-    def callback_common_arguments(
-            odoo: str = '18.0',
-            path: str = '.',
-            silent: bool = False,
-            pre_check: bool = False,
-            post_check: bool = False,
-            continue_on_exception: bool = True
-    ):
-        env.context.update({
-            'odoo_version': odoo,
-            'path': path,
-            'silent': silent,
-            'pre_check': pre_check,
-            'post_check': post_check,
-            'continue_on_exception': continue_on_exception
-        })
-        if not silent:
-            print(chevron.render(
-                template=env.resource_string("data/banner.txt"),
-                data=env.context
-            ))
-        if pre_check:
-            utils.verify_all_resource()
-
-        _load_resources(
-            'otoolbox.addons.help',
-            'otoolbox.addons.workspace',
-            'otoolbox.addons.ubuntu',
-            'otoolbox.addons.vscode',
-            'otoolbox.addons.repositories'
-        )
-
-    def result_callback(*args, **kargs):
-        if env.context.get('post_check', False):
-            utils.verify_all_resource()
-
-    # Launch the CLI application
-    app = typer.Typer(
-        callback=callback_common_arguments,
-        result_callback=result_callback,
-        pretty_exceptions_show_locals=False
-    )
-    app.add_typer(workspace.app, name="workspace")
-    app.add_typer(repositories.app, name="repo")
-    app.add_typer(developer.app, name="dev")
+    # Load the application
     app()
-
-
-if __name__ == '__main__':
-    run()
