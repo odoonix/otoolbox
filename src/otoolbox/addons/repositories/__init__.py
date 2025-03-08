@@ -68,11 +68,15 @@ def command_init(
 @app.command(name="update")
 def command_update():
     """Updates current workspace to the latest version"""
-    return (
-        env.context.get("resources")
-        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .update()
-    )
+    repo_list = env.context.get("resources").filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)).update()
+
+    # Show informations
+    for root_result, root_resource in repo_list:
+        print("\nResource:", root_resource.title)
+        for updates, resource in root_result:
+            for result, update in updates:
+                print(f"[{result}] {update.__name__}")
 
 
 @app.command(name="list")

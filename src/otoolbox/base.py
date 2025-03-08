@@ -31,7 +31,7 @@ class WorkspaceResource():
         self.tags = tags if tags else []
         self.updates = updates if updates else []
         self.priority = priority
-        self.visible=True,
+        self.visible = visible,
 
         # internals
         self.validation_errors = {}
@@ -47,13 +47,13 @@ class WorkspaceResource():
         for destructor in self.destructors:
             destructor(context=self, **kargs)
 
-    def verify(self, continue_on_exception:bool=True, **kargs) -> int:
+    def verify(self, continue_on_exception: bool = True, **kargs) -> int:
         """Launch all verifiy function"""
         verified = 0
         for validator in self.validators:
             try:
                 validator(context=self, **kargs)
-                verified+=1
+                verified += 1
             except BaseException as ex:
                 if not continue_on_exception:
                     raise ex
@@ -63,12 +63,13 @@ class WorkspaceResource():
 
     def update(self, **kargs):
         """Launch all updates function"""
-        for udpdate in self.updates:
-            udpdate(context=self, **kargs)
+        for update in self.updates:
+            result = update(context=self, **kargs)
+            yield result, update
 
     def get_validators_len(self):
         return len(self.validators)
-    
+
     def set_validator_failed(self, validator, exception):
         self.validation_errors[validator] = exception
 
@@ -77,14 +78,15 @@ class WorkspaceResource():
 
     def has_tag(self, *args):
         """Check if it has any tags from arguments.
-        
+
         # git or github
         flag = resource.has_tag('git', 'github')
-          
+
         """
         for arg in args:
             if arg in self.tags:
                 return True
+
 
 class WorkspaceResourceGroup(WorkspaceResource):
     """Group of resources
@@ -101,6 +103,12 @@ class WorkspaceResourceGroup(WorkspaceResource):
         self.resources = resources if resources else []
         self.validators_len = 0
         self.root = root
+
+        # remove all non needed attributes
+        self.validators = []
+        self.updates = []
+        self.constructors = []
+        self.destructors = []
 
     def append(self, resource: WorkspaceResource):
         """Appends new resource to the group"""
@@ -137,12 +145,14 @@ class WorkspaceResourceGroup(WorkspaceResource):
             verified += resource.verify(**kargs)
         verified += super().verify(**kargs)
         return verified
-    
+
     def update(self, **kargs):
         for resource in self.resources:
-            resource.update(**kargs)
-        super().update(**kargs)
-    
+            updates = resource.update(**kargs)
+            yield updates, resource
+        updates = super().update(**kargs)
+        yield updates, self
+
     def get_validators_len(self) -> int:
         return self.validators_len
 
@@ -151,7 +161,7 @@ class WorkspaceResourceGroup(WorkspaceResource):
             if resource.has_tag(*args):
                 return True
         return super().has_tag(*args)
-    
+
     def filter(self, filter_function):
         resources = list(filter(filter_function, self.resources))
         return WorkspaceResourceGroup(self.path, root=self, resources=resources)

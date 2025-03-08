@@ -58,6 +58,7 @@ def git_clone(context):
     ], cwd=cwd)
 
     _rais_git_error(context=context, error_code=result)
+    return 'OK'
 
 
 def git_pull(context):
@@ -70,3 +71,4 @@ def git_pull(context):
     ], cwd=cwd)
 
     _rais_git_error(context=context, error_code=result)
+    return 'OK'
