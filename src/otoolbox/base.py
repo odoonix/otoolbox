@@ -40,26 +40,20 @@ class WorkspaceResource():
     def build(self, **kargs):
         """Launch all build function"""
         for constructor in self.constructors:
-            constructor(context=self, **kargs)
+            result = constructor(context=self, **kargs)
+            yield result, constructor
 
     def destroy(self, **kargs):
         """Launch all destroy function"""
         for destructor in self.destructors:
-            destructor(context=self, **kargs)
+            result = destructor(context=self, **kargs)
+            yield result, destructor
 
-    def verify(self, continue_on_exception: bool = True, **kargs) -> int:
+    def verify(self, **kargs):
         """Launch all verifiy function"""
-        verified = 0
         for validator in self.validators:
-            try:
-                validator(context=self, **kargs)
-                verified += 1
-            except BaseException as ex:
-                if not continue_on_exception:
-                    raise ex
-                self.set_validator_failed(validator, ex)
-        self.is_valied = verified == len(self.validators)
-        return verified
+            result = validator(context=self, **kargs)
+            yield result, validator
 
     def update(self, **kargs):
         """Launch all updates function"""
@@ -68,6 +62,7 @@ class WorkspaceResource():
             yield result, update
 
     def get_validators_len(self):
+        """Return the number of validators"""
         return len(self.validators)
 
     def set_validator_failed(self, validator, exception):
@@ -131,20 +126,24 @@ class WorkspaceResourceGroup(WorkspaceResource):
 
     def build(self, **kargs):
         for resource in self.resources:
-            resource.build(**kargs)
-        super().build(**kargs)
+            result = resource.build(**kargs)
+            yield result, resource
+        result = super().build(**kargs)
+        yield result, self
 
     def destroy(self, **kargs):
         for resource in self.resources:
-            resource.destroy(**kargs)
-        super().destroy(**kargs)
+            result = resource.destroy(**kargs)
+            yield result, resource
+        result = super().destroy(**kargs)
+        yield result, self
 
     def verify(self, **kargs):
-        verified = 0
         for resource in self.resources:
-            verified += resource.verify(**kargs)
-        verified += super().verify(**kargs)
-        return verified
+            result = resource.verify(**kargs)
+            yield result, resource
+        result = super().verify(**kargs)
+        yield result, self
 
     def update(self, **kargs):
         for resource in self.resources:

@@ -71,8 +71,6 @@ def start():
 
     """
     # # 1- load all repositories
-    # admin.update_repositories(**kargs)
-
     result = utils.call_process_safe(
         [
             "code",

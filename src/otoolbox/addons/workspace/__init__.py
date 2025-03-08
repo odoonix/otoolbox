@@ -41,34 +41,37 @@ def command_init(
 ) -> None:
     """Initialize all resources from addons into the current workspace"""
     env.context.update({"ssh_git": ssh_git})
-    resources = env.context.get("resources")
-    resources.build()
+    utils.print_result(
+        title="Building resources",
+        result=env.context.get("resources").build()
+    )
 
 
 @app.command()
 def verify():
     """Verify all resources in the workspace"""
-    # check if verification is performed by the system
-    if env.context.get("pre_check", False) or env.context.get("post_check", False):
-        return
-    result, verified, total = utils.verify_all_resource(should_exit=False)
-    if result:
-        print(f"Verification fail (Verified: {verified}, Total:{total})")
-    else:
-        print("Success")
+    utils.print_result(
+        title="Verification of resources",
+        result=env.context.get("resources").verify()
+    )
 
 
 @app.command()
 def delete():
-    resources = env.context.get("resources")
-    resources.destroy()
+    """Delete all resources in the workspace"""
+    utils.print_result(
+        title="Verification of resources",
+        result=env.context.get("resources").destroy()
+    )
 
 
 @app.command()
 def update():
     """Updates current workspace to the latest version"""
-    resources = env.context.get("resources")
-    resources.update()
+    utils.print_result(
+        title="Verification of resources",
+        result=env.context.get("resources").update()
+    )
 
 
 ###################################################################

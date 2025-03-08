@@ -18,18 +18,6 @@ from otoolbox.constants import ERROR_CODE_PRE_VERIFICATION, RESOURCE_ENV_FILE
 _logger = logging.getLogger(__name__)
 
 
-def verify_all_resource(should_exit=True):
-    continue_on_exception = env.context.get("continue_on_exception", True)
-    verified = env.context["resources"].verify(
-        continue_on_exception=continue_on_exception
-    )
-    total = env.context["resources"].get_validators_len()
-    if verified != total and should_exit:
-        print("Resource verification fail.")
-        typer.Exit(ERROR_CODE_PRE_VERIFICATION)
-    return verified != total, verified, total
-
-
 ###################################################################
 # constructors
 ###################################################################
@@ -179,6 +167,7 @@ def is_not_primitive(value):
     primitive_types = (int, float, str, bool, type(None))
     return not isinstance(value, primitive_types)
 
+
 def set_to_env(path, key, value):
     """Adds new environment variable to the .env file and optionally to the current process environment."""
 
@@ -189,7 +178,6 @@ def set_to_env(path, key, value):
 
     env_vars = dotenv_values(path)
     env_vars[key] = value
-    
 
     # Write all variables back to the .env file
     with open(path, "w", encoding="utf8") as f:
@@ -205,3 +193,12 @@ def set_to_env_all(context: WorkspaceResource):
     path = env.get_workspace_path(context.path)
     for k, v in env.context.items():
         set_to_env(path, k, v)
+
+
+def print_result(title="Result list", result=[]):
+    # Show informations
+    for root_result, root_resource in result:
+        print(f"\n{title}:", root_resource.title)
+        for updates, resource in root_result:
+            for result, update in updates:
+                print(f"[{result}] {update.__name__}")

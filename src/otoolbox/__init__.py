@@ -41,14 +41,19 @@ finally:
 
 def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
-    env.context.get("resources").filter(
-        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
-    ).update()
+    utils.print_result(
+        title="Apply auto update resources",
+        result=env.context.get("resources").filter(
+            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
+        ).update()
+    )
 
-    # Automatically verify resources after the application is run
-    env.context.get("resources").filter(
-        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
-    ).verify()
+    utils.print_result(
+        title="Apply auto verified resources",
+        result=env.context.get("resources").filter(
+            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
+        ).verify()
+    )
 
 
 app = typer.Typer(
@@ -123,7 +128,10 @@ def callback_common_arguments(
             )
         )
     if pre_check:
-        utils.verify_all_resource()
+        utils.print_result(
+            title="Pre checks and verification of resources",
+            result=env.context.get("resources").verify()
+        )
 
 
 @app.command(name="list")
