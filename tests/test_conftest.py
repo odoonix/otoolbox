@@ -6,7 +6,7 @@
     - https://docs.pytest.org/en/stable/fixture.html
     - https://docs.pytest.org/en/stable/writing_plugins.html
 """
-from otoolbox import env
+from otoolbox import environment
 
 # import pytest
 # tests/test_calculator.py
@@ -34,7 +34,7 @@ def divide(a, b):
 
 
 def test_add():
-    assert env.context != None
+    assert environment.context != None
     assert add(2, 3) == 5
     assert add(-1, 1) == 0
 
