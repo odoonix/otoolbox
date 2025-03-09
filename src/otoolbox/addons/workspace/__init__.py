@@ -41,9 +41,11 @@ def command_init(
 ) -> None:
     """Initialize all resources from addons into the current workspace"""
     env.context.update({"ssh_git": ssh_git})
+
+    result = env.resources.executor(['init', 'build', 'verify']).execute()
     utils.print_result(
         title="Building resources",
-        result=env.context.get("resources").build()
+        result=result
     )
 
 
@@ -52,7 +54,7 @@ def verify():
     """Verify all resources in the workspace"""
     utils.print_result(
         title="Verification of resources",
-        result=env.context.get("resources").verify()
+        result=env.resources.verify()
     )
 
 
@@ -61,7 +63,7 @@ def delete():
     """Delete all resources in the workspace"""
     utils.print_result(
         title="Verification of resources",
-        result=env.context.get("resources").destroy()
+        result=env.resources.destroy()
     )
 
 
@@ -70,7 +72,7 @@ def update():
     """Updates current workspace to the latest version"""
     utils.print_result(
         title="Verification of resources",
-        result=env.context.get("resources").update()
+        result=env.resources.update()
     )
 
 

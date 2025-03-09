@@ -11,7 +11,7 @@ import typer
 from typing_extensions import Annotated
 
 
-from otoolbox import environment
+from otoolbox.environment import env
 from otoolbox import utils
 
 from otoolbox.constants import (
@@ -32,7 +32,7 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
-env = environment.Environment()
+
 ###################################################################
 # cli
 ###################################################################
@@ -41,18 +41,20 @@ env = environment.Environment()
 
 def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
-    utils.print_result(
-        title="Apply auto update resources",
-        result=env.context.get("resources").filter(
-            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
-        ).update()
-    )
+    update_list = env.resources.filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
+    ).executor(['verify'])
+
+    verify_list = env.resources.filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
+    ).executor(['update'])
+
+    exe_list = update_list + verify_list
+    result = exe_list.execute()
 
     utils.print_result(
-        title="Apply auto verified resources",
-        result=env.context.get("resources").filter(
-            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
-        ).verify()
+        title="Auto update and verification",
+        result=result
     )
 
 
@@ -130,7 +132,7 @@ def callback_common_arguments(
     if pre_check:
         utils.print_result(
             title="Pre checks and verification of resources",
-            result=env.context.get("resources").verify()
+            result=env.resources.verify()
         )
 
 
@@ -139,9 +141,8 @@ def command_list():
     """
     List all available addons.
     """
-    root = env.context.get("resources")
-    for resource in root.resources:
-        print(resource.path)
+    for resource in env.resources:
+        print(resource)
 
 
 ###################################################################

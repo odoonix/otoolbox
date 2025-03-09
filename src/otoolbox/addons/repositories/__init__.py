@@ -58,10 +58,12 @@ def command_init(
 ):
     """Initialize all resources from addons into the current workspace"""
     env.context.update({"ssh_git": ssh_git})
-    return (
-        env.context.get("resources")
-        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .build()
+
+    result = env.resources.filter(lambda resource: resource.has_tag(
+        RESOURCE_TAGS_GIT)).executor(['init', 'build', 'verify']).execute()
+    utils.print_result(
+        title="Init repositories resources",
+        result=result
     )
 
 
@@ -83,10 +85,10 @@ def command_list():
     table.add_column("Parent", justify="left", style="cyan", no_wrap=True)
     table.add_column("Title", justify="left", style="green", no_wrap=True)
 
-    repo_list = env.context.get("resources").filter(
+    repo_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
     )
-    for repo in repo_list.resources:
+    for repo in repo_list:
         table.add_row(repo.parent, repo.title)
 
     console = Console()

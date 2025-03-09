@@ -197,8 +197,8 @@ def set_to_env_all(context: WorkspaceResource):
 
 def print_result(title="Result list", result=[]):
     # Show informations
-    for root_result, root_resource in result:
-        print(f"\n{title}:", root_resource.title)
-        for updates, resource in root_result:
+    for k in result:
+        print(f"\n{k}:")
+        for v in k:
             for result, update in updates:
                 print(f"[{result}] {update.__name__}")

@@ -11,6 +11,66 @@ STEP_UPDATE = "update"
 STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 
 
+class WorkspaceResourceExecutor:
+    def __init__(self, resource, steps):
+        self.resource = resource
+        self.steps = steps
+
+    def execute(self, **kargs):
+        for result, message, processor in self.resource.run_processors(self.steps, **kargs):
+            yield result, message, processor
+
+    def __eq__(self, other):
+        return self.resource == other.resource
+
+    def __ne__(self, other):
+        return self.resource != other.resource
+
+    def __gt__(self, other):
+        return self.resource.priority > other.resource.priority
+
+    def __lt__(self, other):
+        return self.resource.priority < other.resource.priority
+
+    def __str__(self):
+        return f"WorkspaceResourceExecutor({self.resource.path}, {self.steps})"
+
+
+class WorkspaceResourceSetExecutor:
+    def __init__(self, executors=None, resources=None, steps=[]):
+        self.executors = []
+
+        if resources is not None:
+            self.executors = [WorkspaceResourceExecutor(
+                resource, steps) for resource in resources]
+
+        if executors is not None:
+            self.executors = self.executors + executors
+
+    def execute(self, **kargs):
+        for executor in self.executors:
+            yield executor.execute(**kargs)
+
+    def __add__(self, other):
+        if isinstance(other, WorkspaceResourceSetExecutor):
+            combiled_executors = []
+            for executor in self.executors:
+                if executor in other.executors:
+                    executor_other = other.executors[other.executors.index(executor)]
+                    combiled_executors.append(executor + executor_other)
+                else:
+                    combiled_executors.append(executor)
+            for executor in other.executors:
+                if executor not in self.executors:
+                    combiled_executors.append(executor)
+
+            return WorkspaceResourceSetExecutor(
+                executors=combiled_executors
+            )
+
+        raise TypeError("Can only add WorkspaceResourceSetExecutor")
+
+
 class WorkspaceResourceProcessor:
     """Processor for workspace resource
 
@@ -150,10 +210,10 @@ class WorkspaceResource:
         return False
 
 
-class WorkspaceResourceDB:
-    def __init__(self, root=None):
-        self.root = root
-        self.resources = []
+class WorkspaceResourceSet:
+    def __init__(self, resources=[], parent=None):
+        self.parent = parent
+        self.resources = resources
 
     def add(self, resource: WorkspaceResource):
         self.resources.append(resource)
@@ -164,26 +224,13 @@ class WorkspaceResourceDB:
                 return resource
         return default
 
-    def build(self, **kargs):
-        for resource in self.resources:
-            result = resource.build(**kargs)
-            yield result, resource
-
-    def destroy(self, **kargs):
-        for resource in self.resources:
-            result = resource.destroy(**kargs)
-            yield result, resource
-
-    def verify(self, **kargs):
-        for resource in self.resources:
-            result = resource.verify(**kargs)
-            yield result, resource
-
-    def update(self, **kargs):
-        for resource in self.resources:
-            updates = resource.update(**kargs)
-            yield updates, resource
-
     def filter(self, filter_function):
         resources = list(filter(filter_function, self.resources))
-        return resources
+        return WorkspaceResourceSet(resources=resources, parent=self)
+
+    def executor(self, steps):
+        return WorkspaceResourceSetExecutor(resources=self, steps=steps)
+
+    def __iter__(self):
+        for resource in self.resources:
+            yield resource

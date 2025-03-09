@@ -8,7 +8,7 @@ import sys
 import pkg_resources
 
 # Odoo toolbox
-from otoolbox.base import WorkspaceResource, WorkspaceResourceDB
+from otoolbox.base import WorkspaceResource, WorkspaceResourceSet
 
 
 class Environment:
@@ -21,7 +21,7 @@ class Environment:
             "website": "https://odoonix.com",
             "github": "https://githubs.com/odoonix",
         }
-        self.resources = WorkspaceResourceDB()
+        self.resources = WorkspaceResourceSet()
         self.errors = []
 
     def resource_string(
@@ -56,3 +56,7 @@ class Environment:
         else:
             resource.update(**kargs)
         return sys.modules[__name__]
+
+
+# Create the environment
+env = Environment()
