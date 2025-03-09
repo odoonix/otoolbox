@@ -45,14 +45,15 @@ def load_repos_resources():
             parent=item["workspace"],
             title=item["name"],
             description="""Automaticaly added resources from git.""",
-            constructors=[
+            init=[
                 git.git_clone
             ],
-            updates=[
+            update=[
+                utils.touch,
                 git.git_pull
             ],
-            destructors=[],
-            validators=[],
+            destroy=[utils.delete_dir],
+            verify=[utils.is_dir, utils.is_readable],
             tags=['git', item["workspace"], *item.get('tags', [])]
         )
         if item["workspace"] not in workspaces:
@@ -64,12 +65,12 @@ def load_repos_resources():
             path=workspace_path,
             title="Git workspace: {}".format(workspace_path),
             description="""Automaticaly added resources from git.""",
-            constructors=[
+            init=[
                 utils.makedir
             ],
-            updates=[],
-            destructors=[],
-            validators=[],
+            update=[utils.touch],
+            destroy=[utils.delete_dir],
+            verify=[utils.is_dir, utils.is_readable],
         )
 
 

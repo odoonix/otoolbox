@@ -1,10 +1,10 @@
 """Load general CLI and tools related to odoo"""
 
-import sys
 import importlib
 from importlib.metadata import PackageNotFoundError, version
 import chevron
 import dotenv
+from typing import List
 
 
 import typer
@@ -15,8 +15,6 @@ from otoolbox.environment import env
 from otoolbox import utils
 
 from otoolbox.constants import (
-    ERROR_CODE_PRE_VERIFICATION,
-    ERROR_CODE_POST_VERIFICATION,
     RESOURCE_TAGS_AUTO_UPDATE,
     RESOURCE_TAGS_AUTO_VERIFY,
 )
@@ -43,19 +41,16 @@ def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
     update_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
-    ).executor(['verify'])
+    ).executor(["verify"])
 
     verify_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
-    ).executor(['update'])
+    ).executor(["update"])
 
     exe_list = update_list + verify_list
     result = exe_list.execute()
 
-    utils.print_result(
-        title="Auto update and verification",
-        result=result
-    )
+    utils.print_result(result)
 
 
 app = typer.Typer(
@@ -124,15 +119,12 @@ def callback_common_arguments(
         }
     )
     if not silent:
-        print(
-            chevron.render(
-                template=env.resource_string("banner.txt"), data=env.context
-            )
+        env.console.print(
+            chevron.render(template=env.resource_string("banner.txt"), data=env.context)
         )
     if pre_check:
         utils.print_result(
-            title="Pre checks and verification of resources",
-            result=env.resources.verify()
+            env.resources.executor(["verify"]).execute(),
         )
 
 
@@ -142,7 +134,22 @@ def command_list():
     List all available addons.
     """
     for resource in env.resources:
-        print(resource)
+        env.console.print(resource)
+
+
+@app.command(name="run")
+def command_run(
+    tags: Annotated[
+        List[str], typer.Option(help="List of tags to filter resources.")
+    ],
+    steps: Annotated[
+        List[str], typer.Argument(help="List of steps to process with otoolbox.")
+    ],
+):
+    """
+    List all available addons.
+    """
+    print(steps)
 
 
 ###################################################################
@@ -150,9 +157,11 @@ def command_list():
 # Launch application if called directly
 ###################################################################
 
+
 def main():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
+    env.context.update({"addons": addons_list})
     for addon in addons_list:
         package = importlib.import_module(addon)
         # Initialize the addon

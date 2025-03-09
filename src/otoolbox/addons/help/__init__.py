@@ -18,7 +18,7 @@ def init():
         path="README.md",
         title="Workspace README",
         description="A readme that shows parts of the workspace",
-        constructors=[utils.constructor_copy_resource("data/WORKSPACE_README.md")],
-        destructors=[utils.delete_file],
-        validators=[utils.is_file, utils.is_readable],
+        init=[utils.constructor_copy_resource("addons/help/WORKSPACE_README.md")],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
     )

@@ -4,16 +4,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-import typer
 from dotenv import load_dotenv, dotenv_values
 
-from otoolbox.base import WorkspaceResource
+from otoolbox.base import Resource
 from otoolbox import env
-# from otoolbox.environment import (
-#     get_workspace_path,
-#     resource_stream,
-# )
-from otoolbox.constants import ERROR_CODE_PRE_VERIFICATION, RESOURCE_ENV_FILE
+from otoolbox.constants import (
+    ERROR_CODE_PRE_VERIFICATION,
+    RESOURCE_ENV_FILE,
+    PROCESS_SUCCESS,
+    PROCESS_FAIL,
+    PROCESS_EMPTY_MESSAGE,
+    PROCESS_NOT_IMP_MESSAGE,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +54,7 @@ def run_command_in_venv(venv_path, command, shell=False, cwd=None):
     if not cwd:
         cwd = env.get_workspace()
     if not os.path.isfile(python_executable):
-        print(
+        env.console.print(
             f"Error: Python executable not found at '{python_executable}'. Is '{venv_path}' a valid venv?"
         )
         return
@@ -66,13 +68,13 @@ def run_command_in_venv(venv_path, command, shell=False, cwd=None):
         result = subprocess.run(
             command, check=True, text=True, capture_output=True, shell=shell, cwd=cwd
         )
-        print("Output:", result.stdout)
+        env.console.print("Output:", result.stdout)
         if result.stderr:
-            print("Errors:", result.stderr)
+            env.console.print("Errors:", result.stderr)
     except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e.stderr}")
+        env.console.print(f"Command failed with error: {e.stderr}")
     except FileNotFoundError:
-        print(f"Error: '{command[0]}' not found.")
+        env.console.print(f"Error: '{command[0]}' not found.")
 
 
 ###################################################################
@@ -80,32 +82,35 @@ def run_command_in_venv(venv_path, command, shell=False, cwd=None):
 ###################################################################
 
 
-def makedir(context: WorkspaceResource):
+def makedir(context: Resource):
     """Create new directory in the current workspace.
 
     Parameters:
-    context (WorkspaceResource): The resource detail"""
+    context (Resource): The resource detail"""
     path = env.get_workspace_path(context.path)
     if not os.path.exists(path):
         os.makedirs(path)
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def touch(context: WorkspaceResource):
+def touch(context: Resource):
     """Touch the file in the current workspace."""
     file_path = env.get_workspace_path(context.path)
     Path(file_path).touch()
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def constructor_copy_resource(path, packag_name: str = "otoolbox"):
     """Create a constructor to copy resource with path"""
 
-    def copy_resource(context: WorkspaceResource):
+    def copy_resource(context: Resource):
         stream = env.resource_stream(path, packag_name=packag_name)
         # Open the output file in write-binary mode
         out_file_path = env.get_workspace_path(context.path)
         with open(out_file_path, "wb") as out_file:
             # Read from the resource stream and write to the output file
             out_file.write(stream.read())
+        return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
     return copy_resource
 
@@ -115,24 +120,28 @@ def constructor_copy_resource(path, packag_name: str = "otoolbox"):
 ###################################################################
 
 
-def is_readable(context: WorkspaceResource):
+def is_readable(context: Resource):
     file = env.get_workspace_path(context.path)
     assert os.access(file, os.R_OK), f"File {file} doesn't exist or isn't readable"
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def is_writable(context: WorkspaceResource):
+def is_writable(context: Resource):
     file = env.get_workspace_path(context.path)
     assert os.access(file, os.W_OK), f"File {file} doesn't exist or isn't writable"
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def is_dir(context: WorkspaceResource):
+def is_dir(context: Resource):
     file = env.get_workspace_path(context.path)
     assert os.path.isdir(file), f"File {file} doesn't exist or isn't readable"
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def is_file(context: WorkspaceResource):
+def is_file(context: Resource):
     file = env.get_workspace_path(context.path)
     assert os.path.isfile(file), f"File {file} doesn't exist or isn't readable"
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 ###################################################################
@@ -140,7 +149,7 @@ def is_file(context: WorkspaceResource):
 ###################################################################
 
 
-def delete_file(context: WorkspaceResource):
+def delete_file(context: Resource):
     """
     Delete a file
     """
@@ -148,22 +157,20 @@ def delete_file(context: WorkspaceResource):
     # Check if the file exists before attempting to delete it
     if os.path.exists(file_path):
         os.remove(file_path)
-        _logger.info(f"{file_path} has been deleted successfully.")
-    else:
-        _logger.warn(f"{file_path} does not exist.")
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def delete_dir(context: WorkspaceResource):
+def delete_dir(context: Resource):
     """
     Delete a directory and its contents
     """
-    pass
+    return PROCESS_FAIL, PROCESS_NOT_IMP_MESSAGE
 
 
 ###################################################################
 # destructors
 ###################################################################
-def is_not_primitive(value):
+def __is_not_primitive(value):
     primitive_types = (int, float, str, bool, type(None))
     return not isinstance(value, primitive_types)
 
@@ -171,7 +178,7 @@ def is_not_primitive(value):
 def set_to_env(path, key, value):
     """Adds new environment variable to the .env file and optionally to the current process environment."""
 
-    if is_not_primitive(value):
+    if __is_not_primitive(value):
         return
     key = key.upper()
     value = str(value)
@@ -188,17 +195,18 @@ def set_to_env(path, key, value):
     os.environ[key] = str(value)
 
 
-def set_to_env_all(context: WorkspaceResource):
+def set_to_env_all(context: Resource):
     """Adds all environment variables to the .env file and optionally to the current process environment."""
     path = env.get_workspace_path(context.path)
     for k, v in env.context.items():
         set_to_env(path, k, v)
 
 
-def print_result(title="Result list", result=[]):
+def print_result(result=[]):
     # Show informations
-    for k in result:
-        print(f"\n{k}:")
-        for v in k:
-            for result, update in updates:
-                print(f"[{result}] {update.__name__}")
+    counter = 0
+    for processors, executor in result:
+        counter += 1
+        env.console.print(f"\n{executor.resource} ({counter})")
+        for res, message, processor in processors:
+            env.console.print(f"[{res}] {processor} {message}")

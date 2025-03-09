@@ -4,6 +4,7 @@ Resources:
 - .
 
 """
+
 import dotenv
 
 import typer
@@ -42,19 +43,14 @@ def command_init(
     """Initialize all resources from addons into the current workspace"""
     env.context.update({"ssh_git": ssh_git})
 
-    result = env.resources.executor(['init', 'build', 'verify']).execute()
-    utils.print_result(
-        title="Building resources",
-        result=result
-    )
+    utils.print_result(env.resources.executor(["init", "build", "verify"]).execute())
 
 
 @app.command()
 def verify():
     """Verify all resources in the workspace"""
     utils.print_result(
-        title="Verification of resources",
-        result=env.resources.verify()
+        env.resources.executor(["verify"]).execute(),
     )
 
 
@@ -62,8 +58,7 @@ def verify():
 def delete():
     """Delete all resources in the workspace"""
     utils.print_result(
-        title="Verification of resources",
-        result=env.resources.destroy()
+        env.resources.executor(["destroy"]).execute(),
     )
 
 
@@ -71,8 +66,7 @@ def delete():
 def update():
     """Updates current workspace to the latest version"""
     utils.print_result(
-        title="Verification of resources",
-        result=env.resources.update()
+        env.resources.executor(["update"]).execute(),
     )
 
 
@@ -86,9 +80,9 @@ def init():
         path=RESOURCE_ROOT,
         title="Workspace directory",
         description="The current workspace directory",
-        constructors=[utils.makedir],
-        destructors=[utils.delete_dir],
-        validators=[utils.is_dir, utils.is_readable],
+        init=[utils.makedir],
+        destroy=[utils.delete_dir],
+        verify=[utils.is_dir, utils.is_readable],
         tags=[RESOURCE_TAGS_AUTO_UPDATE],
     )
     env.add_resource(
@@ -97,9 +91,9 @@ def init():
         title="Envirenments Variables",
         description="The env variables file",
         constructors=[utils.touch],
-        updates=[utils.set_to_env_all],
-        destructors=[utils.delete_file],
-        validators=[utils.is_file, utils.is_readable, utils.is_writable],
+        init=[utils.set_to_env_all],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable, utils.is_writable],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE],
     )
 

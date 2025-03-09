@@ -6,9 +6,10 @@ import sys
 
 # 3th party
 import pkg_resources
+from rich.console import Console
 
 # Odoo toolbox
-from otoolbox.base import WorkspaceResource, WorkspaceResourceSet
+from otoolbox.base import Resource, ResourceSet
 
 
 class Environment:
@@ -21,8 +22,9 @@ class Environment:
             "website": "https://odoonix.com",
             "github": "https://githubs.com/odoonix",
         }
-        self.resources = WorkspaceResourceSet()
+        self.resources = ResourceSet()
         self.errors = []
+        self.console = Console()
 
     def resource_string(
         self, resource_name: str, packag_name: str = "otoolbox", encoding: str = "utf-8"
@@ -51,7 +53,7 @@ class Environment:
         """Add a resource to the workspace"""
         resource = self.resources.get(kargs.get("path"))
         if not resource:
-            resource = WorkspaceResource(**kargs)
+            resource = Resource(**kargs)
             self.resources.add(resource)
         else:
             resource.update(**kargs)

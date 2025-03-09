@@ -59,11 +59,10 @@ def command_init(
     """Initialize all resources from addons into the current workspace"""
     env.context.update({"ssh_git": ssh_git})
 
-    result = env.resources.filter(lambda resource: resource.has_tag(
-        RESOURCE_TAGS_GIT)).executor(['init', 'build', 'verify']).execute()
     utils.print_result(
-        title="Init repositories resources",
-        result=result
+        env.resources.filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
+        .executor(["init", "build", "verify"])
+        .execute()
     )
 
 
@@ -71,10 +70,9 @@ def command_init(
 def command_update():
     """Updates current workspace to the latest version"""
     utils.print_result(
-        title="Update of repository",
-        result=env.context.get("resources")
-        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .update(),
+        env.resources.filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
+        .executor(["update", "verify"])
+        .execute()
     )
 
 
@@ -139,13 +137,13 @@ def init():
         path=REPOSITORIES_PATH,
         title="List of managed repositories",
         description="Adding, removing, and updating repositories in the workspace is done through this file",
-        constructors=[
+        init=[
             utils.constructor_copy_resource(
                 RESOURCE_REPOSITORIES_PATH, packag_name=__name__
             )
         ],
-        destructors=[utils.delete_file],
-        validators=[utils.is_file, utils.is_readable],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
     )
 
     config.load_repos_resources()

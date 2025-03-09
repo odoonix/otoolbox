@@ -105,11 +105,11 @@ def init():
         title="List of managed repositories",
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
-        constructors=[
+        init=[
             utils.constructor_copy_resource("addons/vscode/data/workspace.json")
         ],
-        destructors=[utils.delete_file],
-        validators=[utils.is_file, utils.is_readable],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
         tags=["vscode"],
     )
 

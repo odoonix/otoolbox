@@ -21,7 +21,7 @@ def init():
         path=".bin",
         title="Workspace configuration directory",
         description="All configuration related to current workspace are located in this folder",
-        constructors=[utils.makedir],
-        destructors=[utils.delete_dir],
-        validators=[utils.is_dir, utils.is_readable],
+        init=[utils.makedir],
+        destroy=[utils.delete_dir],
+        verify=[utils.is_dir, utils.is_readable],
     )
