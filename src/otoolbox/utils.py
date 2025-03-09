@@ -9,10 +9,10 @@ from dotenv import load_dotenv, dotenv_values
 
 from otoolbox.base import WorkspaceResource
 from otoolbox import env
-from otoolbox.env import (
-    get_workspace_path,
-    resource_stream,
-)
+# from otoolbox.environment import (
+#     get_workspace_path,
+#     resource_stream,
+# )
 from otoolbox.constants import ERROR_CODE_PRE_VERIFICATION, RESOURCE_ENV_FILE
 
 _logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def call_process_safe(command, shell=False, cwd=None):
     try:
         if not cwd:
             cwd = env.get_workspace()
-        with open(get_workspace_path(".logs.txt"), "a", encoding="utf8") as log:
+        with open(env.get_workspace_path(".logs.txt"), "a", encoding="utf8") as log:
             ret = subprocess.call(command, shell=shell, cwd=cwd, stdout=log, stderr=log)
             return ret
     except Exception as e:
@@ -85,14 +85,14 @@ def makedir(context: WorkspaceResource):
 
     Parameters:
     context (WorkspaceResource): The resource detail"""
-    path = get_workspace_path(context.path)
+    path = env.get_workspace_path(context.path)
     if not os.path.exists(path):
         os.makedirs(path)
 
 
 def touch(context: WorkspaceResource):
     """Touch the file in the current workspace."""
-    file_path = get_workspace_path(context.path)
+    file_path = env.get_workspace_path(context.path)
     Path(file_path).touch()
 
 
@@ -100,9 +100,9 @@ def constructor_copy_resource(path, packag_name: str = "otoolbox"):
     """Create a constructor to copy resource with path"""
 
     def copy_resource(context: WorkspaceResource):
-        stream = resource_stream(path, packag_name=packag_name)
+        stream = env.resource_stream(path, packag_name=packag_name)
         # Open the output file in write-binary mode
-        out_file_path = get_workspace_path(context.path)
+        out_file_path = env.get_workspace_path(context.path)
         with open(out_file_path, "wb") as out_file:
             # Read from the resource stream and write to the output file
             out_file.write(stream.read())
@@ -116,22 +116,22 @@ def constructor_copy_resource(path, packag_name: str = "otoolbox"):
 
 
 def is_readable(context: WorkspaceResource):
-    file = get_workspace_path(context.path)
+    file = env.get_workspace_path(context.path)
     assert os.access(file, os.R_OK), f"File {file} doesn't exist or isn't readable"
 
 
 def is_writable(context: WorkspaceResource):
-    file = get_workspace_path(context.path)
+    file = env.get_workspace_path(context.path)
     assert os.access(file, os.W_OK), f"File {file} doesn't exist or isn't writable"
 
 
 def is_dir(context: WorkspaceResource):
-    file = get_workspace_path(context.path)
+    file = env.get_workspace_path(context.path)
     assert os.path.isdir(file), f"File {file} doesn't exist or isn't readable"
 
 
 def is_file(context: WorkspaceResource):
-    file = get_workspace_path(context.path)
+    file = env.get_workspace_path(context.path)
     assert os.path.isfile(file), f"File {file} doesn't exist or isn't readable"
 
 
@@ -144,7 +144,7 @@ def delete_file(context: WorkspaceResource):
     """
     Delete a file
     """
-    file_path = get_workspace_path(context.path)
+    file_path = env.get_workspace_path(context.path)
     # Check if the file exists before attempting to delete it
     if os.path.exists(file_path):
         os.remove(file_path)

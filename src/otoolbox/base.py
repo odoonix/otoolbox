@@ -1,75 +1,141 @@
 import os
 import sys
 
-from otoolbox.constants import (
-    RESOURCE_PRIORITY_DEFAULT
-)
+from otoolbox.constants import RESOURCE_PRIORITY_DEFAULT
+
+STEP_INIT = "init"
+STEP_BUILD = "build"
+STEP_DESTROY = "destroy"
+STEP_VERIFY = "verify"
+STEP_UPDATE = "update"
+STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 
 
-class WorkspaceResource():
+class WorkspaceResourceProcessor:
+    """Processor for workspace resource
+
+    This class is used to define a processor for a workspace resource.
+    It is used to define a process that will be executed on the resource.
+    It can be used to build, destroy, verify or update the resource.
+
+    Each process executed on a resource at a specific step.
+    The step can be used to define the order of execution of the processors.
+    The steps are:
+    - init: Initialization of the resource
+    - build: Build the resource
+    - destroy: Destroy the resource
+    - verify: Verify the resource
+    - update: Update the resource
+    """
+
+    def __init__(self, resource, process, step=STEP_INIT, title=None, description=None):
+        self.title = title
+        self.description = description
+
+        self.step = step
+
+        self.resource = resource
+        self.process = process
+
+    def run(self, **kargs):
+        """Process the resource"""
+        result, message = self.process(context=self.resource, **kargs)
+        return result, message
+
+
+class WorkspaceResource:
     def __init__(
         self,
-        path,
-        parent=None,
-        title=None,
-        description=None,
-        constructors=None,
-        destructors=None,
-        validators=None,
-        updates=None,
-        tags=None,
-        priority=RESOURCE_PRIORITY_DEFAULT,
-        visible=True,
+        **kargs,
     ):
-        self.path = path
-        self.parent = parent
-        self.title = title
-        self.description = description if description else []
-        self.constructors = constructors if constructors else []
-        self.destructors = destructors if destructors else []
-        self.validators = validators if validators else []
-        self.tags = tags if tags else []
-        self.updates = updates if updates else []
-        self.priority = priority
-        self.visible = visible,
+        # Relations&ID
+        self.path = kargs.get("path")
+        self.parent = kargs.get("parent", None)
+        self.origin_extensions = []
+        self.priority = RESOURCE_PRIORITY_DEFAULT
+        self.visible = True
+        self.description = ""
+        self.tags = []
+        self.title = self.path
+        self.processors = []
+        self.extend(**kargs)
 
-        # internals
-        self.validation_errors = {}
-        self.is_valied = False
+    def extend(self, **kargs):
+        """Extends the resource"""
+
+        # Check path and parent
+        path = kargs.get("path")
+        if path != self.path:
+            raise RuntimeError("Imposible to modifie path")
+        parent = kargs.get("parent", None)
+        if parent != self.parent:
+            raise RuntimeError("Imposible to modifie parent")
+
+        self.origin_extensions.append(kargs)
+        self._update_properties()
+        # Functions
+        for step in STEPS:
+            if step in kargs:
+                self.add_processor(kargs[step], step=step)
+
+    def _update_properties(self):
+        self.origin_extensions = sorted(
+            self.origin_extensions,
+            key=lambda x: x.get("priority", RESOURCE_PRIORITY_DEFAULT),
+            reverse=True,
+        )
+        self.priority = min(
+            [
+                extension.get("priority", RESOURCE_PRIORITY_DEFAULT)
+                for extension in self.origin_extensions
+            ]
+        )
+        self.visible = any(
+            [extension.get("visible", True) for extension in self.origin_extensions]
+        )
+        self.description = "\n".join(
+            [extension.get("description", "") for extension in self.origin_extensions]
+        )
+        self.tags = [
+            tag
+            for extension in self.origin_extensions
+            for tag in extension.get("tags", [])
+        ]
+        self.title = self.origin_extensions[0].get("title", self.path)
+
+    def add_processor(self, process, **kargs):
+        """Add a processor to the resource"""
+        self.processors.append(WorkspaceResourceProcessor(self, process, **kargs))
+
+    def get_processors(self, steps):
+        """Get processors by step"""
+        processors = []
+        for processor in self.processors:
+            if processor.step in steps:
+                processors.append(processor)
+        return processors
+
+    def run_processors(self, steps, **kargs):
+        """Run processors by step"""
+        for processor in self.get_processors(steps):
+            result, message = processor.run(context=self, **kargs)
+            yield result, message, processor
 
     def build(self, **kargs):
         """Launch all build function"""
-        for constructor in self.constructors:
-            result = constructor(context=self, **kargs)
-            yield result, constructor
+        return self.run_processors(["build"], **kargs)
 
     def destroy(self, **kargs):
         """Launch all destroy function"""
-        for destructor in self.destructors:
-            result = destructor(context=self, **kargs)
-            yield result, destructor
+        return self.run_processors(["build"], **kargs)
 
     def verify(self, **kargs):
         """Launch all verifiy function"""
-        for validator in self.validators:
-            result = validator(context=self, **kargs)
-            yield result, validator
+        return self.run_processors(["build"], **kargs)
 
     def update(self, **kargs):
         """Launch all updates function"""
-        for update in self.updates:
-            result = update(context=self, **kargs)
-            yield result, update
-
-    def get_validators_len(self):
-        """Return the number of validators"""
-        return len(self.validators)
-
-    def set_validator_failed(self, validator, exception):
-        self.validation_errors[validator] = exception
-
-    def clean_validator_failer(self):
-        self.validation_errors.clear()
+        return self.run_processors(["build"], **kargs)
 
     def has_tag(self, *args):
         """Check if it has any tags from arguments.
@@ -81,44 +147,18 @@ class WorkspaceResource():
         for arg in args:
             if arg in self.tags:
                 return True
+        return False
 
 
-class WorkspaceResourceGroup(WorkspaceResource):
-    """Group of resources
-
-    If there are many resources that are related to each other, it is possible to group them in a group.
-    """
-
-    def __init__(self,
-                 path,
-                 resources=None,
-                 root=None,
-                 **kargs):
-        super().__init__(path, **kargs)
-        self.resources = resources if resources else []
-        self.validators_len = 0
+class WorkspaceResourceDB:
+    def __init__(self, root=None):
         self.root = root
+        self.resources = []
 
-        # remove all non needed attributes
-        self.validators = []
-        self.updates = []
-        self.constructors = []
-        self.destructors = []
-
-    def append(self, resource: WorkspaceResource):
-        """Appends new resource to the group"""
-        if self.root:
-            raise RuntimeError("Imposible to modifie virtual resource")
+    def add(self, resource: WorkspaceResource):
         self.resources.append(resource)
-        self.resources = sorted(self.resources, key=lambda x: x.priority, reverse=True)
-        self.priority = self.resources[0].priority
-        self.title = self.resources[0].title
-        self.description = self.resources[0].description
-        self.visible = self.resources[0].visible
-        self.validators_len += resource.get_validators_len()
 
     def get(self, path, default=False):
-        """Gets resources"""
         for resource in self.resources:
             if resource.path == path:
                 return resource
@@ -128,39 +168,22 @@ class WorkspaceResourceGroup(WorkspaceResource):
         for resource in self.resources:
             result = resource.build(**kargs)
             yield result, resource
-        result = super().build(**kargs)
-        yield result, self
 
     def destroy(self, **kargs):
         for resource in self.resources:
             result = resource.destroy(**kargs)
             yield result, resource
-        result = super().destroy(**kargs)
-        yield result, self
 
     def verify(self, **kargs):
         for resource in self.resources:
             result = resource.verify(**kargs)
             yield result, resource
-        result = super().verify(**kargs)
-        yield result, self
 
     def update(self, **kargs):
         for resource in self.resources:
             updates = resource.update(**kargs)
             yield updates, resource
-        updates = super().update(**kargs)
-        yield updates, self
-
-    def get_validators_len(self) -> int:
-        return self.validators_len
-
-    def has_tag(self, *args):
-        for resource in self.resources:
-            if resource.has_tag(*args):
-                return True
-        return super().has_tag(*args)
 
     def filter(self, filter_function):
         resources = list(filter(filter_function, self.resources))
-        return WorkspaceResourceGroup(self.path, root=self, resources=resources)
+        return resources

@@ -1,10 +1,10 @@
 """The **Developer** module in Odoonix Toolbox streamlines DevOps processes for Odoo
-developers by automating tasks, managing environments, and simplifying workflows.
+developers by automating tasks, managing envs, and simplifying workflows.
 
 The **Developer** module in the Odoonix Toolbox is a specialized tool designed to
 streamline the DevOps processes for Odoo developers. It provides utilities for
-automating repetitive tasks, managing development environments, and simplifying
-workflows. With features such as addon management, environment configuration,
+automating repetitive tasks, managing development envs, and simplifying
+workflows. With features such as addon management, env configuration,
 database handling, and integration tools, the Developer module empowers developers
 to focus on coding and innovation rather than setup and maintenance. This module
 bridges the gap between development and operations, enhancing productivity and
@@ -27,10 +27,10 @@ app.__cli_name__ = "dev"
 @app.command(name="init")
 def command_init():
     """
-    Initialize the development environment.
+    Initialize the development env.
 
     It install and init .venv to the workspace. It also install all required
-    tools for the development environment. All odoo dependencies are installed
+    tools for the development env. All odoo dependencies are installed
     in the .venv.
 
 

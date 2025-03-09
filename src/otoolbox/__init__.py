@@ -11,7 +11,7 @@ import typer
 from typing_extensions import Annotated
 
 
-from otoolbox import env
+from otoolbox import environment
 from otoolbox import utils
 
 from otoolbox.constants import (
@@ -32,7 +32,7 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
-
+env = environment.Environment()
 ###################################################################
 # cli
 ###################################################################
@@ -124,7 +124,7 @@ def callback_common_arguments(
     if not silent:
         print(
             chevron.render(
-                template=env.resource_string("data/banner.txt"), data=env.context
+                template=env.resource_string("banner.txt"), data=env.context
             )
         )
     if pre_check:

@@ -6,7 +6,7 @@ workflows of software maintainers. It provides commands for automating essential
 maintenance tasks, such as updating packages, tracking changes in repositories,
 managing and inspecting databases, and creating backups. This tool helps ensure systems
 remain up-to-date, secure, and efficient, while reducing manual overhead. Whether
-managing single projects or complex multi-repository environments, the Maintainer
+managing single projects or complex multi-repository envs, the Maintainer
 package offers a reliable and streamlined solution for maintenance operations.
 """
 
@@ -70,8 +70,9 @@ def command_update():
     """Updates current workspace to the latest version"""
     utils.print_result(
         title="Update of repository",
-        result=env.context.get("resources").filter(
-            lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)).update()
+        result=env.context.get("resources")
+        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
+        .update(),
     )
 
 
@@ -152,6 +153,10 @@ def init():
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
+def run():
     dotenv.load_dotenv()
     app()
+
+
+if __name__ == "__main__":
+    run()

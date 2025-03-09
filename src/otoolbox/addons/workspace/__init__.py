@@ -93,7 +93,7 @@ def init():
         priority=RESOURCE_PRIORITY_ROOT,
         path=RESOURCE_ENV_FILE,
         title="Envirenments Variables",
-        description="The environment variables file",
+        description="The env variables file",
         constructors=[utils.touch],
         updates=[utils.set_to_env_all],
         destructors=[utils.delete_file],
