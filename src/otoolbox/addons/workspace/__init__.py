@@ -98,10 +98,16 @@ def init():
     )
 
 
+
+
 ###################################################################
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
+def _main():
     dotenv.load_dotenv()
     app()
+
+
+if __name__ == "__main__":
+    _main()

@@ -5,9 +5,20 @@ Resources:
 """
 
 import os
+import dotenv
+
+import typer
+from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+
+
+###################################################################
+# cli
+###################################################################
+app = typer.Typer()
+app.__cli_name__ = "ubuntu"
 
 ###################################################################
 # init
@@ -25,3 +36,16 @@ def init():
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
     )
+
+
+###################################################################
+# Application entry point
+# Launch application if called directly
+###################################################################
+def _main():
+    dotenv.load_dotenv()
+    app()
+
+
+if __name__ == "__main__":
+    _main()

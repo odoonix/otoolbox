@@ -7,9 +7,30 @@ Resources:
 
 import logging
 import sys
+import dotenv
+
+import typer
+from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+
+LOG_FILE = ".logs.txt"
+
+###################################################################
+# cli
+###################################################################
+app = typer.Typer()
+app.__cli_name__ = "log"
+
+
+@app.command(name="show")
+def command_show():
+    """Show latest logs"""
+    path = env.get_workspace_path(LOG_FILE)
+    with open(path, "r", encoding="UTF8") as file:
+        for line in file:
+            env.console.print(line, end="")
 
 
 ###################################################################
@@ -18,14 +39,14 @@ from otoolbox import utils
 def init():
     """Init the resources for the workspace"""
     env.add_resource(
-        path=".logs.txt",
+        path=LOG_FILE,
         title="Default logging resource",
         description="Containes all logs from the sysem",
         init=[utils.touch_file],
         update=[utils.touch_file],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_writable],
-        tags=['debug']
+        tags=["debug"],
     )
 
     # Logging
@@ -41,3 +62,16 @@ def init():
         format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
         handlers=handlers,
     )
+
+
+###################################################################
+# Application entry point
+# Launch application if called directly
+###################################################################
+def _main():
+    dotenv.load_dotenv()
+    app()
+
+
+if __name__ == "__main__":
+    _main()

@@ -10,8 +10,11 @@ to focus on coding and innovation rather than setup and maintenance. This module
 bridges the gap between development and operations, enhancing productivity and
 ensuring a seamless development experience in Odoo projects.
 """
+
 import dotenv
+
 import typer
+from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
@@ -105,9 +108,7 @@ def init():
         title="List of managed repositories",
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
-        init=[
-            utils.constructor_copy_resource("addons/vscode/data/workspace.json")
-        ],
+        init=[utils.constructor_copy_resource("addons/vscode/data/workspace.json")],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["vscode"],
@@ -118,6 +119,10 @@ def init():
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
+def _main():
     dotenv.load_dotenv()
     app()
+
+
+if __name__ == "__main__":
+    _main()
