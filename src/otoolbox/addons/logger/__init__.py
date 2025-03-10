@@ -21,8 +21,8 @@ def init():
         path=".logs.txt",
         title="Default logging resource",
         description="Containes all logs from the sysem",
-        init=[utils.touch],
-        update=[utils.touch],
+        init=[utils.touch_file],
+        update=[utils.touch_file],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_writable],
         tags=['debug']
@@ -31,12 +31,13 @@ def init():
     # Logging
     file_handler = logging.FileHandler(filename=env.get_workspace_path(".logs.txt"))
     handlers = [file_handler]
-    if env.context.get("verbose"):
+    verbose = env.context.get("verbose")
+    if verbose:
         stdout_handler = logging.StreamHandler(stream=sys.stdout)
         handlers.append(stdout_handler)
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO if verbose else logging.ERROR,
         format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
         handlers=handlers,
     )

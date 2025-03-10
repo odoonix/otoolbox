@@ -90,7 +90,7 @@ def init():
         path=RESOURCE_ENV_FILE,
         title="Envirenments Variables",
         description="The env variables file",
-        constructors=[utils.touch],
+        constructors=[utils.touch_dir],
         init=[utils.set_to_env_all],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable, utils.is_writable],

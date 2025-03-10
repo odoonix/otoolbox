@@ -51,6 +51,9 @@ class Environment:
     #################################################################################
     def add_resource(self, **kargs):
         """Add a resource to the workspace"""
+        kargs.update({
+            'env': self
+        })
         resource = self.resources.get(kargs.get("path"))
         if not resource:
             resource = Resource(**kargs)

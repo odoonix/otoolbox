@@ -49,8 +49,8 @@ def load_repos_resources():
                 git.git_clone
             ],
             update=[
-                utils.touch,
-                git.git_pull
+                git.git_pull,
+                utils.touch_dir,
             ],
             destroy=[utils.delete_dir],
             verify=[utils.is_dir, utils.is_readable],
@@ -63,12 +63,12 @@ def load_repos_resources():
         env.add_resource(
             priority=RESOURCE_PRIORITY_ROOT,
             path=workspace_path,
-            title="Git workspace: {}".format(workspace_path),
+            title=f"Git workspace: {workspace_path}",
             description="""Automaticaly added resources from git.""",
             init=[
                 utils.makedir
             ],
-            update=[utils.touch],
+            update=[utils.touch_dir],
             destroy=[utils.delete_dir],
             verify=[utils.is_dir, utils.is_readable],
         )

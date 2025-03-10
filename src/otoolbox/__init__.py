@@ -111,7 +111,6 @@ def callback_common_arguments(
     env.context.update(
         {
             "odoo_version": odoo_version,
-            "path": ".",
             "silent": silent,
             "pre_check": pre_check,
             "post_check": post_check,

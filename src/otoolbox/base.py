@@ -142,6 +142,7 @@ class Resource:
         self.tags = []
         self.title = self.path
         self.processors = []
+        self.env = kargs.get("env")
         self.extend(**kargs)
 
     def extend(self, **kargs):
@@ -215,6 +216,10 @@ class Resource:
             if arg in self.tags:
                 return True
         return False
+
+    def get_abs_path(self):
+        """Gets abs path of the current resource"""
+        return self.env.env.get_workspace_path(self.path)
 
     def __str__(self):
         template = (
