@@ -130,6 +130,7 @@ class ResourceProcessor:
 
 class Resource:
     """A resource of the working directory"""
+
     def __init__(self, **kargs):
         # Relations&ID
         self.path = kargs.get("path")
@@ -207,6 +208,9 @@ class Resource:
         flag = resource.has_tag('git', 'github')
 
         """
+        if not len(args):
+            return True
+
         for arg in args:
             if arg in self.tags:
                 return True
@@ -268,6 +272,4 @@ class ResourceSet:
         if isinstance(other, ResourceSet):
             return ResourceSet(resources=self.resources + other.resources)
 
-        raise TypeError(
-            f"Impossible to add {type(other)} to {type(ResourceSet)}"
-        )
+        raise TypeError(f"Impossible to add {type(other)} to {type(ResourceSet)}")

@@ -139,17 +139,30 @@ def command_list():
 
 @app.command(name="run")
 def command_run(
-    tags: Annotated[
-        List[str], typer.Option(help="List of tags to filter resources.")
-    ],
     steps: Annotated[
         List[str], typer.Argument(help="List of steps to process with otoolbox.")
     ],
+    tags: Annotated[List[str], typer.Option(help="List of tags to filter resources.")] = None,
+    ssh_auth: Annotated[
+        bool,
+        typer.Option(
+            prompt="Use SSH for git and other apps to authenticate?",
+            help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
+            "The default ssh key is used.",
+            envvar="OTOOLBOX_SSH_AUTH",
+        ),
+    ] = True,
 ):
     """
     List all available addons.
     """
-    print(steps)
+    tags = tags if isinstance(tags, List) else []
+    env.context.update({"tags": tags, "step": steps, "ssh_auth": ssh_auth})
+    utils.print_result(
+        env.resources.filter(lambda resource: resource.has_tag(*tags))
+        .executor(steps)
+        .execute()
+    )
 
 
 ###################################################################
