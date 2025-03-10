@@ -18,6 +18,7 @@ from otoolbox.constants import (
     RESOURCE_ROOT,
     RESOURCE_TAGS_ENV,
     RESOURCE_TAGS_AUTO_UPDATE,
+    RESOURCE_TAGS_AUTO_VERIFY
 )
 
 
@@ -46,30 +47,6 @@ def command_init(
     utils.print_result(env.resources.executor(["init", "build", "verify"]).execute())
 
 
-@app.command()
-def verify():
-    """Verify all resources in the workspace"""
-    utils.print_result(
-        env.resources.executor(["verify"]).execute(),
-    )
-
-
-@app.command()
-def delete():
-    """Delete all resources in the workspace"""
-    utils.print_result(
-        env.resources.executor(["destroy"]).execute(),
-    )
-
-
-@app.command()
-def update():
-    """Updates current workspace to the latest version"""
-    utils.print_result(
-        env.resources.executor(["update"]).execute(),
-    )
-
-
 ###################################################################
 # init
 ###################################################################
@@ -83,7 +60,7 @@ def init():
         init=[utils.makedir],
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
-        tags=[RESOURCE_TAGS_AUTO_UPDATE],
+        tags=[RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,
@@ -92,9 +69,10 @@ def init():
         description="The env variables file",
         constructors=[utils.touch],
         init=[utils.set_to_env_all],
+        update=[utils.set_to_env_all],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable, utils.is_writable],
-        tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE],
+        tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
 
 
@@ -102,6 +80,10 @@ def init():
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
-    dotenv.load_dotenv()
+def _main():
+    dotenv.load_dotenv(".env")
     app()
+
+
+if __name__ == "__main__":
+    _main()

@@ -58,6 +58,11 @@ class ResourceExecutor:
     def __str__(self):
         return f"ResourceExecutor({self.resource.path}, {self.steps})"
 
+    def __add__(self, other):
+        if not isinstance(other, ResourceExecutor) or self.resource != other.resource:
+            raise TypeError(f"Impossible to add {type(self)} to {type(other)}")
+        return ResourceExecutor(self.resource, self.steps + other.steps)
+
 
 class ResourceSetExecutor:
     def __init__(self, executors=None, resources=None, steps=[]):
@@ -72,6 +77,7 @@ class ResourceSetExecutor:
             self.executors = self.executors + executors
 
     def execute(self, **kargs):
+        self.executors.sort(reverse=True, key=lambda x: x.resource.priority)
         for executor in self.executors:
             yield executor.execute(**kargs), executor
 
@@ -242,7 +248,7 @@ class ResourceSet:
         self.resources = sorted(
             self.resources,
             key=lambda x: x.priority,
-            reverse=True,
+            reverse=False,
         )
 
     def get(self, path, default=False):

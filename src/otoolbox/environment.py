@@ -56,7 +56,7 @@ class Environment:
             resource = Resource(**kargs)
             self.resources.add(resource)
         else:
-            resource.update(**kargs)
+            resource.extend(**kargs)
         return sys.modules[__name__]
 
 

@@ -7,14 +7,26 @@ Resources:
 
 import logging
 import sys
+import dotenv
+
+import typer
+from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
 
 
 ###################################################################
+# cli
+###################################################################
+app = typer.Typer(pretty_exceptions_show_locals=False)
+app.__cli_name__ = "workspace"
+
+###################################################################
 # init
 ###################################################################
+
+
 def init():
     """Init the resources for the workspace"""
     env.add_resource(
@@ -40,3 +52,17 @@ def init():
         format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
         handlers=handlers,
     )
+
+###################################################################
+# Application entry point
+# Launch application if called directly
+###################################################################
+
+
+def _main():
+    dotenv.load_dotenv(".env")
+    app()
+
+
+if __name__ == "__main__":
+    _main()

@@ -16,6 +16,8 @@ import typer
 from otoolbox import env
 from otoolbox import utils
 
+from otoolbox.addons.vscode import dev_env
+
 
 ###################################################################
 # cli
@@ -24,51 +26,12 @@ app = typer.Typer()
 app.__cli_name__ = "dev"
 
 
-@app.command(name="init")
-def command_init():
-    """
-    Initialize the development env.
-
-    It install and init .venv to the workspace. It also install all required
-    tools for the development env. All odoo dependencies are installed
-    in the .venv.
-
-
-    """
-    utils.call_process_safe(
-        [
-            "python3",
-            "-m",
-            "venv",
-            env.get_workspace_path(".venv"),
-        ],
-        cwd=env.get_workspace(),
-    )
-
-    utils.run_command_in_venv(
-        env.get_workspace_path(".venv"),
-        [
-            "python",
-            "-m",
-            "pip",
-            "install",
-            "-r",
-            env.get_workspace_path("odoo/odoo/requirements.txt"),
-        ],
-        cwd=env.get_workspace(),
-    )
-
-    # TODO: check if need to update settings
-    pass
-
-
 @app.command()
 def start():
     """Check and start development tools.
 
     Our default development envirenment is based on docker and vscode. This command
     run vscode and docker if they are not running.
-
     """
     # # 1- load all repositories
     result = utils.call_process_safe(
@@ -78,8 +41,6 @@ def start():
         ],
         cwd=env.get_workspace(),
     )
-
-    pass
 
 
 ###################################################################
@@ -92,7 +53,7 @@ def get_workspace_config_path():
 
 def get_workspace_config_resourse():
     """Get the resource name of the workspace configuration file"""
-    return "./odoo-dev.code-workspace"
+    return "odoo-dev.code-workspace"
 
 
 ###################################################################
@@ -106,18 +67,66 @@ def init():
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
         init=[
-            utils.constructor_copy_resource("addons/vscode/data/workspace.json")
+            utils.constructor_copy_resource("addons/vscode/workspace.json")
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["vscode"],
     )
-
+    env.add_resource(
+        path=".venv",
+        title="Python vertual environment",
+        description="Contlains all libs and tools",
+        init=[dev_env.create],
+        update=[],
+        destroy=[utils.delete_dir],
+        verify=[],
+        tags=["vscode", "venv", "python"],
+    )
+    env.add_resource(
+        path="requirements.txt",
+        parent=".venv",
+        title="Python vertual environment",
+        description="Contlains all libs and tools",
+        init=[utils.touch, dev_env.install],
+        update=[dev_env.install],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "venv", "python"],
+    )
+    env.add_resource(
+        path="requirements.txt",
+        parent=".venv",
+        title="Python vertual environment",
+        description="Contlains all libs and tools",
+        init=[utils.touch, dev_env.install],
+        update=[dev_env.install],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "venv", "python"],
+    )
+    env.add_resource(
+        path="odoo/odoo/requirements.txt",
+        parent=".venv",
+        title="Python vertual environment",
+        description="Contlains all libs and tools",
+        init=[utils.touch, dev_env.install],
+        update=[dev_env.install],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "venv", "python"],
+    )
 
 ###################################################################
 # Application entry point
 # Launch application if called directly
 ###################################################################
-if __name__ == "__main__":
-    dotenv.load_dotenv()
+
+
+def _main():
+    dotenv.load_dotenv(".env")
     app()
+
+
+if __name__ == "__main__":
+    _main()

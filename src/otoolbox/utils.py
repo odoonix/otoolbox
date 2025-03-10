@@ -27,15 +27,29 @@ _logger = logging.getLogger(__name__)
 
 def call_process_safe(command, shell=False, cwd=None):
     """Execute a command in a subprocess and log the output"""
-    try:
-        if not cwd:
-            cwd = env.get_workspace()
-        with open(env.get_workspace_path(".logs.txt"), "a", encoding="utf8") as log:
-            ret = subprocess.call(command, shell=shell, cwd=cwd, stdout=log, stderr=log)
-            return ret
-    except Exception as e:
-        _logger.error("Failed to execute command: %s", e)
-        return 2
+    if not cwd:
+        cwd = env.get_workspace()
+
+    _logger.info("Command: %s", command)
+    result = subprocess.run(
+        command,
+        # Use shell=True if command is a string (be cautious with security)
+        shell=shell,
+        cwd=cwd,
+        stdout=subprocess.PIPE,  # Capture stdout
+        stderr=subprocess.PIPE,  # Capture stderr
+        text=True,
+        check=False
+    )  # Log stdout (if any)
+    if result.stdout:
+        _logger.info("Command output: %s", result.stdout.strip())
+
+    # Log stderr (if any)
+    if result.stderr:
+        _logger.error("Command error: %s", result.stderr.strip())
+
+    # Return the exit code
+    return result.returncode
 
 
 def run_command_in_venv(venv_path, command, shell=False, cwd=None):
@@ -64,17 +78,23 @@ def run_command_in_venv(venv_path, command, shell=False, cwd=None):
     else:
         command = [python_executable] + command
 
-    try:
-        result = subprocess.run(
-            command, check=True, text=True, capture_output=True, shell=shell, cwd=cwd
-        )
-        env.console.print("Output:", result.stdout)
-        if result.stderr:
-            env.console.print("Errors:", result.stderr)
-    except subprocess.CalledProcessError as e:
-        env.console.print(f"Command failed with error: {e.stderr}")
-    except FileNotFoundError:
-        env.console.print(f"Error: '{command[0]}' not found.")
+    result = subprocess.run(
+        command,
+        check=True,
+        text=True,
+        capture_output=True,
+        shell=shell,
+        cwd=cwd
+    )
+    if result.stdout:
+        _logger.info("Command output: %s", result.stdout.strip())
+
+    # Log stderr (if any)
+    if result.stderr:
+        _logger.error("Command error: %s", result.stderr.strip())
+
+    # Return the exit code
+    return result.returncode
 
 
 ###################################################################
@@ -200,6 +220,7 @@ def set_to_env_all(context: Resource):
     path = env.get_workspace_path(context.path)
     for k, v in env.context.items():
         set_to_env(path, k, v)
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def print_result(result=[]):
@@ -207,6 +228,7 @@ def print_result(result=[]):
     counter = 0
     for processors, executor in result:
         counter += 1
-        env.console.print(f"\n{executor.resource} ({counter})")
+        env.console.print(
+            f"\n{executor.resource} ({counter}, {executor.resource.priority})")
         for res, message, processor in processors:
             env.console.print(f"[{res}] {processor} {message}")

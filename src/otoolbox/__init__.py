@@ -41,11 +41,11 @@ def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
     update_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
-    ).executor(["verify"])
+    ).executor(["update"])
 
     verify_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
-    ).executor(["update"])
+    ).executor(["verify"])
 
     exe_list = update_list + verify_list
     result = exe_list.execute()
@@ -142,14 +142,15 @@ def command_run(
     steps: Annotated[
         List[str], typer.Argument(help="List of steps to process with otoolbox.")
     ],
-    tags: Annotated[List[str], typer.Option(help="List of tags to filter resources.")] = None,
+    tags: Annotated[List[str], typer.Option(
+        help="List of tags to filter resources.")] = None,
     ssh_auth: Annotated[
         bool,
         typer.Option(
             prompt="Use SSH for git and other apps to authenticate?",
             help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
             "The default ssh key is used.",
-            envvar="OTOOLBOX_SSH_AUTH",
+            envvar="SSH_AUTH",
         ),
     ] = True,
 ):
@@ -169,9 +170,7 @@ def command_run(
 # Application entry point
 # Launch application if called directly
 ###################################################################
-
-
-def main():
+def _main():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
     env.context.update({"addons": addons_list})
@@ -190,4 +189,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    _main()

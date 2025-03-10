@@ -149,14 +149,15 @@ def init():
     config.load_repos_resources()
 
 
+
 ###################################################################
 # Application entry point
 # Launch application if called directly
 ###################################################################
-def run():
-    dotenv.load_dotenv()
+def _main():
+    dotenv.load_dotenv(".env")
     app()
 
 
 if __name__ == "__main__":
-    run()
+    _main()
