@@ -34,7 +34,7 @@ def start():
     run vscode and docker if they are not running.
     """
     # # 1- load all repositories
-    result = utils.call_process_safe(
+    utils.call_process_safe(
         [
             "code",
             get_workspace_config_resourse(),

@@ -141,6 +141,7 @@ class Resource:
         # Relations&ID
         self.path = kargs.get("path")
         self.parent = kargs.get("parent", None)
+        self.branch = kargs.get('branch', None)
         self.origin_extensions = []
         self.priority = RESOURCE_PRIORITY_DEFAULT
         self.visible = True

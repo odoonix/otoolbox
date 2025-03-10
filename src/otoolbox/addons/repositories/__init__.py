@@ -9,8 +9,10 @@ remain up-to-date, secure, and efficient, while reducing manual overhead. Whethe
 managing single projects or complex multi-repository envs, the Maintainer
 package offers a reliable and streamlined solution for maintenance operations.
 """
-
+import os
+import json
 import dotenv
+from typing import List
 import typer
 from typing_extensions import Annotated
 
@@ -38,44 +40,6 @@ app = typer.Typer()
 app.__cli_name__ = "repo"
 
 
-@app.command(name="info")
-def command_info():
-    """Display information about the workspace"""
-    pass
-
-
-@app.command(name="init")
-def command_init(
-    ssh_git: Annotated[
-        bool,
-        typer.Option(
-            prompt="Use SSH for git clone?",
-            help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
-            "The default ssh key is used.",
-            envvar="OTOOLBOX_SSH_GIT",
-        ),
-    ] = True,
-):
-    """Initialize all resources from addons into the current workspace"""
-    env.context.update({"ssh_git": ssh_git})
-
-    utils.print_result(
-        env.resources.filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .executor(["init", "build", "verify"])
-        .execute()
-    )
-
-
-@app.command(name="update")
-def command_update():
-    """Updates current workspace to the latest version"""
-    utils.print_result(
-        env.resources.filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .executor(["update", "verify"])
-        .execute()
-    )
-
-
 @app.command(name="list")
 def command_list():
     """Print list of repositories"""
@@ -95,36 +59,96 @@ def command_list():
 
 @app.command(name="add")
 def command_add(
-    organization: str,
-    project: str,
-    branch: str,
-    title: str = None,
-    description: str = None,
-    tags: str = None,
+    organization: Annotated[
+        str,
+        typer.Option(
+            prompt="organization?",
+            help="organization."
+        ),
+    ],
+    project: Annotated[
+        str,
+        typer.Option(
+            prompt="project?",
+            help="project."
+        ),
+    ],
+    branch: Annotated[
+        str,
+        typer.Option(
+            prompt="branch?",
+            help="branch."
+        ),
+    ],
+    title: Annotated[
+        str,
+        typer.Option(
+            help="title."
+        ),
+    ] = None,
+    description: Annotated[
+        str,
+        typer.Option(
+            help="description."
+        ),
+    ] = None,
+    tags: Annotated[
+        List[str],
+        typer.Option(
+            help="tags."
+        ),
+    ] = None,
 ):
     """Add a new repository to the workspace"""
-    return (
-        env.context.get("resources")
-        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .build()
-    )
+    new_repo = {
+        'name': project,
+        'workspace': organization,
+        'branch': branch if branch else env.context.get('odoo_version'),
+        'title': title,
+        'description': description,
+        'tags': tags if tags else []
+    }
+    reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
+    data = '[]'
+    if os.path.isfile(reposiotires_path):
+        with open(reposiotires_path, 'r', encoding="utf8") as f:
+            data = f.read()
+    repo_list = json.loads(data)
+    repo_list.append(new_repo)
+
+    with open(reposiotires_path, 'w', encoding="utf8") as f:
+        f.write(json.dumps(repo_list))
 
 
 @app.command(name="remove")
 def command_remove(
-    organization: str,
-    project: str,
-    branch: str,
-    title: str = None,
-    description: str = None,
-    tags: str = None,
+    organization: Annotated[
+        str,
+        typer.Option(
+            prompt="organization?",
+            help="organization."
+        ),
+    ],
+    project: Annotated[
+        str,
+        typer.Option(
+            prompt="project?",
+            help="project."
+        ),
+    ],
 ):
-    """Add a new repository to the workspace"""
-    return (
-        env.context.get("resources")
-        .filter(lambda resource: resource.has_tag(RESOURCE_TAGS_GIT))
-        .build()
-    )
+    reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
+    data = '[]'
+    if os.path.isfile(reposiotires_path):
+        with open(reposiotires_path, 'r', encoding="utf8") as f:
+            data = f.read()
+    repo_list = json.loads(data)
+
+    new_list = [p for p in repo_list if p['name'] !=
+                project or p['workspace'] != organization]
+
+    with open(reposiotires_path, 'w', encoding="utf8") as f:
+        f.write(json.dumps(new_list))
 
 
 ###################################################################
@@ -147,7 +171,6 @@ def init():
     )
 
     config.load_repos_resources()
-
 
 
 ###################################################################

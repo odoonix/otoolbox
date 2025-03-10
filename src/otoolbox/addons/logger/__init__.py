@@ -20,7 +20,7 @@ from otoolbox import utils
 # cli
 ###################################################################
 app = typer.Typer(pretty_exceptions_show_locals=False)
-app.__cli_name__ = "workspace"
+app.__cli_name__ = "log"
 
 ###################################################################
 # init

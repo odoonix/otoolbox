@@ -1,11 +1,11 @@
 import os
 import json
+from typing import List
 
 from otoolbox import env
 from otoolbox import utils
 # from otoolbox import linux
 # from otoolbox.repositories import linux
-
 
 
 from otoolbox.constants import (
@@ -18,10 +18,9 @@ from otoolbox.addons.repositories.constants import (
 )
 
 
-
 def load_repos_resources():
     """Load the resources for the workspace dynamically
-    
+
     Each repository is added as a resource in the workspace. The resources are added
     based on the configuration file .repositoires.json. The configuration file is
     added as a resource in the workspace.
@@ -40,6 +39,7 @@ def load_repos_resources():
     repo_list = json.loads(data)
     workspaces = []
     for item in repo_list:
+        tags = item.get('tags') if isinstance(item.get('tags'), List) else []
         env.add_resource(
             path="{}/{}".format(item["workspace"], item["name"]),
             parent=item["workspace"],
@@ -54,7 +54,8 @@ def load_repos_resources():
             ],
             destroy=[utils.delete_dir],
             verify=[utils.is_dir, utils.is_readable],
-            tags=['git', item["workspace"], *item.get('tags', [])]
+            tags=['git', item["workspace"], *tags],
+            branch=item.get("branch")
         )
         if item["workspace"] not in workspaces:
             workspaces.append(item["workspace"])
@@ -72,7 +73,6 @@ def load_repos_resources():
             destroy=[utils.delete_dir],
             verify=[utils.is_dir, utils.is_readable],
         )
-
 
 
 class ModuleList(list):

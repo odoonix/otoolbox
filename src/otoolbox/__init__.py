@@ -155,7 +155,7 @@ def command_run(
     ] = True,
 ):
     """
-    List all available addons.
+    Run step processors on resources which are filterd by tags.
     """
     tags = tags if isinstance(tags, List) else []
     env.context.update({"tags": tags, "step": steps, "ssh_auth": ssh_auth})

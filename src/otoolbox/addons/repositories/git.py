@@ -46,7 +46,7 @@ def _rais_git_error(context, error_code):
 
 def git_clone(context):
     """Clone the git repository from github"""
-    branch_name = env.context.get("odoo_version", "18.0")
+    branch_name = context.branch if context.branch else env.context.get("odoo_version", "18.0")
     cwd = env.get_workspace_path(context.parent)
     depth = env.context.get("depth", "1")
 

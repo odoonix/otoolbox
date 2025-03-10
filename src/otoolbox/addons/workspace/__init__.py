@@ -28,28 +28,11 @@ from otoolbox.constants import (
 app = typer.Typer(pretty_exceptions_show_locals=False)
 app.__cli_name__ = "workspace"
 
-
-@app.command(name="init")
-def command_init(
-    ssh_git: Annotated[
-        bool,
-        typer.Option(
-            prompt="Use SSH for git clone?",
-            help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
-            "The default ssh key is used.",
-            envvar="OTOOLBOX_SSH_GIT",
-        ),
-    ] = True,
-) -> None:
-    """Initialize all resources from addons into the current workspace"""
-    env.context.update({"ssh_git": ssh_git})
-
-    utils.print_result(env.resources.executor(["init", "build", "verify"]).execute())
-
-
 ###################################################################
 # init
 ###################################################################
+
+
 def init():
     """Init the resources for the workspace"""
     env.add_resource(
