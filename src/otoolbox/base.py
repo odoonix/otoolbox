@@ -146,7 +146,7 @@ class Resource:
         self.priority = RESOURCE_PRIORITY_DEFAULT
         self.visible = True
         self.description = ""
-        self.tags = []
+        self.tags = [self.path]
         self.title = self.path
         self.processors = []
         self.env = kargs.get("env")

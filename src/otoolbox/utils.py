@@ -50,7 +50,6 @@ def call_process_safe(command, cwd=None):
     result = subprocess.run(
         command,
         # Use shell=True if command is a string (be cautious with security)
-        shell=shell,
         cwd=cwd,
         stdout=subprocess.PIPE,  # Capture stdout
         stderr=subprocess.PIPE,  # Capture stderr
@@ -65,7 +64,7 @@ def call_process_safe(command, cwd=None):
         _logger.error("Command error: %s", result.stderr.strip())
 
     # Return the exit code
-    return result.returncode
+    return result
 
 
 def run_command_in_venv(venv_path, command, cwd=None):
@@ -97,7 +96,6 @@ def run_command_in_venv(venv_path, command, cwd=None):
         check=True,
         text=True,
         capture_output=True,
-        shell=shell,
         cwd=cwd
     )
     if result.stdout:
