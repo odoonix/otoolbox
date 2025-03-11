@@ -11,6 +11,7 @@ bridges the gap between development and operations, enhancing productivity and
 ensuring a seamless development experience in Odoo projects.
 """
 
+import subprocess
 import dotenv
 
 import typer
@@ -18,6 +19,10 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.constants import RESOURCE_PRIORITY_ROOT, RESOURCE_PRIORITY_DEFAULT
+
+from otoolbox.addons.vscode import dev_env
+from otoolbox.addons.vscode import code_cof
 
 
 ###################################################################
@@ -27,46 +32,8 @@ app = typer.Typer()
 app.__cli_name__ = "dev"
 
 
-@app.command(name="init")
-def command_init():
-    """
-    Initialize the development env.
-
-    It install and init .venv to the workspace. It also install all required
-    tools for the development env. All odoo dependencies are installed
-    in the .venv.
-
-
-    """
-    utils.call_process_safe(
-        [
-            "python3",
-            "-m",
-            "venv",
-            env.get_workspace_path(".venv"),
-        ],
-        cwd=env.get_workspace(),
-    )
-
-    utils.run_command_in_venv(
-        env.get_workspace_path(".venv"),
-        [
-            "python",
-            "-m",
-            "pip",
-            "install",
-            "-r",
-            env.get_workspace_path("odoo/odoo/requirements.txt"),
-        ],
-        cwd=env.get_workspace(),
-    )
-
-    # TODO: check if need to update settings
-    pass
-
-
-@app.command()
-def start():
+@app.command(name="start")
+def command_start():
     """Check and start development tools.
 
     Our default development envirenment is based on docker and vscode. This command
@@ -74,15 +41,14 @@ def start():
 
     """
     # # 1- load all repositories
-    result = utils.call_process_safe(
+    subprocess.run(
         [
             "code",
             get_workspace_config_resourse(),
         ],
         cwd=env.get_workspace(),
+        check=False,
     )
-
-    pass
 
 
 ###################################################################
@@ -95,7 +61,7 @@ def get_workspace_config_path():
 
 def get_workspace_config_resourse():
     """Get the resource name of the workspace configuration file"""
-    return "./odoo-dev.code-workspace"
+    return "odoo-dev.code-workspace"
 
 
 ###################################################################
@@ -103,15 +69,56 @@ def get_workspace_config_resourse():
 ###################################################################
 def init():
     """Init the resources for the workspace"""
+    env.context.update({"venv_path": ".venv"})
+
     env.add_resource(
         path=get_workspace_config_resourse(),
         title="List of managed repositories",
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
-        init=[utils.constructor_copy_resource("addons/vscode/data/workspace.json")],
+        init=[utils.constructor_copy_resource("addons/vscode/workspace.json"), code_cof.set_workspace_conf_odoo_addons],
+        update=[code_cof.set_workspace_conf_odoo_addons],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["vscode"],
+    )
+
+    env.add_resource(
+        path=".venv",
+        title="Python Virtual Environment",
+        description="This environment is used to install dev tools.",
+        init=[dev_env.pyenv_create],
+        update=[utils.touch_dir],
+        destroy=[utils.delete_dir],
+        verify=[utils.is_dir, utils.is_readable],
+        tags=["vscode", "python", "venv"],
+        priority=RESOURCE_PRIORITY_ROOT,
+    )
+
+    env.add_resource(
+        path="odoo/odoo/requirements.txt",
+        parent="odoo/odoo",
+        title="Odoo dependencies",
+        description="Libs required in development or runtime environment.",
+        init=[dev_env.pyenv_install],
+        update=[dev_env.pyenv_install],
+        destroy=[],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "python", "venv"],
+        priority=RESOURCE_PRIORITY_DEFAULT,
+    )
+
+    env.add_resource(
+        path="requirements.txt",
+        parent=".",
+        title="Custom dependencies",
+        description="Libs required in development environemnt.",
+        init=[utils.touch_file, dev_env.pyenv_install],
+        update=[utils.touch_file, dev_env.pyenv_install],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "python", "venv"],
+        priority=RESOURCE_PRIORITY_DEFAULT,
     )
 
 

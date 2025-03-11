@@ -177,21 +177,6 @@
     "workspace": "odoonix"
   },
   {
-    "name": "utils",
-    "workspace": "odoonix"
-  },
-  {
-    "name": "docker-postgres",
-    "workspace": "odoonix",
-    "branch": "16",
-    "tags": ["IT"]
-  },
-  {
-    "name": "docker",
-    "workspace": "odoonix",
-    "tags": ["IT"]
-  },
-  {
     "name": "payment",
     "workspace": "odoonix",
     "tags": ["Payment"]
@@ -208,11 +193,6 @@
     "name": "sms",
     "workspace": "odoonix",
     "tags": ["marketing"]
-  },
-  {
-    "name": "documentation",
-    "workspace": "odoonix",
-    "tags": ["doc"]
   },
   {
     "name": "iot",
@@ -291,13 +271,6 @@
     "workspace": "moonsunsoft",
     "public": false,
     "tags": ["customer"]
-  },
-  {
-    "name": "documentation",
-    "workspace": "moonsunsoft",
-    "public": true,
-    "branch": "main",
-    "tags": ["doc"]
   },
   {
     "name": "connector",

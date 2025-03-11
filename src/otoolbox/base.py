@@ -219,7 +219,7 @@ class Resource:
 
     def get_abs_path(self):
         """Gets abs path of the current resource"""
-        return self.env.env.get_workspace_path(self.path)
+        return self.env.get_workspace_path(self.path)
 
     def __str__(self):
         template = (

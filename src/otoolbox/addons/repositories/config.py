@@ -54,7 +54,7 @@ def load_repos_resources():
             ],
             destroy=[utils.delete_dir],
             verify=[utils.is_dir, utils.is_readable],
-            tags=['git', item["workspace"], *item.get('tags', [])]
+            tags=['git', "addon", item["workspace"], *item.get('tags', [])]
         )
         if item["workspace"] not in workspaces:
             workspaces.append(item["workspace"])

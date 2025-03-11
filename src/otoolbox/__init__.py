@@ -148,7 +148,7 @@ def command_run(
             prompt="Use SSH for git and other apps to authenticate?",
             help="Use SSH for git clone. By enabling SSH, ssh key must be added to the git server."
             "The default ssh key is used.",
-            envvar="OTOOLBOX_SSH_AUTH",
+            envvar="SSH_AUTH",
         ),
     ] = True,
 ):
