@@ -9,14 +9,19 @@ import dotenv
 
 import typer
 from typing_extensions import Annotated
+import dotenv
+
+import typer
+from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
 
+
 ###################################################################
 # cli
 ###################################################################
-app = typer.Typer(pretty_exceptions_show_locals=False)
+app = typer.Typer()
 app.__cli_name__ = "ubuntu"
 
 ###################################################################
@@ -36,14 +41,13 @@ def init():
         verify=[utils.is_dir, utils.is_readable],
     )
 
+
 ###################################################################
 # Application entry point
 # Launch application if called directly
 ###################################################################
-
-
 def _main():
-    dotenv.load_dotenv(".env")
+    dotenv.load_dotenv()
     app()
 
 

@@ -50,8 +50,7 @@ def init():
         path=RESOURCE_ENV_FILE,
         title="Envirenments Variables",
         description="The env variables file",
-        constructors=[utils.touch],
-        init=[utils.set_to_env_all],
+        init=[utils.touch_file, utils.set_to_env_all],
         update=[utils.set_to_env_all],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable, utils.is_writable],
@@ -59,12 +58,14 @@ def init():
     )
 
 
+
+
 ###################################################################
 # Application entry point
 # Launch application if called directly
 ###################################################################
 def _main():
-    dotenv.load_dotenv(".env")
+    dotenv.load_dotenv()
     app()
 
 

@@ -1,8 +1,10 @@
 import os
 import logging
+import subprocess
 
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.base import Resource
 from otoolbox.constants import (
     PROCESS_SUCCESS,
     PROCESS_FAIL,
@@ -12,39 +14,35 @@ from otoolbox.constants import (
 
 _logger = logging.getLogger(__name__)
 
-# GIT
+######################################################################################
+#                                Git Utilities                                       #
+#                                                                                    #
+#                                                                                    #
+######################################################################################
 GIT_ADDRESS_HTTPS = "https://github.com/{path}.git"
 GIT_ADDRESS_SSH = "git@github.com:{path}.git"
 
-GIT_ERROR_TABLE = {
-    2: {
-        "level": "fatal",
-        "message": "Resource {path}, doese not exist or is not a git repository.",
-    },
-    128: {
-        "level": "fatal",
-        "message": "Destination path '{path}' already exists and is not an empty directory.",
-    },
-}
 
-
-def _rais_git_error(context, error_code):
-    if not error_code:
-        return
-    error = GIT_ERROR_TABLE.get(
-        error_code,
-        {
-            "level": "fatal",
-            "message": "Unknown GIT error for distination path {path}. Error code is {error_code}. "
-            "See .logs.text for more information.",
-        },
+def _get_branch_info(context: Resource):
+    cwd = env.get_workspace_path(context.path)
+    result = subprocess.run(
+        ["git", "show-branch", "--current"],
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        check=False,
     )
-    raise RuntimeError(
-        error["message"].format(error_code=error_code, **context.__dict__)
-    )
+    return str.strip(result.stdout)
 
 
-def git_clone(context):
+######################################################################################
+#                             Resource Processors                                    #
+# Resource processors are used to process resources from the workspace. The resource #
+# must be a git repository.                                                          #
+######################################################################################
+
+
+def git_clone(context: Resource):
     """Clone the git repository from github"""
     branch_name = context.branch if context.branch else env.context.get("odoo_version", "18.0")
     cwd = env.get_workspace_path(context.parent)
@@ -52,7 +50,7 @@ def git_clone(context):
 
     result = utils.call_process_safe(
         [
-            "git",
+            "/usr/bin/git",
             "clone",
             "--branch",
             branch_name,
@@ -67,14 +65,16 @@ def git_clone(context):
         cwd=cwd,
     )
 
-    _rais_git_error(context=context, error_code=result)
-    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, _get_branch_info(context=context)
 
 
-def git_pull(context):
+def git_pull(context: Resource):
     """Pull the git repository from github"""
     cwd = env.get_workspace_path(context.path)
     result = utils.call_process_safe(["git", "pull"], cwd=cwd)
 
-    _rais_git_error(context=context, error_code=result)
-    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, _get_branch_info(context=context)

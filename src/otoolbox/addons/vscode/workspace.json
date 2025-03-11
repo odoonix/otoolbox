@@ -2,19 +2,7 @@
   "folders": [
     {
       "name": "Odoo",
-      "path": "odoo"
-    },
-    {
-      "name": "OCA",
-      "path": "oca"
-    },
-    {
-      "name": "MoonSun",
-      "path": "moonsunsoft"
-    },
-    {
-      "name": "Odoonix",
-      "path": "odoonix"
+      "path": "."
     }
   ],
   "launch": {
@@ -65,7 +53,7 @@
           "--limit-time-worker-cron",
           "0",
           "--addons-path",
-          "${config:odoo.addons.path}",
+          "${config:odoo.addons}",
           "--update",
           "product_sale_list,sale,product",
           "--dev",
@@ -89,7 +77,7 @@
           "--database",
           "odooiottest${input:databaseName}",
           "--addons-path",
-          "${config:odoo.addons.path}",
+          "${config:odoo.addons}",
           "--init",
           "${input:modulesTest}",
           "--test-tag",
@@ -100,26 +88,28 @@
     ]
   },
   "settings": {
-    "odoo.bin": "${workspaceFolder:Odoo}/odoo/odoo-bin",
-    "odoo.addons.path": "${workspaceFolder:Odoo}/odoo/addons,${workspaceFolder:Odoo}/design-themes",
+    "odoo" : {
+      "bin":  "${workspaceFolder}/odoo/odoo/odoo-bin",
+      "addons": "${workspaceFolder}/odoo/odoo/addons,${workspaceFolder}/odoo/design-themes"
+    },
     "git.ignoreLimitWarning": true,
-    "python.defaultInterpreterPath": "${workspaceFolder:Odoo}/../.venv/bin/python"
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
   },
   "tasks": {
     "version": "2.0.0",
     "tasks": [
       {
-        "label": "Dev Update",
-        "command": "python3",
+        "label": "Otoolbox: Update All Git Repositories",
+        "command": "otoolbox",
         "type": "shell",
-        "args": ["otoolbox", "repo", "update"],
+        "args": ["run", "update", "--tags", "git"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
         },
         "group": "build",
         "options": {
-          "cwd": "${workspaceFolder:Odoo}/.."
+          "cwd": "${workspaceFolder}"
         }
       }
     ]

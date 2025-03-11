@@ -173,6 +173,8 @@ def init():
     config.load_repos_resources()
 
 
+
+
 ###################################################################
 # Application entry point
 # Launch application if called directly

@@ -20,12 +20,28 @@ from otoolbox.constants import (
 _logger = logging.getLogger(__name__)
 
 
+######################################################################################
+#                                 IO Utilities                                       #
+#                                                                                    #
+#                                                                                    #
+######################################################################################
+def _get_modif_date(context):
+    path = env.get_workspace_path(context.path)
+    result = subprocess.run(
+        ["stat", "-c", "%y", path],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return str.strip(result.stdout)
+
+
 ###################################################################
 # constructors
 ###################################################################
 
 
-def call_process_safe(command, shell=False, cwd=None):
+def call_process_safe(command, cwd=None):
     """Execute a command in a subprocess and log the output"""
     if not cwd:
         cwd = env.get_workspace()
@@ -52,7 +68,7 @@ def call_process_safe(command, shell=False, cwd=None):
     return result.returncode
 
 
-def run_command_in_venv(venv_path, command, shell=False, cwd=None):
+def run_command_in_venv(venv_path, command, cwd=None):
     """
     Runs a command in a specified virtual environment using subprocess.
 
@@ -65,13 +81,11 @@ def run_command_in_venv(venv_path, command, shell=False, cwd=None):
     else:
         python_executable = os.path.join(venv_path, "bin", "python")
 
-    if not cwd:
-        cwd = env.get_workspace()
+    cwd = cwd if cwd else env.get_workspace()
     if not os.path.isfile(python_executable):
-        env.console.print(
+        raise RuntimeError(
             f"Error: Python executable not found at '{python_executable}'. Is '{venv_path}' a valid venv?"
         )
-        return
 
     if command[0] == "python":
         command[0] = python_executable
@@ -113,11 +127,19 @@ def makedir(context: Resource):
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def touch(context: Resource):
+def touch_file(context: Resource):
     """Touch the file in the current workspace."""
     file_path = env.get_workspace_path(context.path)
     Path(file_path).touch()
-    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+    return PROCESS_SUCCESS, _get_modif_date(context=context)
+
+
+def touch_dir(context: Resource):
+    """Touch the file in the current workspace."""
+    dir_path = env.get_workspace_path(context.path)
+    subprocess.call(["mkdir", "-p", dir_path], text=True)
+    Path(dir_path).touch()
+    return PROCESS_SUCCESS, _get_modif_date(context=context)
 
 
 def constructor_copy_resource(path, packag_name: str = "otoolbox"):
@@ -184,7 +206,15 @@ def delete_dir(context: Resource):
     """
     Delete a directory and its contents
     """
-    return PROCESS_FAIL, PROCESS_NOT_IMP_MESSAGE
+    result = subprocess.run(
+        ["rm", "-fR", context.get_abs_path()],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        return PROCESS_FAIL, str.strip(result.stderr)
+    return PROCESS_SUCCESS, str.strip(result.stdout)
 
 
 ###################################################################
@@ -196,12 +226,19 @@ def __is_not_primitive(value):
 
 
 def set_to_env(path, key, value):
-    """Adds new environment variable to the .env file and optionally to the current process environment."""
+    """Adds new environment variable to the .env file and optionally to the current
+    process environment."""
 
     if __is_not_primitive(value):
         return
     key = key.upper()
     value = str(value)
+
+    if key in ["PATH"]:
+        _logger.warning(
+            "Forbiden to change Linux default environment variables: %s", key
+        )
+        return
 
     env_vars = dotenv_values(path)
     env_vars[key] = value
@@ -216,19 +253,22 @@ def set_to_env(path, key, value):
 
 
 def set_to_env_all(context: Resource):
-    """Adds all environment variables to the .env file and optionally to the current process environment."""
+    """Adds all environment variables to the .env file and optionally to the current
+    process environment."""
     path = env.get_workspace_path(context.path)
     for k, v in env.context.items():
         set_to_env(path, k, v)
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-def print_result(result=[]):
-    # Show informations
+def print_result(result=None):
+    """Print resource executors"""
+    if not result:
+        return
     counter = 0
     for processors, executor in result:
         counter += 1
         env.console.print(
             f"\n{executor.resource} ({counter}, {executor.resource.priority})")
         for res, message, processor in processors:
-            env.console.print(f"[{res}] {processor} {message}")
+            env.console.print(f"[{res}] {processor} ({message})")
