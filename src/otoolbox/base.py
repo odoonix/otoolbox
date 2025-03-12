@@ -141,7 +141,7 @@ class Resource:
         # Relations&ID
         self.path = kargs.get("path")
         self.parent = kargs.get("parent", None)
-        self.branch = kargs.get('branch', None)
+        self.branch = kargs.get("branch", None)
         self.origin_extensions = []
         self.priority = RESOURCE_PRIORITY_DEFAULT
         self.visible = True
@@ -284,4 +284,13 @@ class ResourceSet:
         if isinstance(other, ResourceSet):
             return ResourceSet(resources=self.resources + other.resources)
 
-        raise TypeError(f"Impossible to add {type(other)} to {type(ResourceSet)}")
+        raise NotImplementedError(
+            f"Impossible to add {type(other)} to {type(ResourceSet)}"
+        )
+
+    def __sub__(self, other):
+        if isinstance(other, ResourceSet):
+            return ResourceSet(resources=list(set(self.resources) - set(other.resources)))
+        raise NotImplementedError(
+            f"Subtraction is not supportd for {type(other)} to {type(ResourceSet)}"
+        )

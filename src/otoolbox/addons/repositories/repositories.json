@@ -1,280 +1,289 @@
 [
   {
-    "name": "odoo",
-    "workspace": "odoo"
+    "repository": "odoo",
+    "organization": "odoo",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "design-themes",
-    "workspace": "odoo"
-  },
-
-  {
-    "name": "fleet",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "queue",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "reporting-engine",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "spreadsheet",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "geospatial",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "OpenUpgrade",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "iot",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "server-ux",
-    "workspace": "oca",
-    "tags": ["lib"]
-  },
-  {
-    "name": "connector",
-    "workspace": "oca",
-    "tags": ["lib"]
+    "repository": "design-themes",
+    "organization": "odoo"
   },
 
   {
-    "name": "account-invoicing",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "fleet",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "account-invoice-reporting",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "queue",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "account-reconcile",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "reporting-engine",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "account-financial-reporting",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "spreadsheet",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "account-financial-tools",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "geospatial",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "bank-statement-import",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "OpenUpgrade",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "credit-control",
-    "workspace": "oca",
-    "tags": ["Acconting"]
+    "repository": "iot",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "margin-analysis",
-    "workspace": "oca",
-    "tags": ["Acconting"]
-  },
-
-  {
-    "name": "brand",
-    "workspace": "oca"
+    "repository": "server-ux",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "management-system",
-    "workspace": "oca",
-    "tags": ["ISO", "IEC", "BS"]
-  },
-  {
-    "name": "purchase-workflow",
-    "workspace": "oca"
-  },
-  {
-    "name": "pos",
-    "workspace": "oca"
-  },
-  {
-    "name": "web",
-    "workspace": "oca"
-  },
-  {
-    "name": "website",
-    "workspace": "oca",
-    "tags": ["Website"]
+    "repository": "connector",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
 
   {
-    "name": "hr",
-    "workspace": "oca",
-    "tags": ["HR"]
+    "repository": "account-invoicing",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "payroll",
-    "workspace": "oca",
-    "tags": ["Payroll", "HR"]
+    "repository": "account-invoice-reporting",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "project",
-    "workspace": "oca"
+    "repository": "account-reconcile",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "sale-workflow",
-    "workspace": "oca"
+    "repository": "account-financial-reporting",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "server-auth",
-    "workspace": "oca"
+    "repository": "account-financial-tools",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "server-tools",
-    "workspace": "oca"
+    "repository": "bank-statement-import",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "server-brand",
-    "workspace": "oca"
+    "repository": "credit-control",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "product-attribute",
-    "workspace": "oca"
-  },
-  {
-    "name": "partner-contact",
-    "workspace": "oca"
-  },
-
-  {
-    "name": "knowledge",
-    "workspace": "oca",
-    "tags": ["Document", "Knowledge", "KMS"]
-  },
-  {
-    "name": "dms",
-    "workspace": "oca",
-    "tags": ["Document", "DMS"]
+    "repository": "margin-analysis",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
 
   {
-    "name": "online",
-    "workspace": "odoonix"
+    "repository": "brand",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "payment",
-    "workspace": "odoonix",
-    "tags": ["Payment"]
+    "repository": "management-system",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "geospatial",
-    "workspace": "odoonix"
+    "repository": "purchase-workflow",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "municipality",
-    "workspace": "odoonix"
+    "repository": "pos",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "sms",
-    "workspace": "odoonix",
-    "tags": ["marketing"]
+    "repository": "web",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "iot",
-    "workspace": "odoonix",
-    "branch": "3.5.1"
-  },
-  {
-    "name": "website",
-    "workspace": "odoonix"
-  },
-  {
-    "name": "server-tools",
-    "workspace": "odoonix",
-    "tags": ["server", "db"]
+    "repository": "website",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
 
   {
-    "name": "exchange",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "hr",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "exchange-mp",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "payroll",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "payment",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "project",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "payment-mp",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "sale-workflow",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "hr",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "server-auth",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "iot",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "server-tools",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "product",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "server-brand",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "pos",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "product-attribute",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "sale",
-    "workspace": "moonsunsoft",
-    "public": false
-  },
-  {
-    "name": "stock-logistics-warehouse",
-    "workspace": "moonsunsoft",
-    "public": false
+    "repository": "partner-contact",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
 
   {
-    "name": "cnp",
-    "workspace": "moonsunsoft",
-    "public": false,
-    "tags": ["customer"]
+    "repository": "knowledge",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "gmtlighting",
-    "workspace": "moonsunsoft",
-    "public": false,
-    "tags": ["customer"]
+    "repository": "dms",
+    "organization": "oca",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+
+  {
+    "repository": "online",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   },
   {
-    "name": "connector",
-    "workspace": "moonsunsoft",
-    "tags": ["lib"]
+    "repository": "payment",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "geospatial",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "municipality",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "sms",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "website",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "server-tools",
+    "organization": "odoonix",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+
+  {
+    "repository": "exchange",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "exchange-mp",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "payment",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "payment-mp",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "hr",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "iot",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "product",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "pos",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "sale",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "stock-logistics-warehouse",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+
+  {
+    "repository": "cnp",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "gmtlighting",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
+  },
+  {
+    "repository": "connector",
+    "organization": "moonsunsoft",
+    "tags":["15.0", "16.0", "17.0", "18.0"]
   }
 ]

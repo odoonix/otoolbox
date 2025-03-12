@@ -9,13 +9,15 @@ remain up-to-date, secure, and efficient, while reducing manual overhead. Whethe
 managing single projects or complex multi-repository envs, the Maintainer
 package offers a reliable and streamlined solution for maintenance operations.
 """
+
 import os
 import json
-import dotenv
 from typing import List
+import re
+
+import dotenv
 import typer
 from typing_extensions import Annotated
-
 from rich.console import Console
 from rich.table import Table
 
@@ -30,7 +32,39 @@ from otoolbox.addons.repositories.constants import (
     REPOSITORIES_PATH,
     RESOURCE_REPOSITORIES_PATH,
 )
-import otoolbox.addons.repositories.config as config
+from otoolbox.addons.repositories import config
+
+
+###################################################################
+# Utils
+###################################################################
+
+
+def extract_github_info(github_url):
+    # Regular expression pattern for GitHub repository URL
+    # Matches both SSH (git@github.com:org/repo.git) and HTTPS (https://github.com/org/repo.git) formats
+    pattern = r"(?:git@|https://)github\.com[:/](?P<organization>[A-Za-z0-9-]+)/(?P<repository>[A-Za-z0-9_-]+)(?:\.git)?$"
+
+    # Try to match the pattern
+    match = re.match(pattern, github_url)
+
+    if match:
+        organization = match.group("organization")
+        repository = match.group("repository")
+
+        # Validate repository name according to Git repository naming rules
+        # Repository names can contain letters, numbers, hyphens, underscores, and periods
+        # Must not start or end with a period, must not contain consecutive periods
+        repo_valid_pattern = (
+            r"^[A-Za-z0-9](?:[A-Za-z0-9_-]*[A-Za-z0-9])?$|^[A-Za-z0-9]$"
+        )
+
+        if not re.match(repo_valid_pattern, repository):
+            return None, None, "Invalid repository name"
+
+        return organization, repository, None
+    else:
+        return None, None, "Invalid GitHub URL format"
 
 
 ###################################################################
@@ -59,96 +93,115 @@ def command_list():
 
 @app.command(name="add")
 def command_add(
+    url: Annotated[str, typer.Argument(help="The repository URL.")] = None,
     organization: Annotated[
         str,
-        typer.Option(
-            prompt="organization?",
-            help="organization."
-        ),
-    ],
-    project: Annotated[
+        typer.Option(help="organization."),
+    ] = None,
+    repository: Annotated[
         str,
-        typer.Option(
-            prompt="project?",
-            help="project."
-        ),
-    ],
+        typer.Option(help="repository."),
+    ] = None,
     branch: Annotated[
         str,
-        typer.Option(
-            prompt="branch?",
-            help="branch."
-        ),
-    ],
+        typer.Option(help="branch."),
+    ] = None,
     title: Annotated[
         str,
-        typer.Option(
-            help="title."
-        ),
+        typer.Option(help="title."),
     ] = None,
     description: Annotated[
         str,
-        typer.Option(
-            help="description."
-        ),
+        typer.Option(help="description."),
     ] = None,
     tags: Annotated[
         List[str],
-        typer.Option(
-            help="tags."
-        ),
+        typer.Option(help="tags."),
     ] = None,
 ):
     """Add a new repository to the workspace"""
-    new_repo = {
-        'name': project,
-        'workspace': organization,
-        'branch': branch if branch else env.context.get('odoo_version'),
-        'title': title,
-        'description': description,
-        'tags': tags if tags else []
-    }
-    reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-    data = '[]'
-    if os.path.isfile(reposiotires_path):
-        with open(reposiotires_path, 'r', encoding="utf8") as f:
-            data = f.read()
-    repo_list = json.loads(data)
-    repo_list.append(new_repo)
+    if url:
+        organization, repository, message = extract_github_info(url)
+        if message:
+            env.console.print(message)
+            return
 
-    with open(reposiotires_path, 'w', encoding="utf8") as f:
-        f.write(json.dumps(repo_list))
+    if not repository or not organization:
+        env.console.print("Repository and Organization name is required!!")
+        return
+    repository = repository.lower()
+    organization = organization.lower()
+    tags = tags if tags else []
+    branch = branch if branch else env.context.get("odoo_version")
+    config.add_repository(
+        {
+            "repository": repository,
+            "organization": organization,
+            "branch": branch,
+            "title": title,
+            "description": description,
+            "tags": tags,
+        }
+    )
+    utils.print_result(
+        env.resources.filter(
+            lambda resource: resource.path == f"{organization}/{repository}"
+        )
+        .executor(["init", "verify"])
+        .execute()
+    )
+    utils.print_result(
+        env.resources.filter(
+            lambda resource: resource.path == "odoo-dev.code-workspace"
+        )
+        .executor(["update"])
+        .execute()
+    )
 
 
 @app.command(name="remove")
 def command_remove(
+    repository: Annotated[str, typer.Argument(help="The repository URL.")] = None,
     organization: Annotated[
         str,
-        typer.Option(
-            prompt="organization?",
-            help="organization."
-        ),
-    ],
+        typer.Option(help="organization."),
+    ] = None,
     project: Annotated[
         str,
-        typer.Option(
-            prompt="project?",
-            help="project."
-        ),
-    ],
+        typer.Option(help="project."),
+    ] = None,
 ):
-    reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-    data = '[]'
-    if os.path.isfile(reposiotires_path):
-        with open(reposiotires_path, 'r', encoding="utf8") as f:
-            data = f.read()
-    repo_list = json.loads(data)
+    """Remove a repository from workspace"""
+    if repository:
+        organization, project, message = extract_github_info(repository)
+        if message:
+            env.console.print(message)
+            return
 
-    new_list = [p for p in repo_list if p['name'] !=
-                project or p['workspace'] != organization]
+    if not project or not organization:
+        env.console.print("Project and Organization name is required!!")
+        return
+    repository = repository.lower()
+    organization = organization.lower()
 
-    with open(reposiotires_path, 'w', encoding="utf8") as f:
-        f.write(json.dumps(new_list))
+    config.remove_repository(organization, project)
+    utils.print_result(
+        env.resources.filter(
+            lambda resource: resource.path == f"{organization}/{project}"
+        )
+        .executor(["destroy"])
+        .execute()
+    )
+    env.resources = env.resources - env.resources.filter(
+        lambda resource: resource.path == f"{organization}/{project}"
+    )
+    utils.print_result(
+        env.resources.filter(
+            lambda resource: resource.path == "odoo-dev.code-workspace"
+        )
+        .executor(["update"])
+        .execute()
+    )
 
 
 ###################################################################
@@ -171,8 +224,6 @@ def init():
     )
 
     config.load_repos_resources()
-
-
 
 
 ###################################################################

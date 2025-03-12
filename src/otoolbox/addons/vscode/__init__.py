@@ -43,24 +43,11 @@ def command_start():
     subprocess.run(
         [
             "code",
-            get_workspace_config_resourse(),
+            env.get_workspace_path("odoo-dev.code-workspace"),
         ],
         cwd=env.get_workspace(),
         check=False,
     )
-
-
-###################################################################
-# init
-###################################################################
-def get_workspace_config_path():
-    """Get the path of the workspace configuration file"""
-    return env.get_workspace_path(get_workspace_config_resourse())
-
-
-def get_workspace_config_resourse():
-    """Get the resource name of the workspace configuration file"""
-    return "odoo-dev.code-workspace"
 
 
 ###################################################################
@@ -71,13 +58,15 @@ def init():
     env.context.update({"venv_path": ".venv"})
 
     env.add_resource(
-        path=get_workspace_config_resourse(),
+        path="odoo-dev.code-workspace",
         title="List of managed repositories",
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
         init=[
-            utils.constructor_copy_resource("addons/vscode/workspace.json")
+            utils.constructor_copy_resource("addons/vscode/workspace.json"),
+            code_cof.set_workspace_conf_odoo_addons
         ],
+        update=[code_cof.set_workspace_conf_odoo_addons],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["vscode"],
