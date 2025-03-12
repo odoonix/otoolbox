@@ -29,9 +29,8 @@
 
 |
 
-=====
 otoolbox - Odoo development toolbox 
-=====
+====================================
 
 
     Otoolbox is a tool for managing the Odoo development environment, helping developers work on multiple versions of Odoo simultaneously.

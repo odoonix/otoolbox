@@ -111,6 +111,41 @@
         "options": {
           "cwd": "${workspaceFolder}"
         }
+      },
+      {
+        "label": "Otoolbox: Add repository",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": ["repo", "add", "${repositoryUrlAdd}"],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      },
+      {
+        "label": "Otoolbox: Remove repository",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": ["repo", "remove", "${repositoryUrlAdd}"],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      }
+    ],
+    "inputs": [
+      {
+        "id": "repositoryUrlAdd",
+        "type": "promptString",
+        "description": "Enter the repository URL to add/remove to the workspace"
       }
     ]
   }
