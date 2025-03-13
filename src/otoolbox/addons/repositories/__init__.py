@@ -43,28 +43,32 @@ from otoolbox.addons.repositories import config
 def extract_github_info(github_url):
     # Regular expression pattern for GitHub repository URL
     # Matches both SSH (git@github.com:org/repo.git) and HTTPS (https://github.com/org/repo.git) formats
-    pattern = r"(?:git@|https://)github\.com[:/](?P<organization>[A-Za-z0-9-]+)/(?P<repository>[A-Za-z0-9_-]+)(?:\.git)?$"
+    patterns = [
+        r"(?:git@|https://)github\.com[:/](?P<organization>[A-Za-z0-9-]+)/(?P<repository>[A-Za-z0-9_-]+)(?:\.git)?$",
+        r"^(?P<organization>[A-Za-z0-9-]+)/(?P<repository>[A-Za-z0-9_-]+)$",
+    ]
 
     # Try to match the pattern
-    match = re.match(pattern, github_url)
+    for pattern in patterns:
+        match = re.match(pattern, github_url)
 
-    if match:
-        organization = match.group("organization")
-        repository = match.group("repository")
+        if match:
+            organization = match.group("organization")
+            repository = match.group("repository")
 
-        # Validate repository name according to Git repository naming rules
-        # Repository names can contain letters, numbers, hyphens, underscores, and periods
-        # Must not start or end with a period, must not contain consecutive periods
-        repo_valid_pattern = (
-            r"^[A-Za-z0-9](?:[A-Za-z0-9_-]*[A-Za-z0-9])?$|^[A-Za-z0-9]$"
-        )
+            # Validate repository name according to Git repository naming rules
+            # Repository names can contain letters, numbers, hyphens, underscores, and periods
+            # Must not start or end with a period, must not contain consecutive periods
+            repo_valid_pattern = (
+                r"^[A-Za-z0-9](?:[A-Za-z0-9_-]*[A-Za-z0-9])?$|^[A-Za-z0-9]$"
+            )
 
-        if not re.match(repo_valid_pattern, repository):
-            return None, None, "Invalid repository name"
+            if not re.match(repo_valid_pattern, repository):
+                return None, None, "Invalid repository name"
 
-        return organization, repository, None
-    else:
-        return None, None, "Invalid GitHub URL format"
+            return organization, repository, None
+
+    return None, None, "Invalid GitHub URL format"
 
 
 ###################################################################
