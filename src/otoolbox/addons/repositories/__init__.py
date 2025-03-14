@@ -249,6 +249,7 @@ def init():
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
+        tags=[REPOSITORIES_PATH]
     )
 
     config.load_repos_resources()

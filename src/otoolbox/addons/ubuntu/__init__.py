@@ -9,10 +9,6 @@ import dotenv
 
 import typer
 from typing_extensions import Annotated
-import dotenv
-
-import typer
-from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
@@ -23,6 +19,11 @@ from otoolbox import utils
 ###################################################################
 app = typer.Typer()
 app.__cli_name__ = "ubuntu"
+
+
+@app.command(name="install")
+def install():
+    env.console.print("Run ./ubuntu-install-apps.sh in terminal.")
 
 ###################################################################
 # init
@@ -39,6 +40,25 @@ def init():
         init=[utils.makedir],
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
+    )
+
+    env.add_resource(
+        priority=100,
+        path="ubuntu-install-apps.sh",
+        title="Ubuntu application installer",
+        description="Install all required application in ubuntu.",
+        init=[
+            utils.constructor_copy_resource("addons/ubuntu/ubuntu-install-apps.sh"),
+            utils.chmod_executable,
+            utils.touch_file
+        ],
+        updat=[
+            utils.constructor_copy_resource("addons/ubuntu/ubuntu-install-apps.sh"),
+            utils.chmod_executable,
+            utils.touch_file
+        ],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_executable],
     )
 
 

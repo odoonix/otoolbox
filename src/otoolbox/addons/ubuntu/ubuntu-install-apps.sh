@@ -30,7 +30,6 @@ apt install -y \
 snap install code --classic
 snap install postman
 snap install chromium
-snap install skype
 snap install audacity
 apt install -y \
     git \

@@ -54,7 +54,7 @@ def call_process_safe(command, cwd=None):
         stdout=subprocess.PIPE,  # Capture stdout
         stderr=subprocess.PIPE,  # Capture stderr
         text=True,
-        check=False
+        check=False,
     )  # Log stdout (if any)
     if result.stdout:
         _logger.info("Command output: %s", result.stdout.strip())
@@ -92,11 +92,7 @@ def run_command_in_venv(venv_path, command, cwd=None):
         command = [python_executable] + command
 
     result = subprocess.run(
-        command,
-        check=True,
-        text=True,
-        capture_output=True,
-        cwd=cwd
+        command, check=True, text=True, capture_output=True, cwd=cwd
     )
     if result.stdout:
         _logger.info("Command output: %s", result.stdout.strip())
@@ -155,32 +151,53 @@ def constructor_copy_resource(path, packag_name: str = "otoolbox"):
     return copy_resource
 
 
+def chmod_executable(context: Resource):
+    file_path = env.get_workspace_path(context.path)
+    os.chmod(file_path, 0o755)
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
+
 ###################################################################
 # validators
 ###################################################################
 
 
 def is_readable(context: Resource):
-    file = env.get_workspace_path(context.path)
-    assert os.access(file, os.R_OK), f"File {file} doesn't exist or isn't readable"
+    file_path = env.get_workspace_path(context.path)
+    assert os.access(
+        file_path, os.R_OK
+    ), f"File {file_path} doesn't exist or isn't readable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def is_writable(context: Resource):
-    file = env.get_workspace_path(context.path)
-    assert os.access(file, os.W_OK), f"File {file} doesn't exist or isn't writable"
+    file_path = env.get_workspace_path(context.path)
+    assert os.access(
+        file_path, os.W_OK
+    ), f"File {file_path} doesn't exist or isn't writable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def is_dir(context: Resource):
-    file = env.get_workspace_path(context.path)
-    assert os.path.isdir(file), f"File {file} doesn't exist or isn't readable"
+    file_path = env.get_workspace_path(context.path)
+    assert os.path.isdir(file_path), f"File {file_path} doesn't exist or isn't readable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def is_file(context: Resource):
-    file = env.get_workspace_path(context.path)
-    assert os.path.isfile(file), f"File {file} doesn't exist or isn't readable"
+    file_path = env.get_workspace_path(context.path)
+    assert os.path.isfile(
+        file_path
+    ), f"File {file_path} doesn't exist or isn't readable"
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
+
+def is_executable(context: Resource):
+    is_file(context=context)
+
+    file_path = env.get_workspace_path(context.path)
+    mode = os.stat(file_path).st_mode
+    assert mode & (0o100 | 0o010 | 0o001), f"File {file_path} isn't executable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
@@ -267,6 +284,7 @@ def print_result(result=None):
     for processors, executor in result:
         counter += 1
         env.console.print(
-            f"\n{executor.resource} ({counter}, {executor.resource.priority})")
+            f"\n{executor.resource} ({counter}, {executor.resource.priority})"
+        )
         for res, message, processor in processors:
             env.console.print(f"[{res}] {processor} ({message})")
