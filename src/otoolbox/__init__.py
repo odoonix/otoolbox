@@ -39,6 +39,8 @@ finally:
 
 def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
+    if env.context.get("should_skip_auto_operations", False):
+        return
     update_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
     ).executor(["update"])

@@ -208,9 +208,33 @@ def command_remove(
     )
 
 
+@app.command(name="merge")
+def command_merge(
+    repo_db: Annotated[
+        str,
+        typer.Option(
+            prompt="The distination repository",
+            help="The repository database."
+        ),
+    ] = None,
+    repo: Annotated[
+        str,
+        typer.Option(
+            prompt="The source repository",
+            help="Project repository."),
+    ] = None
+):
+    """Remove a repository from workspace"""
+    env.context.update({
+        "should_skip_auto_operations": True
+    })
+    config.merge_repository(repo_db, repo)
+
 ###################################################################
 # init
 ###################################################################
+
+
 def init():
     """Init the resources for the workspace"""
     env.add_resource(

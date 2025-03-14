@@ -1,0 +1,6 @@
+[2025-03-14 09:46:34,702] {base.py:32} ERROR - Fail to execute the resource process is_file, on the resource .env[env,auto_update,auto_verify,]
+[2025-03-14 09:46:34,702] {base.py:38} ERROR - File ./.env doesn't exist or isn't readable :process is_file on the resource .env[env,auto_update,auto_verify,]
+[2025-03-14 09:46:34,703] {base.py:32} ERROR - Fail to execute the resource process is_readable, on the resource .env[env,auto_update,auto_verify,]
+[2025-03-14 09:46:34,703] {base.py:38} ERROR - File ./.env doesn't exist or isn't readable :process is_readable on the resource .env[env,auto_update,auto_verify,]
+[2025-03-14 09:46:34,703] {base.py:32} ERROR - Fail to execute the resource process is_writable, on the resource .env[env,auto_update,auto_verify,]
+[2025-03-14 09:46:34,703] {base.py:38} ERROR - File ./.env doesn't exist or isn't writable :process is_writable on the resource .env[env,auto_update,auto_verify,]

@@ -94,9 +94,9 @@ is that **Ubuntu 24 has introduced restrictions on using `pip` for system-wide p
 These restrictions make traditional `pip install` methods less reliable.  
 
 By using `pipx`, you benefit from:  
-✅ **Automatic environment isolation** – Prevents dependency conflicts.  
-✅ **Simplified management** – Easily install, upgrade, and uninstall tools.  
-✅ **Compatibility with modern Linux distributions** – Works seamlessly on Ubuntu 24 and newer versions.  
+✅ **Automatic environment isolation** - Prevents dependency conflicts.  
+✅ **Simplified management** - Easily install, upgrade, and uninstall tools.  
+✅ **Compatibility with modern Linux distributions** - Works seamlessly on Ubuntu 24 and newer versions.  
 
 For these reasons, we strongly recommend using `pipx` as the preferred method for installing **OToolbox**.
 
