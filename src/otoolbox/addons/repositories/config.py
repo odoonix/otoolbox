@@ -56,7 +56,7 @@ def _add_organization_to_resources(organization):
         update=[utils.touch_dir],
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
-        tags=["git", organization],
+        tags=["git", "organization", organization],
     )
 
 
@@ -78,8 +78,7 @@ def _load_repository_list():
 
 def _save_repository_list(repo_list):
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-    with open(reposiotires_path, "w", encoding="utf8") as f:
-        f.write(json.dumps(repo_list))
+    _save_json_file(reposiotires_path,  repo_list)
 
 
 def load_repos_resources():
@@ -135,6 +134,11 @@ def _load_json_file(file_path):
     return json.loads(data)
 
 
+def _save_json_file(file_path, data):
+    with open(file_path, "w", encoding="utf8") as f:
+        f.write(json.dumps(data))
+
+
 def _get_odoo_version(repository_path):
     directory = os.path.dirname(repository_path)
     env_path = os.path.join(directory, '.env')
@@ -176,3 +180,5 @@ def merge_repository(dist, src):
 
     for item in dist_repo:
         _remove_tag_if_not_in(src_repo, item, odoo_version)
+
+    _save_json_file(dist, dist_repo)

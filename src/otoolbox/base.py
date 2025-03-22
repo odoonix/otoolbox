@@ -195,6 +195,7 @@ class Resource:
             for extension in self.origin_extensions
             for tag in extension.get("tags", [])
         ]
+        self.tags.append(self.path)
         self.title = self.origin_extensions[0].get("title", self.path)
 
     def add_processor(self, process, **kargs):
@@ -294,3 +295,10 @@ class ResourceSet:
         raise NotImplementedError(
             f"Subtraction is not supportd for {type(other)} to {type(ResourceSet)}"
         )
+
+    def __getitem__(self, indices):
+        """Find resource with the path"""
+        for resource in self.resources:
+            if resource.path == indices:
+                return resource
+        return None
