@@ -20,7 +20,7 @@
         }
       },
       {
-        "id": "modulesTest",
+        "id": "moduleList",
         "type": "pickString",
         "description": "List of Module to test, leave empty for all module",
         "options": [
@@ -55,7 +55,7 @@
           "--addons-path",
           "${config:odoo.addons}",
           "--update",
-          "product_sale_list,sale,product",
+          "${input:moduleList}",
           "--dev",
           "all"
         ]
@@ -79,7 +79,7 @@
           "--addons-path",
           "${config:odoo.addons}",
           "--init",
-          "${input:modulesTest}",
+          "${input:moduleList}",
           "--test-tag",
           "vw",
           "--stop-after-init"
