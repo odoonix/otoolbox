@@ -3,6 +3,7 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv, dotenv_values
 
@@ -41,21 +42,23 @@ def _get_modif_date(context):
 ###################################################################
 
 
-def call_process_safe(command, cwd=None):
+def call_process_safe(command, **kwargs):
     """Execute a command in a subprocess and log the output"""
-    if not cwd:
-        cwd = env.get_workspace()
+    if not kwargs.get("cwd"):
+        kwargs.update({
+            "cwd", env.get_workspace()
+        })
 
-    _logger.info("Command: %s", command)
-    result = subprocess.run(
-        command,
+    kwargs.update({
         # Use shell=True if command is a string (be cautious with security)
-        cwd=cwd,
-        stdout=subprocess.PIPE,  # Capture stdout
-        stderr=subprocess.PIPE,  # Capture stderr
-        text=True,
-        check=False,
-    )  # Log stdout (if any)
+        'stdout': subprocess.PIPE,  # Capture stdout
+        'stderr': subprocess.PIPE,  # Capture stderr
+        'text': True,
+        'check': False,
+    })
+    _logger.info("Command: %s", kwargs)
+    result = subprocess.run(command, **kwargs)
+
     if result.stdout:
         _logger.info("Command output: %s", result.stdout.strip())
 
@@ -288,3 +291,81 @@ def print_result(result=None):
         )
         for res, message, processor in processors:
             env.console.print(f"[{res}] {processor} ({message})")
+
+
+###################################################################
+# destructors
+###################################################################
+def _find_text_in_lines(text, pattern):
+    pattern = pattern.lower()
+    for line in text.splitlines():
+        if pattern in line.lower():
+            return line
+    return None
+
+
+def pipx_install(context: Resource):
+    """Install an aplication  from pipx"""
+    url = urlparse(context.path)
+    if url.scheme != 'application':
+        raise RuntimeError(
+            "Impossible to use PIPX installer for non application resources")
+    application = url.netloc
+    cwd = env.get_workspace_path(".")
+    result = call_process_safe(
+        [
+            "pipx",
+            "install",
+            application
+        ],
+        cwd=cwd,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, f"apaplication {application} is installed"
+
+
+def pipx_remove(context: Resource):
+    pass
+
+
+def pipx_update(context: Resource):
+    pass
+
+
+def pipx_is_install(context: Resource):
+    """Check if the application is installed with pipx"""
+    url = urlparse(context.path)
+    if url.scheme != 'application':
+        raise RuntimeError(
+            "Impossible to use PIPX installer for non application resources")
+    application = url.netloc
+    cwd = env.get_workspace_path(".")
+    result = call_process_safe(
+        [
+            "pipx",
+            "list",
+            "--short"
+        ],
+        cwd=cwd,
+    )
+
+    version = _find_text_in_lines(result.stdout, application)
+    if not version:
+        raise RuntimeError(f"Application {application} is not installed with pipx")
+    return PROCESS_SUCCESS, version
+
+
+def pipx_ensurepath(context: Resource):
+    """Check if pipx path is ok"""
+    cwd = env.get_workspace_path(".")
+    result = call_process_safe(
+        [
+            "pipx",
+            "ensurepath"
+        ],
+        cwd=cwd,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE

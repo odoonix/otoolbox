@@ -12,6 +12,9 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.constants import (
+    RESOURCE_PRIORITY_DEFAULT
+)
 
 
 ###################################################################
@@ -33,7 +36,7 @@ def install():
 def init():
     """Init the resources for the workspace"""
     env.add_resource(
-        priority=100,
+        priority=RESOURCE_PRIORITY_DEFAULT,
         path=".bin",
         title="Workspace configuration directory",
         description="All configuration related to current workspace are located in this folder",
@@ -43,7 +46,7 @@ def init():
     )
 
     env.add_resource(
-        priority=100,
+        priority=RESOURCE_PRIORITY_DEFAULT,
         path="ubuntu-install-apps.sh",
         title="Ubuntu application installer",
         description="Install all required application in ubuntu.",
@@ -59,6 +62,56 @@ def init():
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_executable],
+    )
+
+    # pipx install copier
+    # pipx install pre-commit
+    # pipx ensurepath
+
+    env.add_resource(
+        priority=RESOURCE_PRIORITY_DEFAULT,
+        path="application://copier",
+        title="Copier tool",
+        description="Copier",
+        init=[
+            utils.pipx_install,
+            utils.pipx_ensurepath
+        ],
+        update=[
+            utils.pipx_update,
+            utils.pipx_ensurepath
+        ],
+        destroy=[
+            utils.pipx_remove
+        ],
+        verify=[
+            utils.pipx_is_install,
+            utils.pipx_ensurepath
+        ],
+        tags=['application', 'oca', 'maintainer']
+    )
+
+    env.add_resource(
+        priority=RESOURCE_PRIORITY_DEFAULT,
+        path="application://pre-commit",
+        title="pre-commit tool",
+        description="pre-commit",
+        init=[
+            utils.pipx_install,
+            utils.pipx_ensurepath
+        ],
+        update=[
+            utils.pipx_update,
+            utils.pipx_ensurepath
+        ],
+        destroy=[
+            utils.pipx_remove
+        ],
+        verify=[
+            utils.pipx_is_install,
+            utils.pipx_ensurepath
+        ],
+        tags=['application', 'oca', 'maintainer']
     )
 
 

@@ -18,8 +18,7 @@ apt install -y \
     python3-pyldap \
     python3-cachetools \
     libldap2-dev \
-    libsasl2-dev \
-    pre-commit
+    libsasl2-dev 
     
 
 

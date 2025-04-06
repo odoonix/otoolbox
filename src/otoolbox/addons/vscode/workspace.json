@@ -88,8 +88,8 @@
     ]
   },
   "settings": {
-    "odoo" : {
-      "bin":  "${workspaceFolder}/odoo/odoo/odoo-bin",
+    "odoo": {
+      "bin": "${workspaceFolder}/odoo/odoo/odoo-bin",
       "addons": "${workspaceFolder}/odoo/odoo/addons,${workspaceFolder}/odoo/design-themes"
     },
     "git.ignoreLimitWarning": true,
@@ -116,7 +116,7 @@
         "label": "Otoolbox: Add repository",
         "command": "otoolbox",
         "type": "shell",
-        "args": ["repo", "add", "${repositoryUrlAdd}"],
+        "args": ["repo", "add", "${input:repositoryUrlAdd}"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
@@ -130,7 +130,7 @@
         "label": "Otoolbox: Remove repository",
         "command": "otoolbox",
         "type": "shell",
-        "args": ["repo", "remove", "${repositoryUrlAdd}"],
+        "args": ["repo", "remove", "${input:repositoryUrlAdd}"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
@@ -148,5 +148,8 @@
         "description": "Enter the repository URL to add/remove to the workspace"
       }
     ]
+  },
+  "extensions": {
+    "recommendations": []
   }
 }

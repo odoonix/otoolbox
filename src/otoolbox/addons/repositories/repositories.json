@@ -27,12 +27,12 @@
   {
     "repository": "spreadsheet",
     "organization": "oca",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "geospatial",
     "organization": "oca",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "OpenUpgrade",
@@ -42,7 +42,7 @@
   {
     "repository": "iot",
     "organization": "oca",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "server-ux",
@@ -54,7 +54,6 @@
     "organization": "oca",
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
-
   {
     "repository": "account-invoicing",
     "organization": "oca",
@@ -95,7 +94,6 @@
     "organization": "oca",
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
-
   {
     "repository": "brand",
     "organization": "oca",
@@ -114,7 +112,7 @@
   {
     "repository": "pos",
     "organization": "oca",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "web",
@@ -126,7 +124,6 @@
     "organization": "oca",
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
-
   {
     "repository": "hr",
     "organization": "oca",
@@ -172,7 +169,6 @@
     "organization": "oca",
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
-
   {
     "repository": "knowledge",
     "organization": "oca",
@@ -181,13 +177,12 @@
   {
     "repository": "dms",
     "organization": "oca",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
-
   {
     "repository": "online",
     "organization": "odoonix",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "payment",
@@ -197,33 +192,28 @@
   {
     "repository": "geospatial",
     "organization": "odoonix",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
-  {
-    "repository": "municipality",
-    "organization": "odoonix",
-    "tags": ["17.0"]
-  },
+  { "repository": "municipality", "organization": "odoonix", "tags": ["17.0"] },
   {
     "repository": "sms",
     "organization": "odoonix",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "website",
     "organization": "odoonix",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "server-tools",
     "organization": "odoonix",
     "tags": ["17.0", "18.0"]
   },
-
   {
     "repository": "exchange",
     "organization": "moonsunsoft",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "exchange-mp",
@@ -233,57 +223,36 @@
   {
     "repository": "payment",
     "organization": "moonsunsoft",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
+    "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "payment-mp",
     "organization": "moonsunsoft",
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
-  {
-    "repository": "hr",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
-  {
-    "repository": "iot",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
-  {
-    "repository": "product",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
+  { "repository": "hr", "organization": "moonsunsoft", "tags": ["17.0"] },
+  { "repository": "iot", "organization": "moonsunsoft", "tags": ["17.0"] },
+  { "repository": "product", "organization": "moonsunsoft", "tags": ["17.0"] },
   {
     "repository": "pos",
     "organization": "moonsunsoft",
-    "tags": ["16.0", "17.0", "18.0"]
+    "tags": ["16.0", "17.0"]
   },
-  {
-    "repository": "sale",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
+  { "repository": "sale", "organization": "moonsunsoft", "tags": ["17.0"] },
   {
     "repository": "stock-logistics-warehouse",
     "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
+    "tags": ["17.0"]
   },
-
-  {
-    "repository": "cnp",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
+  { "repository": "cnp", "organization": "moonsunsoft", "tags": ["17.0"] },
   {
     "repository": "gmtlighting",
     "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
+    "tags": ["17.0"]
   },
   {
     "repository": "connector",
     "organization": "moonsunsoft",
-    "tags": ["16.0", "17.0", "18.0"]
+    "tags": ["16.0", "17.0"]
   }
 ]

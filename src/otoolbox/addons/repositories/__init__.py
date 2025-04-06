@@ -230,6 +230,57 @@ def command_merge(
     })
     config.merge_repository(repo_db, repo)
 
+
+@app.command(name="init")
+def command_init(
+    repository: Annotated[str, typer.Argument(
+        help="The repository URL or path.")] = None,
+):
+    """Inint a repository with precommit"""
+
+    # TODO: maso, 2025: check if copier, pre-commit are installed
+    # Clone this template and answer its questions
+    # copier copy --UNSAFE https://github.com/OCA/oca-addons-repo-template.git some-repo
+    organization, project, message = extract_github_info(repository)
+    if message:
+        env.console.print(message)
+        return
+    organization = organization.lower()
+    project = project.lower()
+    resource = env.resources[f"{organization}/{project}"]
+    if not resource:
+        env.console.print("Related resource not found.")
+        return
+
+    result = utils.call_process_safe(
+        [
+            "copier",
+            "copy",
+            "--UNSAFE",
+            "https://github.com/OCA/oca-addons-repo-template.git",
+            resource.path
+        ],
+        cwd=env.get_workspace(),
+        timeout=60
+    )
+
+    if result.returncode != 0:
+        env.console.print(result.stderr)
+        return
+
+    # Commit that
+    # cd some-repo
+    # git add .
+    # pre-commit install
+    utils.call_process_safe(
+        [
+            "pre-commit",
+            "install",
+        ],
+        cwd=env.get_workspace_path(repository)
+    )
+    # pre-commit run -a
+    # git commit -am 'Hello world 🖖'
 ###################################################################
 # init
 ###################################################################
@@ -247,9 +298,10 @@ def init():
                 RESOURCE_REPOSITORIES_PATH, packag_name=__name__
             )
         ],
+        udpate=[],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
-        tags=[REPOSITORIES_PATH]
+        tags=[]
     )
 
     config.load_repos_resources()
