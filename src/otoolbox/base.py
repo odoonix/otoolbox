@@ -150,6 +150,7 @@ class Resource:
         self.title = self.path
         self.processors = []
         self.env = kargs.get("env")
+        self.enable_in_runtime = kargs.get("enableInRuntime", True)
         self.extend(**kargs)
 
     def extend(self, **kargs):
@@ -298,7 +299,10 @@ class ResourceSet:
 
     def __getitem__(self, indices):
         """Find resource with the path"""
-        for resource in self.resources:
-            if resource.path == indices:
-                return resource
+        if isinstance(indices, str):
+            for resource in self.resources:
+                if resource.path == indices:
+                    return resource
+        else:
+            return self.resources[indices]
         return None

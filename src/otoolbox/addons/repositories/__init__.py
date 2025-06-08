@@ -48,6 +48,8 @@ def extract_github_info(github_url):
         r"^(?P<organization>[A-Za-z0-9-]+)/(?P<repository>[A-Za-z0-9_-]+)$",
     ]
 
+    if not github_url:
+        return None, None, "GitHub URL cannot be empty"
     # Try to match the pattern
     for pattern in patterns:
         match = re.match(pattern, github_url)
@@ -281,6 +283,58 @@ def command_init(
     )
     # pre-commit run -a
     # git commit -am 'Hello world 🖖'
+
+
+@app.command(name="sync-shielded")
+def command_sync_shielded(
+    public_name: Annotated[
+        str,
+        typer.Option(
+            prompt="The source organization",
+            help="The source organization to copy from.",
+            envvar="PUBLIC_ORGANIZATION",
+        ),
+    ] = None,
+    shielded_name: Annotated[
+        str,
+        typer.Option(
+            prompt="The target organization",
+            help="The target organization name.",
+            envvar="SHIELDED_ORGANIZATION"
+        )
+    ] = None
+):
+    """Copy from public to shielded organization and remove history of the git"""
+    # rsync -av --delete --exclude '.git' "$source/" "$dist/"
+    public_organization = env.resources.filter(
+        lambda resource: resource.path == public_name
+    )[0]
+    shielded_organization = env.resources.filter(
+        lambda resource: resource.path == shielded_name
+    )[0]
+    repo_list = env.resources.filter(
+        lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
+    ).filter(
+        lambda resource: resource.parent == public_organization.path
+    )
+    for repo in repo_list:
+        # 1. repo is not an organization
+        # 2. repo is a git project in public_organization
+        result = utils.call_process_safe(
+            [
+                "rsync",
+                "-a",
+                "-v",
+                "--delete",
+                "--exclude",
+                ".git",
+                repo.path + "/",
+                shielded_organization.path + "/" + repo.path[len(repo.parent)+1:] + "/"
+            ],
+            cwd=env.get_workspace(),
+            timeout=60
+        )
+
 ###################################################################
 # init
 ###################################################################

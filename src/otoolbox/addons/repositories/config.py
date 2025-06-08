@@ -56,7 +56,7 @@ def _add_organization_to_resources(organization):
         update=[utils.touch_dir],
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
-        tags=["git", "organization", organization],
+        tags=["organization", organization],
     )
 
 

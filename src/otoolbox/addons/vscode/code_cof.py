@@ -27,7 +27,7 @@ def set_workspace_conf_odoo_addons(context: Resource):
     resource_set = env.resources.filter(
         lambda resource: resource.has_tag("addon") and resource.path != "odoo/odoo")
     path_list = ["${workspaceFolder}/odoo/odoo/addons"] + [
-        "${workspaceFolder}/" + resource.path for resource in resource_set
+        "${workspaceFolder}/" + resource.path for resource in resource_set if resource.enable_in_runtime
     ]
     _jsonpath_addons_expr.update(data, ",".join(path_list))
     _store_data(context, data)
