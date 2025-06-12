@@ -179,80 +179,56 @@
     "organization": "oca",
     "tags": ["15.0", "16.0", "17.0"]
   },
+
   {
     "repository": "online",
     "organization": "odoonix",
+    "is_shielded": true,
+    "linked_shielded_repo": "online",
+    "enable_in_runtime": true,
     "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "payment",
     "organization": "odoonix",
+    "is_shielded": true,
+    "linked_shielded_repo": "payment",
+    "enable_in_runtime": true,
     "tags": ["15.0", "16.0", "17.0", "18.0"]
   },
   {
     "repository": "geospatial",
     "organization": "odoonix",
+    "is_shielded": true,
+    "enable_in_runtime": true,
     "tags": ["15.0", "16.0", "17.0"]
   },
-  { "repository": "municipality", "organization": "odoonix", "tags": ["17.0"] },
+  {
+    "repository": "municipality",
+    "organization": "odoonix",
+    "is_shielded": true,
+    "enable_in_runtime": true,
+    "tags": ["17.0"]
+  },
   {
     "repository": "sms",
     "organization": "odoonix",
+    "is_shielded": true,
+    "enable_in_runtime": true,
     "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "website",
     "organization": "odoonix",
+    "is_shielded": true,
+    "enable_in_runtime": true,
     "tags": ["15.0", "16.0", "17.0"]
   },
   {
     "repository": "server-tools",
     "organization": "odoonix",
+    "is_shielded": true,
+    "enable_in_runtime": true,
     "tags": ["17.0", "18.0"]
-  },
-  {
-    "repository": "exchange",
-    "organization": "moonsunsoft",
-    "tags": ["15.0", "16.0", "17.0"]
-  },
-  {
-    "repository": "exchange-mp",
-    "organization": "moonsunsoft",
-    "tags": ["17.0", "18.0"]
-  },
-  {
-    "repository": "payment",
-    "organization": "moonsunsoft",
-    "tags": ["15.0", "16.0", "17.0"]
-  },
-  {
-    "repository": "payment-mp",
-    "organization": "moonsunsoft",
-    "tags": ["15.0", "16.0", "17.0", "18.0"]
-  },
-  { "repository": "hr", "organization": "moonsunsoft", "tags": ["17.0"] },
-  { "repository": "iot", "organization": "moonsunsoft", "tags": ["17.0"] },
-  { "repository": "product", "organization": "moonsunsoft", "tags": ["17.0"] },
-  {
-    "repository": "pos",
-    "organization": "moonsunsoft",
-    "tags": ["16.0", "17.0"]
-  },
-  { "repository": "sale", "organization": "moonsunsoft", "tags": ["17.0"] },
-  {
-    "repository": "stock-logistics-warehouse",
-    "organization": "moonsunsoft",
-    "tags": ["17.0"]
-  },
-  { "repository": "cnp", "organization": "moonsunsoft", "tags": ["17.0"] },
-  {
-    "repository": "gmtlighting",
-    "organization": "moonsunsoft",
-    "tags": ["17.0"]
-  },
-  {
-    "repository": "connector",
-    "organization": "moonsunsoft",
-    "tags": ["16.0", "17.0"]
   }
 ]

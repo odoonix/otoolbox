@@ -14,10 +14,7 @@
         "command": "extension.commandvariable.number",
         "args": {
           "name": "databaseName",
-          "range": [
-            1500,
-            60000000
-          ],
+          "range": [1500, 60000000],
           "random": true,
           "uniqueCount": 10
         }
@@ -97,11 +94,15 @@
     },
     "git.ignoreLimitWarning": true,
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-    "editor.rulers": [
-      88
-    ],
+    "editor.rulers": [88],
     "workbench.colorCustomizations": {
       "editorRuler.foreground": "#ff4081"
+    },
+    "search.exclude": {
+      "**/moonsunsoft/**": true
+    },
+    "files.exclude": {
+      "**/moonsunsoft": true
     }
   },
   "tasks": {
@@ -111,12 +112,7 @@
         "label": "Otoolbox: Update All Git Repositories",
         "command": "otoolbox",
         "type": "shell",
-        "args": [
-          "run",
-          "update",
-          "--tags",
-          "git"
-        ],
+        "args": ["run", "update", "--tags", "git"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
@@ -130,11 +126,7 @@
         "label": "Otoolbox: Add repository",
         "command": "otoolbox",
         "type": "shell",
-        "args": [
-          "repo",
-          "add",
-          "${input:repositoryUrlAdd}"
-        ],
+        "args": ["repo", "add", "${input:repositoryUrlAdd}"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
@@ -148,11 +140,7 @@
         "label": "Otoolbox: Remove repository",
         "command": "otoolbox",
         "type": "shell",
-        "args": [
-          "repo",
-          "remove",
-          "${input:repositoryUrlAdd}"
-        ],
+        "args": ["repo", "remove", "${input:repositoryUrlAdd}"],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
