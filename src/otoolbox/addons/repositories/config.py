@@ -29,21 +29,22 @@ def _add_repo_to_resources(item):
             ]
         )
     )
-    env.add_resource(
-        path=f"{item.get("organization")}/{item.get("repository")}",
-        parent=item.get("organization"),
-        title=item.get("repository"),
-        description="""Automaticaly added resources from git.""",
-        init=[git.git_clone],
-        update=[
+    item.update({
+        "path": f"{item.get("organization")}/{item.get("repository")}",
+        "parent": item.get("organization"),
+        "title": item.get("repository"),
+        "description": """Automaticaly added resources from git.""",
+        "init": [git.git_clone],
+        "update": [
             git.git_pull,
             utils.touch_dir,
         ],
-        destroy=[utils.delete_dir],
-        verify=[utils.is_dir, utils.is_readable],
-        tags=tags,
-        branch=item.get("branch"),
-    )
+        "destroy": [utils.delete_dir],
+        "verify": [utils.is_dir, utils.is_readable],
+        "tags": tags,
+        "branch": item.get("branch"),
+    })
+    env.add_resource(**item)
 
 
 def _add_organization_to_resources(organization):

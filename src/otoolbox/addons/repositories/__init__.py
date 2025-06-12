@@ -320,20 +320,22 @@ def command_sync_shielded(
     for repo in repo_list:
         # 1. repo is not an organization
         # 2. repo is a git project in public_organization
-        result = utils.call_process_safe(
-            [
-                "rsync",
-                "-a",
-                "-v",
-                "--delete",
-                "--exclude",
-                ".git",
-                repo.path + "/",
-                shielded_organization.path + "/" + repo.path[len(repo.parent)+1:] + "/"
-            ],
-            cwd=env.get_workspace(),
-            timeout=60
-        )
+        if repo.is_shielded:
+            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent)+1:]
+            result = utils.call_process_safe(
+                [
+                    "rsync",
+                    "-a",
+                    "-v",
+                    "--delete",
+                    "--exclude",
+                    ".git",
+                    repo.path + "/",
+                    shielded_organization.path + "/" + repo_name + "/"
+                ],
+                cwd=env.get_workspace(),
+                timeout=60
+            )
 
 ###################################################################
 # init

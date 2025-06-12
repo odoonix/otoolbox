@@ -151,6 +151,8 @@ class Resource:
         self.processors = []
         self.env = kargs.get("env")
         self.enable_in_runtime = kargs.get("enableInRuntime", True)
+        self.is_shielded = kargs.get("is_shielded", False)
+        self.linked_shielded_repo = kargs.get("linked_shielded_repo", None)
         self.extend(**kargs)
 
     def extend(self, **kargs):
