@@ -201,7 +201,7 @@
     "organization": "odoonix",
     "is_shielded": true,
     "enable_in_runtime": true,
-    "tags": ["15.0", "16.0", "17.0"]
+    "tags": ["15.0", "17.0"]
   },
   {
     "repository": "municipality",

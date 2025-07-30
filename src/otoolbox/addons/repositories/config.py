@@ -23,14 +23,14 @@ def _add_repo_to_resources(item):
             + [
                 "git",
                 "addon",
-                f"{item.get("organization")}/{item.get("repository")}",
+                f"{item.get('organization')}/{item.get('repository')}",
                 item.get("organization"),
                 item.get("branch"),
             ]
         )
     )
     item.update({
-        "path": f"{item.get("organization")}/{item.get("repository")}",
+        "path": f"{item.get('organization')}/{item.get('repository')}",
         "parent": item.get("organization"),
         "title": item.get("repository"),
         "description": """Automaticaly added resources from git.""",

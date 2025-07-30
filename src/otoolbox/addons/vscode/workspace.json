@@ -93,11 +93,18 @@
       "addons": "${workspaceFolder}/odoo/odoo/addons,${workspaceFolder}/odoo/design-themes"
     },
     "git.ignoreLimitWarning": true,
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 90,
+    "editor.rulers": [
+      88
+    ],
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-    "editor.rulers": [88],
-    "workbench.colorCustomizations": {
-      "editorRuler.foreground": "#ff4081"
-    },
+    "python.languageServer": "Pylance",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.supportAllPythonDocuments": true,
+    "python.analysis.enableSyncServer": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
     "search.exclude": {
       "**/moonsunsoft/**": true
     },
@@ -160,6 +167,8 @@
     ]
   },
   "extensions": {
-    "recommendations": []
+    "recommendations": [
+      "odoo.odoo"
+    ]
   }
 }
