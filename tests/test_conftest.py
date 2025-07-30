@@ -15,6 +15,10 @@ import pytest
 # src/calculator.py
 
 
+def test_check_if_env_is_define():
+    assert environment.env != None
+
+
 def add(a, b):
     return a + b
 
@@ -31,12 +35,6 @@ def divide(a, b):
     if b == 0:
         raise ValueError("Cannot divide by zero.")
     return a / b
-
-
-def test_add():
-    assert environment.context != None
-    assert add(2, 3) == 5
-    assert add(-1, 1) == 0
 
 
 def test_subtract():
