@@ -52,7 +52,7 @@ def rebuile_folder_config(context: Resource):
     ############################################################
     folders = [{
         "path": ".",
-        "name": f"Odoo {env.context.get("odoo_version")}"
+        "name": f"Odoo {env.context.get('odoo_version')}"
     }]
 
     # save to workspace
