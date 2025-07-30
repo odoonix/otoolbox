@@ -27,7 +27,7 @@
 Contributing
 ============
 
-Welcome to ``utils`` contributor's guide.
+Welcome to ``otoolbox`` contributor's guide.
 
 This document focuses on getting any potential contributor familiarized
 with the development processes, but `other kinds of contributions`_ are also
@@ -46,7 +46,7 @@ guidelines.
 Issue Reports
 =============
 
-If you experience bugs or general issues with ``utils``, please have a look
+If you experience bugs or general issues with ``otoolbox``, please have a look
 on the `issue tracker`_. If you don't see anything useful there, please feel
 free to fire an issue report.
 
@@ -65,32 +65,30 @@ you help us to identify the root cause of the issue.
 Documentation Improvements
 ==========================
 
-You can help improve ``utils`` docs by making them more readable and coherent, or
+You can help improve ``otoolbox`` docs by making them more readable and coherent, or
 by adding missing information and correcting mistakes.
 
-``utils`` documentation uses Sphinx_ as its main documentation compiler.
+``otoolbox`` documentation uses Sphinx_ as its main documentation compiler.
 This means that the docs are kept in the same repository as the project code, and
 that any documentation update is done in the same way was a code contribution.
 
-.. todo:: Don't forget to mention which markup language you are using.
+The documentation is written in `reStructuredText`_ and `MyST`_ (a superset of
+`CommonMark`_). If you are not familiar with these formats, you can learn more
+about them in the `Sphinx`_ documentation.
 
-    e.g.,  reStructuredText_ or CommonMark_ with MyST_ extensions.
+.. tip::
+   Please notice that the `GitHub web interface`_ provides a quick way of
+   propose changes in ``otoolbox``'s files. While this mechanism can
+   be tricky for normal code contributions, it works perfectly fine for
+   contributing to the docs, and can be quite handy.
 
-.. todo:: If your project is hosted on GitHub, you can also mention the following tip:
-
-   .. tip::
-      Please notice that the `GitHub web interface`_ provides a quick way of
-      propose changes in ``utils``'s files. While this mechanism can
-      be tricky for normal code contributions, it works perfectly fine for
-      contributing to the docs, and can be quite handy.
-
-      If you are interested in trying this method out, please navigate to
-      the ``docs`` folder in the source repository_, find which file you
-      would like to propose changes and click in the little pencil icon at the
-      top, to open `GitHub's code editor`_. Once you finish editing the file,
-      please write a message in the form at the bottom of the page describing
-      which changes have you made and what are the motivations behind them and
-      submit your proposal.
+   If you are interested in trying this method out, please navigate to
+   the ``docs`` folder in the source repository_, find which file you
+   would like to propose changes and click in the little pencil icon at the
+   top, to open `GitHub's code editor`_. Once you finish editing the file,
+   please write a message in the form at the bottom of the page describing
+   which changes have you made and what are the motivations behind them and
+   submit your proposal.
 
 When working on documentation changes in your local machine, you can
 compile them using |tox|_::

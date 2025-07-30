@@ -1,0 +1,177 @@
+{
+  "folders": [
+    {
+      "name": "Odoo",
+      "path": "."
+    }
+  ],
+  "launch": {
+    "version": "0.2.0",
+    "inputs": [
+      {
+        "id": "databaseName",
+        "type": "command",
+        "command": "extension.commandvariable.number",
+        "args": {
+          "name": "databaseName",
+          "range": [
+            1500,
+            60000000
+          ],
+          "random": true,
+          "uniqueCount": 10
+        }
+      },
+      {
+        "id": "modulesTest",
+        "type": "pickString",
+        "description": "List of Module to test, leave empty for all module",
+        "options": [
+          "exchange,base_model_validation,australia_austrac,base_model_validation"
+        ],
+        "default": "web"
+      }
+    ],
+    "configurations": [
+      {
+        "name": "Odoo Run",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${config:odoo.bin}",
+        "console": "integratedTerminal",
+        "justMyCode": true,
+        "args": [
+          "--db_host",
+          "localhost",
+          "--db_password",
+          "odoo",
+          "--db_user",
+          "odoo",
+          "--database",
+          "odoo1-main-103",
+          "--limit-time-real",
+          "6000",
+          "--limit-time-cpu",
+          "6000",
+          "--limit-time-worker-cron",
+          "0",
+          "--addons-path",
+          "${config:odoo.addons}",
+          "--update",
+          "product_sale_list,sale,product",
+          "--dev",
+          "all"
+        ]
+      },
+      {
+        "name": "Odoo Test",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${config:odoo.bin}",
+        "console": "integratedTerminal",
+        "justMyCode": true,
+        "args": [
+          "--db_host",
+          "localhost",
+          "--db_password",
+          "odoo",
+          "--db_user",
+          "odoo",
+          "--database",
+          "odooiottest${input:databaseName}",
+          "--addons-path",
+          "${config:odoo.addons}",
+          "--init",
+          "${input:modulesTest}",
+          "--test-tag",
+          "vw",
+          "--stop-after-init"
+        ]
+      }
+    ]
+  },
+  "settings": {
+    "odoo": {
+      "bin": "${workspaceFolder}/odoo/odoo/odoo-bin",
+      "addons": "${workspaceFolder}/odoo/odoo/addons,${workspaceFolder}/odoo/design-themes"
+    },
+    "git.ignoreLimitWarning": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "editor.rulers": [
+      88
+    ],
+    "workbench.colorCustomizations": {
+      "editorRuler.foreground": "#ff4081"
+    }
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Otoolbox: Update All Git Repositories",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": [
+          "run",
+          "update",
+          "--tags",
+          "git"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      },
+      {
+        "label": "Otoolbox: Add repository",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": [
+          "repo",
+          "add",
+          "${input:repositoryUrlAdd}"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      },
+      {
+        "label": "Otoolbox: Remove repository",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": [
+          "repo",
+          "remove",
+          "${input:repositoryUrlAdd}"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
+      }
+    ],
+    "inputs": [
+      {
+        "id": "repositoryUrlAdd",
+        "type": "promptString",
+        "description": "Enter the repository URL to add/remove to the workspace"
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": []
+  }
+}

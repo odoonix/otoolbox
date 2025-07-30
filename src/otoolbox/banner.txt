@@ -1,4 +1,4 @@
-
+[red]
  ▒█████  ▓█████▄  ▒█████   ▒█████   ███▄    █  ██▓▒██   ██▒
 ▒██▒  ██▒▒██▀ ██▌▒██▒  ██▒▒██▒  ██▒ ██ ▀█   █ ▓██▒▒▒ █ █ ▒░
 ▒██░  ██▒░██   █▌▒██░  ██▒▒██░  ██▒▓██  ▀█ ██▒▒██▒░░  █   ░
@@ -9,21 +9,13 @@
 ░ ░ ░ ▒   ░ ░  ░ ░ ░ ░ ▒  ░ ░ ░ ▒     ░   ░ ░  ▒ ░ ░    ░  
     ░ ░     ░        ░ ░      ░ ░           ░  ░   ░    ░  
           ░                                                
-
+[/red]
 
 Odoo Toolbax developed by {{author}}
-Version: {{version}}
-EMail  : {{email}}
-Website: {{website}}
+Version: [green]{{version}}[/green]
+EMail  : [green]{{email}}[/green]
+Website: [green]{{website}}[/green]
 
-{{#verbose}}
-  {{#resources.resources}}
-
-
-{{title}} 
----------------------------
-Path:{{path}}
-Type: 
-Description: {{description}}
-  {{/resources.resources}}
-{{/verbose}}
+Addons:
+{{#addons}}- {{.}}
+{{/addons}}
