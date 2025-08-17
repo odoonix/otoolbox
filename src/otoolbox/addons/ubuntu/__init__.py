@@ -45,24 +45,32 @@ def init():
         verify=[utils.is_dir, utils.is_readable],
     )
 
-    env.add_resource(
-        priority=RESOURCE_PRIORITY_DEFAULT,
-        path="ubuntu-install-apps.sh",
-        title="Ubuntu application installer",
-        description="Install all required application in ubuntu.",
-        init=[
-            utils.constructor_copy_resource("addons/ubuntu/ubuntu-install-apps.sh"),
-            utils.chmod_executable,
-            utils.touch_file
-        ],
-        updat=[
-            utils.constructor_copy_resource("addons/ubuntu/ubuntu-install-apps.sh"),
-            utils.chmod_executable,
-            utils.touch_file
-        ],
-        destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_executable],
-    )
+    scripts = [
+        "bulk-commit.sh",
+        "bulk-pre-commit.sh",
+        "bulk-push-shielded.sh",
+        "ubuntu-install-apps.sh",
+        "ubuntu-office-conf.sh",
+    ]
+    for script in scripts:
+        env.add_resource(
+            priority=RESOURCE_PRIORITY_DEFAULT,
+            path=script,
+            title=f"Ubuntu utility script {script}",
+            description="Install all required application in ubuntu.",
+            init=[
+                utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
+                utils.chmod_executable,
+                utils.touch_file
+            ],
+            updat=[
+                utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
+                utils.chmod_executable,
+                utils.touch_file
+            ],
+            destroy=[utils.delete_file],
+            verify=[utils.is_file, utils.is_executable],
+        )
 
     # pipx install copier
     # pipx install pre-commit
