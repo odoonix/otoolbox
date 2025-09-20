@@ -96,9 +96,7 @@
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 90,
-    "editor.rulers": [
-      88
-    ],
+    "editor.rulers": [88],
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "python.languageServer": "Pylance",
     "python.analysis.autoImportCompletions": true,
@@ -156,6 +154,20 @@
         "options": {
           "cwd": "${workspaceFolder}"
         }
+      },
+      {
+        "label": "Otoolbox: Create Addon",
+        "command": "${workspaceFolder}/odoo/odoo/odoo-bin",
+        "type": "shell",
+        "args": ["scaffold", "${input:repositoryUrlAdd}"],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
       }
     ],
     "inputs": [
@@ -167,8 +179,6 @@
     ]
   },
   "extensions": {
-    "recommendations": [
-      "odoo.odoo"
-    ]
+    "recommendations": ["odoo.odoo"]
   }
 }
