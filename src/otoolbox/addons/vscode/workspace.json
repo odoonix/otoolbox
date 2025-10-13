@@ -157,9 +157,13 @@
       },
       {
         "label": "Otoolbox: Create Addon",
-        "command": "${workspaceFolder}/odoo/odoo/odoo-bin",
+        "command": "${command:python.interpreterPath}",
         "type": "shell",
-        "args": ["scaffold", "${input:repositoryUrlAdd}"],
+        "args": [
+          "${workspaceFolder}/odoo/odoo/odoo-bin",
+          "scaffold",
+          "${input:repositoryUrlAdd}"
+        ],
         "problemMatcher": [],
         "presentation": {
           "reveal": "always"
