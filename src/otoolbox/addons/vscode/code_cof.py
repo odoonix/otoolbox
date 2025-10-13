@@ -1,5 +1,6 @@
 from jsonpath_ng import parse
 import json
+import os
 
 from otoolbox import env
 from otoolbox import utils
@@ -22,12 +23,30 @@ def _store_data(context: Resource, data):
         json.dump(data, file, indent=2, ensure_ascii=False)
 
 
+def _is_git(context: Resource) -> bool:
+    path = context.get_abs_path()
+    git_folder = os.path.join(path, ".git")
+    return os.path.isdir(git_folder)
+
+
 def set_workspace_conf_odoo_addons(context: Resource):
+    """ Filter list of addons
+
+    """
     data = _load_data(context)
     resource_set = env.resources.filter(
-        lambda resource: resource.has_tag("addon") and resource.path != "odoo/odoo")
+        lambda resource: (
+            resource.has_tag("addon")
+            and resource.path != "odoo/odoo"
+            and resource.enable_in_runtime
+            and _is_git(resource)
+        )
+    )
+
+    # Sort based on periority
+    sorted_resources = sorted(list(resource_set), key=lambda r: r.priority)
     path_list = ["${workspaceFolder}/odoo/odoo/addons"] + [
-        "${workspaceFolder}/" + resource.path for resource in resource_set if resource.enable_in_runtime
+        "${workspaceFolder}/" + resource.path for resource in sorted_resources
     ]
     _jsonpath_addons_expr.update(data, ",".join(path_list))
     _store_data(context, data)

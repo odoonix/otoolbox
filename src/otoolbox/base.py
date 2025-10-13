@@ -143,7 +143,6 @@ class Resource:
         self.parent = kargs.get("parent", None)
         self.branch = kargs.get("branch", None)
         self.origin_extensions = []
-        self.priority = RESOURCE_PRIORITY_DEFAULT
         self.visible = True
         self.description = ""
         self.tags = [self.path]
@@ -153,6 +152,7 @@ class Resource:
         self.enable_in_runtime = kargs.get("enable_in_runtime", True)
         self.is_shielded = kargs.get("is_shielded", False)
         self.linked_shielded_repo = kargs.get("linked_shielded_repo", None)
+        self.priority = kargs.get("priority", RESOURCE_PRIORITY_DEFAULT)
         self.extend(**kargs)
 
     def extend(self, **kargs):
