@@ -168,6 +168,20 @@
         "options": {
           "cwd": "${workspaceFolder}"
         }
+      },
+      {
+        "label": "Otoolbox: Update VS Code Workspace",
+        "command": "otoolbox",
+        "type": "shell",
+        "args": ["run", "init", "--tags", "odoo-dev.code-workspace"],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always"
+        },
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}"
+        }
       }
     ],
     "inputs": [
