@@ -337,6 +337,121 @@ def command_sync_shielded(
                 timeout=60
             )
 
+
+#
+# maso, 2025: to init new version
+#
+# When a new version of Odoo is released, we need to create a new
+# empty branch. This command is meant to create and initialize that
+# branch.
+#
+# Command:
+#
+# otoolbox repo new-branch --branch 19.0 --tags <tag como list>
+#
+# How to create new empty branch:
+#
+#   git switch --orphan <new branch>
+#   git commit --allow-empty -m "Initial commit on orphan branch"
+#   git push -u origin <new branch>
+#
+#  see: https://stackoverflow.com/a/34100189/635891
+#
+
+@app.command(name="new-branch")
+def command_new_branch(
+    branch: Annotated[
+        str,
+        typer.Option(
+            prompt="The target branch",
+            help="Should set the target branch name.",
+            envvar="NEW_BRANCH",
+        ),
+    ] = None,
+    tags: Annotated[
+        List[str],
+        typer.Option(help="tags."),
+    ] = None,
+):
+    """Create a new empty branch for all repositories"""
+
+    current_branch = env.context.get("odoo_version")
+    tags = tags if tags else []
+    repo_list = env.resources.filter(
+        lambda resource: resource.has_tag(*tags)
+    )
+    for repo in repo_list:
+
+        result = utils.call_process_safe(
+            [
+                "git",
+                "fetch",
+            ],
+            cwd=repo.path,
+            timeout=60
+        )
+        if result.returncode != 0:
+            env.console.print(result.stderr)
+            continue
+
+        result = utils.call_process_safe(
+            [
+                "git",
+                "switch",
+                "--orphan",
+                branch,
+            ],
+            cwd=repo.path,
+            timeout=60
+        )
+        if result.returncode != 0:
+            env.console.print(result.stderr)
+            continue
+
+        result = utils.call_process_safe(
+            [
+                "git",
+                "commit",
+                "--allow-empty",
+                "-m",
+                "Initial commit on orphan branch",
+            ],
+            cwd=repo.path,
+            timeout=60
+        )
+        if result.returncode != 0:
+            env.console.print(result.stderr)
+            continue
+
+        result = utils.call_process_safe(
+            [
+                "git",
+                "push",
+                "-u",
+                "origin",
+                branch,
+            ],
+            cwd=repo.path,
+            timeout=60
+        )
+        if result.returncode != 0:
+            env.console.print(result.stderr)
+            continue
+
+    for repo in repo_list:
+        result = utils.call_process_safe(
+            [
+                "git",
+                "checkout",
+                current_branch,
+            ],
+            cwd=repo.path,
+            timeout=60
+        )
+        if result.returncode != 0:
+            env.console.print(result.stderr)
+            continue
+
 ###################################################################
 # init
 ###################################################################
