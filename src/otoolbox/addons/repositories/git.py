@@ -21,9 +21,6 @@ from otoolbox.addons.repositories.constants import (
 _logger = logging.getLogger(__name__)
 
 
-
-
-
 ######################################################################################
 #                                Git Utilities                                       #
 #                                                                                    #
@@ -47,6 +44,7 @@ def _rais_git_error(context, error_code):
             error['message'].format(error_code=error_code, **context.__dict__)
         )
 
+
 def _get_branch_info(context: Resource):
     cwd = env.get_workspace_path(context.path)
     result = subprocess.run(
@@ -64,9 +62,11 @@ def _get_branch_info(context: Resource):
 # must be a git repository.                                                          #
 ######################################################################################
 
+
 def git_clone(context: Resource):
     """Clone the git repository from github"""
-    branch_name = context.branch if context.branch else env.context.get("odoo_version", "18.0")
+    branch_name = context.branch if context.branch else env.context.get(
+        "odoo_version", "18.0")
     cwd = env.get_workspace_path(context.parent)
     depth = env.context.get("depth", "1")
 
@@ -96,6 +96,18 @@ def git_pull(context: Resource):
     """Pull the git repository from github"""
     cwd = env.get_workspace_path(context.path)
     result = utils.call_process_safe([GIT_COMMAND, "pull"], cwd=cwd)
+
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, _get_branch_info(context=context)
+
+
+def git_checkout(context: Resource):
+    """Pull the git repository from github"""
+    cwd = env.get_workspace_path(context.path)
+    branch_name = context.branch if context.branch else env.context.get(
+        "odoo_version", "18.0")
+    result = utils.call_process_safe([GIT_COMMAND, "checkout", branch_name], cwd=cwd)
 
     if result.returncode:
         raise RuntimeError(result.stderr)

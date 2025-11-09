@@ -36,6 +36,7 @@ def _add_repo_to_resources(item):
         "description": """Automaticaly added resources from git.""",
         "init": [git.git_clone],
         "update": [
+            git.git_checkout,
             git.git_pull,
             utils.touch_dir,
         ],
