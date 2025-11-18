@@ -68,7 +68,6 @@ def git_clone(context: Resource):
     branch_name = context.branch if context.branch else env.context.get(
         "odoo_version", "18.0")
     cwd = env.get_workspace_path(context.parent)
-    depth = env.context.get("depth", "1")
 
     result = utils.call_process_safe(
         [
@@ -76,8 +75,6 @@ def git_clone(context: Resource):
             "clone",
             "--branch",
             branch_name,
-            "--depth",
-            depth,
             (
                 GIT_ADDRESS_HTTPS
                 if not env.context.get("ssh_git", True)
