@@ -144,15 +144,25 @@ class Resource:
         self.branch = kargs.get("branch", None)
         self.origin_extensions = []
         self.visible = True
-        self.description = ""
         self.tags = [self.path]
-        self.title = self.path
+        self.name = kargs.get("name")
+        self.title = kargs.get("title") or self.path
+        self.description = ""
         self.processors = []
         self.env = kargs.get("env")
         self.enable_in_runtime = kargs.get("enable_in_runtime", True)
         self.is_shielded = kargs.get("is_shielded", False)
         self.linked_shielded_repo = kargs.get("linked_shielded_repo", None)
         self.priority = kargs.get("priority", RESOURCE_PRIORITY_DEFAULT)
+        # Odoo addons
+        self.organization = kargs.get("organization")
+        self.repository = kargs.get("repository")
+        self.version = kargs.get("version")
+        self.website = kargs.get("website")
+        self.license = kargs.get("license")
+        self.category = kargs.get("category")
+        self.installable = kargs.get("installable")
+        # TODO: add other addons __manifist__.py keys
         self.extend(**kargs)
 
     def extend(self, **kargs):
@@ -191,7 +201,7 @@ class Resource:
             [extension.get("visible", True) for extension in self.origin_extensions]
         )
         self.description = "\n".join(
-            [extension.get("description", "") for extension in self.origin_extensions]
+            [str(extension.get("description", "")) for extension in self.origin_extensions]
         )
         self.tags = [
             tag
@@ -199,7 +209,31 @@ class Resource:
             for tag in extension.get("tags", [])
         ]
         self.tags.append(self.path)
-        self.title = self.origin_extensions[0].get("title", self.path)
+        # All other attributes
+        attributes_key = [
+            "title", 
+            "version", 
+            "author",
+            "branch",
+            "organization",
+            "repository",
+            "version",
+            "website",
+            "license",
+            "category",
+            "installable",
+         ]
+        for key in attributes_key:
+            selected_value = None
+            for ext in self.origin_extensions:
+                value = ext.get(key)
+                if value not in (None, ""):
+                    selected_value = value
+                    break
+            setattr(self, key,selected_value)
+
+
+
 
     def add_processor(self, process, **kargs):
         """Add a processor to the resource"""

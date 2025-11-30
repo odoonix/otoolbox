@@ -42,9 +42,10 @@ class Environment:
         """Get the workspace"""
         return self.context.get("path", ".")
 
-    def get_workspace_path(self, path):
+    def get_workspace_path(self, *path):
         """Gets subfolder/file with in workspace"""
-        return os.path.join(self.get_workspace(), path)
+        assert path, "Path is requried"
+        return os.path.join(self.get_workspace(), *path)
 
     #################################################################################
     # Resource

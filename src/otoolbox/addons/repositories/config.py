@@ -22,7 +22,7 @@ def _add_repo_to_resources(item):
             item.get("tags", [])
             + [
                 "git",
-                "addon",
+                "repository",
                 f"{item.get('organization')}/{item.get('repository')}",
                 item.get("organization"),
                 item.get("branch"),
