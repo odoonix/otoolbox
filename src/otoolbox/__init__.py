@@ -41,18 +41,25 @@ def result_callback(*args, **kwargs):
     # Automatically update resources after the application is run
     if env.context.get("should_skip_auto_operations", False):
         return
-    update_list = env.resources.filter(
-        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
-    ).executor(["update"])
+    exe_list = False
+    if env.context.get("post_check"):
+        exe_list = env.resources.filter(
+            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_UPDATE)
+        ).executor(["update"])
 
-    verify_list = env.resources.filter(
-        lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
-    ).executor(["verify"])
+    if env.context.get("verify"):
+        verify_list = env.resources.filter(
+            lambda resource: resource.has_tag(RESOURCE_TAGS_AUTO_VERIFY)
+        ).executor(["verify"])
+        if exe_list:
+            exe_list = exe_list + verify_list
+        else:
+            exe_list = verify_list
 
-    exe_list = update_list + verify_list
-    result = exe_list.execute()
-
-    utils.print_result(result)
+    if exe_list:
+        result = exe_list.execute()
+        if not env.context.get("silent"):
+            utils.print_result(result)
 
 
 app = typer.Typer(
@@ -102,6 +109,13 @@ def callback_common_arguments(
             envvar="POST_CHECK",
         ),
     ] = False,
+    verify: Annotated[
+        bool,
+        typer.Option(
+            help="Check if the process run well.",
+            envvar="VERIFY",
+        ),
+    ] = False,
     continue_on_exception: Annotated[
         bool,
         typer.Option(
@@ -116,6 +130,7 @@ def callback_common_arguments(
             "silent": silent,
             "pre_check": pre_check,
             "post_check": post_check,
+            "verify": verify,
             "continue_on_exception": continue_on_exception,
         }
     )
@@ -160,11 +175,14 @@ def command_run(
     """
     tags = tags if isinstance(tags, List) else []
     env.context.update({"tags": tags, "step": steps, "ssh_auth": ssh_auth})
-    utils.print_result(
+    
+    result =(
         env.resources.filter(lambda resource: resource.has_tag(*tags))
         .executor(steps)
         .execute()
-    )
+    ) 
+    if not env.context.get("silent"):
+         utils.print_result(result)
 
 
 ###################################################################
