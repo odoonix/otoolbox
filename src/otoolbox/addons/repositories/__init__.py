@@ -215,28 +215,24 @@ def command_merge(
     repo_db: Annotated[
         str,
         typer.Option(
-            prompt="The distination repository",
-            help="The repository database."
+            prompt="The distination repository", help="The repository database."
         ),
     ] = None,
     repo: Annotated[
         str,
-        typer.Option(
-            prompt="The source repository",
-            help="Project repository."),
-    ] = None
+        typer.Option(prompt="The source repository", help="Project repository."),
+    ] = None,
 ):
     """Remove a repository from workspace"""
-    env.context.update({
-        "should_skip_auto_operations": True
-    })
+    env.context.update({"should_skip_auto_operations": True})
     config.merge_repository(repo_db, repo)
 
 
 @app.command(name="init")
 def command_init(
-    repository: Annotated[str, typer.Argument(
-        help="The repository URL or path.")] = None,
+    repository: Annotated[
+        str, typer.Argument(help="The repository URL or path.")
+    ] = None,
 ):
     """Inint a repository with precommit"""
 
@@ -260,10 +256,10 @@ def command_init(
             "copy",
             "--UNSAFE",
             "https://github.com/OCA/oca-addons-repo-template.git",
-            resource.path
+            resource.path,
         ],
         cwd=env.get_workspace(),
-        timeout=60
+        timeout=60,
     )
 
     if result.returncode != 0:
@@ -279,7 +275,7 @@ def command_init(
             "pre-commit",
             "install",
         ],
-        cwd=env.get_workspace_path(repository)
+        cwd=env.get_workspace_path(repository),
     )
     # pre-commit run -a
     # git commit -am 'Hello world 🖖'
@@ -300,9 +296,9 @@ def command_sync_shielded(
         typer.Option(
             prompt="The target organization",
             help="The target organization name.",
-            envvar="SHIELDED_ORGANIZATION"
-        )
-    ] = None
+            envvar="SHIELDED_ORGANIZATION",
+        ),
+    ] = None,
 ):
     """Copy from public to shielded organization and remove history of the git"""
     # rsync -av --delete --exclude '.git' "$source/" "$dist/"
@@ -314,14 +310,12 @@ def command_sync_shielded(
     )[0]
     repo_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
-    ).filter(
-        lambda resource: resource.parent == public_organization.path
-    )
+    ).filter(lambda resource: resource.parent == public_organization.path)
     for repo in repo_list:
         # 1. repo is not an organization
         # 2. repo is a git project in public_organization
         if repo.is_shielded:
-            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent)+1:]
+            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent) + 1 :]
             result = utils.call_process_safe(
                 [
                     "rsync",
@@ -331,10 +325,10 @@ def command_sync_shielded(
                     "--exclude",
                     ".git",
                     repo.path + "/",
-                    shielded_organization.path + "/" + repo_name + "/"
+                    shielded_organization.path + "/" + repo_name + "/",
                 ],
                 cwd=env.get_workspace(),
-                timeout=60
+                timeout=60,
             )
 
 
@@ -358,6 +352,7 @@ def command_sync_shielded(
 #  see: https://stackoverflow.com/a/34100189/635891
 #
 
+
 @app.command(name="new-branch")
 def command_new_branch(
     branch: Annotated[
@@ -377,18 +372,15 @@ def command_new_branch(
 
     current_branch = env.context.get("odoo_version")
     tags = tags if tags else []
-    repo_list = env.resources.filter(
-        lambda resource: resource.has_tag(*tags)
-    )
+    repo_list = env.resources.filter(lambda resource: resource.has_tag(*tags))
     for repo in repo_list:
-
         result = utils.call_process_safe(
             [
                 "git",
                 "fetch",
             ],
             cwd=repo.path,
-            timeout=60
+            timeout=60,
         )
         if result.returncode != 0:
             env.console.print(result.stderr)
@@ -402,7 +394,7 @@ def command_new_branch(
                 branch,
             ],
             cwd=repo.path,
-            timeout=60
+            timeout=60,
         )
         if result.returncode != 0:
             env.console.print(result.stderr)
@@ -417,7 +409,7 @@ def command_new_branch(
                 "Initial commit on orphan branch",
             ],
             cwd=repo.path,
-            timeout=60
+            timeout=60,
         )
         if result.returncode != 0:
             env.console.print(result.stderr)
@@ -432,7 +424,7 @@ def command_new_branch(
                 branch,
             ],
             cwd=repo.path,
-            timeout=60
+            timeout=60,
         )
         if result.returncode != 0:
             env.console.print(result.stderr)
@@ -446,11 +438,12 @@ def command_new_branch(
                 current_branch,
             ],
             cwd=repo.path,
-            timeout=60
+            timeout=60,
         )
         if result.returncode != 0:
             env.console.print(result.stderr)
             continue
+
 
 ###################################################################
 # init
@@ -472,7 +465,7 @@ def init():
         udpate=[],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
-        tags=[]
+        tags=[],
     )
 
     config.load_repos_resources()

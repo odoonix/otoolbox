@@ -6,7 +6,7 @@ import logging
 from otoolbox import env
 from otoolbox.base import Resource
 
-from otoolbox.constants import PROCESS_SUCCESS, PROCESS_FAIL, PROCESS_EMPTY_MESSAGE
+from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def pyenv_create(context: Resource):

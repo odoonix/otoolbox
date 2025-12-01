@@ -11,10 +11,7 @@ import dotenv
 
 import typer
 from typing_extensions import Annotated
-import dotenv
 
-import typer
-from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils

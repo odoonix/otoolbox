@@ -158,8 +158,9 @@ def command_run(
     steps: Annotated[
         List[str], typer.Argument(help="List of steps to process with otoolbox.")
     ],
-    tags: Annotated[List[str], typer.Option(
-        help="List of tags to filter resources.")] = None,
+    tags: Annotated[
+        List[str], typer.Option(help="List of tags to filter resources.")
+    ] = None,
     ssh_auth: Annotated[
         bool,
         typer.Option(
@@ -175,14 +176,14 @@ def command_run(
     """
     tags = tags if isinstance(tags, List) else []
     env.context.update({"tags": tags, "step": steps, "ssh_auth": ssh_auth})
-    
-    result =(
+
+    result = (
         env.resources.filter(lambda resource: resource.has_tag(*tags))
         .executor(steps)
         .execute()
-    ) 
+    )
     if not env.context.get("silent"):
-         utils.print_result(result)
+        utils.print_result(result)
 
 
 ###################################################################

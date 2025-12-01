@@ -65,11 +65,11 @@ def init():
         init=[
             utils.constructor_copy_resource("addons/vscode/workspace.json"),
             code_cof.set_workspace_conf_odoo_addons,
-            code_cof.rebuile_folder_config
+            code_cof.rebuile_folder_config,
         ],
         update=[
             code_cof.set_workspace_conf_odoo_addons,
-            code_cof.rebuile_folder_config
+            code_cof.rebuile_folder_config,
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],

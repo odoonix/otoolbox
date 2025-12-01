@@ -18,8 +18,8 @@ apt install -y \
     python3-pyldap \
     python3-cachetools \
     libldap2-dev \
-    libsasl2-dev 
-    
+    libsasl2-dev
+
 
 
 
@@ -65,4 +65,3 @@ systemctl enable docker
 ############################################################
 apt install -y \
     ubuntu-restricted-extras
-

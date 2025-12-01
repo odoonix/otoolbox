@@ -3,7 +3,6 @@ import json
 import os
 
 from otoolbox import env
-from otoolbox import utils
 from otoolbox.base import Resource
 from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
@@ -30,9 +29,7 @@ def _is_git(context: Resource) -> bool:
 
 
 def set_workspace_conf_odoo_addons(context: Resource):
-    """ Filter list of addons
-
-    """
+    """Filter list of addons"""
     data = _load_data(context)
     resource_set = env.resources.filter(
         lambda resource: (
@@ -69,10 +66,7 @@ def rebuile_folder_config(context: Resource):
     ############################################################
     # Adding all the root folder
     ############################################################
-    folders = [{
-        "path": ".",
-        "name": f"Odoo {env.context.get('odoo_version')}"
-    }]
+    folders = [{"path": ".", "name": f"Odoo {env.context.get('odoo_version')}"}]
 
     # save to workspace
     data = _load_data(context)

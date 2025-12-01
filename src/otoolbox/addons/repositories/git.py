@@ -1,4 +1,3 @@
-import os
 import logging
 import subprocess
 
@@ -7,15 +6,12 @@ from otoolbox import utils
 from otoolbox.base import Resource
 from otoolbox.constants import (
     PROCESS_SUCCESS,
-    PROCESS_FAIL,
-    PROCESS_EMPTY_MESSAGE,
-    PROCESS_NOT_IMP_MESSAGE,
 )
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
     GIT_ADDRESS_SSH,
     GIT_ERROR_TABLE,
-    GIT_COMMAND
+    GIT_COMMAND,
 )
 
 _logger = logging.getLogger(__name__)
@@ -27,21 +23,25 @@ _logger = logging.getLogger(__name__)
 #                                                                                    #
 ######################################################################################
 
+
 def _rais_git_error(context, error_code):
     if not error_code:
         return
-    error = GIT_ERROR_TABLE.get(error_code, {
-        'level': 'fatal',
-        'message': "Unknown GIT error for distination path {path}. Error code is {error_code}. "
-        "See .otoolbox/logs.text for more information."
-    })
-    message = error['message'].format(error_code=error_code, **context.__dict__)
-    if env.context.get('continue_on_exception'):
+    error = GIT_ERROR_TABLE.get(
+        error_code,
+        {
+            "level": "fatal",
+            "message": "Unknown GIT error for distination path {path}. Error code is {error_code}. "
+            "See .otoolbox/logs.text for more information.",
+        },
+    )
+    message = error["message"].format(error_code=error_code, **context.__dict__)
+    if env.context.get("continue_on_exception"):
         _logger.error(message)
         env.errors.append(message)
     else:
         raise RuntimeError(
-            error['message'].format(error_code=error_code, **context.__dict__)
+            error["message"].format(error_code=error_code, **context.__dict__)
         )
 
 
@@ -56,6 +56,7 @@ def _get_branch_info(context: Resource):
     )
     return str.strip(result.stdout)
 
+
 ######################################################################################
 #                             Resource Processors                                    #
 # Resource processors are used to process resources from the workspace. The resource #
@@ -65,8 +66,9 @@ def _get_branch_info(context: Resource):
 
 def git_clone(context: Resource):
     """Clone the git repository from github"""
-    branch_name = context.branch if context.branch else env.context.get(
-        "odoo_version", "18.0")
+    branch_name = (
+        context.branch if context.branch else env.context.get("odoo_version", "18.0")
+    )
     cwd = env.get_workspace_path(context.parent)
 
     result = utils.call_process_safe(
@@ -102,8 +104,9 @@ def git_pull(context: Resource):
 def git_checkout(context: Resource):
     """Pull the git repository from github"""
     cwd = env.get_workspace_path(context.path)
-    branch_name = context.branch if context.branch else env.context.get(
-        "odoo_version", "18.0")
+    branch_name = (
+        context.branch if context.branch else env.context.get("odoo_version", "18.0")
+    )
     result = utils.call_process_safe([GIT_COMMAND, "checkout", branch_name], cwd=cwd)
 
     if result.returncode:

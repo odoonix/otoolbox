@@ -12,9 +12,7 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
-from otoolbox.constants import (
-    RESOURCE_PRIORITY_DEFAULT
-)
+from otoolbox.constants import RESOURCE_PRIORITY_DEFAULT
 
 
 ###################################################################
@@ -27,6 +25,7 @@ app.__cli_name__ = "ubuntu"
 @app.command(name="install")
 def install():
     env.console.print("Run ./ubuntu-install-apps.sh in terminal.")
+
 
 ###################################################################
 # init
@@ -61,12 +60,12 @@ def init():
             init=[
                 utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
                 utils.chmod_executable,
-                utils.touch_file
+                utils.touch_file,
             ],
             updat=[
                 utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
                 utils.chmod_executable,
-                utils.touch_file
+                utils.touch_file,
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_executable],
@@ -81,22 +80,11 @@ def init():
         path="application://copier",
         title="Copier tool",
         description="Copier",
-        init=[
-            utils.pipx_install,
-            utils.pipx_ensurepath
-        ],
-        update=[
-            utils.pipx_update,
-            utils.pipx_ensurepath
-        ],
-        destroy=[
-            utils.pipx_remove
-        ],
-        verify=[
-            utils.pipx_is_install,
-            utils.pipx_ensurepath
-        ],
-        tags=['application', 'oca', 'maintainer']
+        init=[utils.pipx_install, utils.pipx_ensurepath],
+        update=[utils.pipx_update, utils.pipx_ensurepath],
+        destroy=[utils.pipx_remove],
+        verify=[utils.pipx_is_install, utils.pipx_ensurepath],
+        tags=["application", "oca", "maintainer"],
     )
 
     env.add_resource(
@@ -104,22 +92,11 @@ def init():
         path="application://pre-commit",
         title="pre-commit tool",
         description="pre-commit",
-        init=[
-            utils.pipx_install,
-            utils.pipx_ensurepath
-        ],
-        update=[
-            utils.pipx_update,
-            utils.pipx_ensurepath
-        ],
-        destroy=[
-            utils.pipx_remove
-        ],
-        verify=[
-            utils.pipx_is_install,
-            utils.pipx_ensurepath
-        ],
-        tags=['application', 'oca', 'maintainer']
+        init=[utils.pipx_install, utils.pipx_ensurepath],
+        update=[utils.pipx_update, utils.pipx_ensurepath],
+        destroy=[utils.pipx_remove],
+        verify=[utils.pipx_is_install, utils.pipx_ensurepath],
+        tags=["application", "oca", "maintainer"],
     )
 
 

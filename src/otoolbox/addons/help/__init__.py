@@ -4,12 +4,11 @@ Resources:
 - README.md
 
 """
+
 import typer
 from typing_extensions import Annotated
 import dotenv
 
-import typer
-from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
@@ -19,6 +18,7 @@ from otoolbox import utils
 ###################################################################
 app = typer.Typer()
 app.__cli_name__ = "help"
+
 
 ###################################################################
 # init

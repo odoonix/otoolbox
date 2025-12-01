@@ -8,5 +8,3 @@ Usage: repo [-h]
    --check, -c: Checks all repos
     --init, -i: Init the repo if not exist and update use -i all for all repo
      --console: Enable VW developer console
-
-

@@ -29,22 +29,24 @@ def _add_repo_to_resources(item):
             ]
         )
     )
-    item.update({
-        "path": f"{item.get('organization')}/{item.get('repository')}",
-        "parent": item.get("organization"),
-        "title": item.get("repository"),
-        "description": """Automaticaly added resources from git.""",
-        "init": [git.git_clone],
-        "update": [
-            git.git_checkout,
-            git.git_pull,
-            utils.touch_dir,
-        ],
-        "destroy": [utils.delete_dir],
-        "verify": [utils.is_dir, utils.is_readable],
-        "tags": tags,
-        "branch": item.get("branch"),
-    })
+    item.update(
+        {
+            "path": f"{item.get('organization')}/{item.get('repository')}",
+            "parent": item.get("organization"),
+            "title": item.get("repository"),
+            "description": """Automaticaly added resources from git.""",
+            "init": [git.git_clone],
+            "update": [
+                git.git_checkout,
+                git.git_pull,
+                utils.touch_dir,
+            ],
+            "destroy": [utils.delete_dir],
+            "verify": [utils.is_dir, utils.is_readable],
+            "tags": tags,
+            "branch": item.get("branch"),
+        }
+    )
     env.add_resource(**item)
 
 
@@ -80,7 +82,7 @@ def _load_repository_list():
 
 def _save_repository_list(repo_list):
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-    _save_json_file(reposiotires_path,  repo_list)
+    _save_json_file(reposiotires_path, repo_list)
 
 
 def load_repos_resources():
@@ -126,6 +128,7 @@ def remove_repository(organization, repository):
 
 # Merge db
 
+
 def _load_json_file(file_path):
     data = False
     if os.path.isfile(file_path):
@@ -143,8 +146,8 @@ def _save_json_file(file_path, data):
 
 def _get_odoo_version(repository_path):
     directory = os.path.dirname(repository_path)
-    env_path = os.path.join(directory, '.env')
-    with open(env_path, 'r', encoding="utf8") as file:
+    env_path = os.path.join(directory, ".env")
+    with open(env_path, "r", encoding="utf8") as file:
         content = file.read()
     pattern = r'ODOO_VERSION="(\d+\.\d+)"'
     match = re.search(pattern, content)
@@ -156,21 +159,25 @@ def _get_odoo_version(repository_path):
 
 
 def _merge_item_to_db(repo_db, repo_item, odoo_version):
-    repo_item['tags'].append(odoo_version)
+    repo_item["tags"].append(odoo_version)
     for index, item in enumerate(repo_db):
-        if item["organization"] == repo_item["organization"] and item["repository"] == repo_item["repository"]:
-            repo_db[index]["tags"] = list(
-                set(item["tags"] + [odoo_version]))
+        if (
+            item["organization"] == repo_item["organization"]
+            and item["repository"] == repo_item["repository"]
+        ):
+            repo_db[index]["tags"] = list(set(item["tags"] + [odoo_version]))
             return
     repo_db.append(repo_item)
 
 
 def _remove_tag_if_not_in(repo_db, repo_item, odoo_version):
     for index, item in enumerate(repo_db):
-        if item["organization"] == repo_item["organization"] and item["repository"] == repo_item["repository"]:
+        if (
+            item["organization"] == repo_item["organization"]
+            and item["repository"] == repo_item["repository"]
+        ):
             return index
-    repo_item["tags"] = list(
-        set(repo_item["tags"]) - set([odoo_version]))
+    repo_item["tags"] = list(set(repo_item["tags"]) - set([odoo_version]))
 
 
 def merge_repository(dist, src):

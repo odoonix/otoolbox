@@ -1,5 +1,3 @@
-import os
-import sys
 from typing import List
 import logging
 import chevron
@@ -65,7 +63,9 @@ class ResourceExecutor:
 
 
 class ResourceSetExecutor:
-    def __init__(self, executors=None, resources=None, steps=[]):
+    def __init__(self, executors=None, resources=None, steps=None):
+        if not steps:
+            steps = []
         self.executors = []
 
         if resources is not None:
@@ -201,7 +201,10 @@ class Resource:
             [extension.get("visible", True) for extension in self.origin_extensions]
         )
         self.description = "\n".join(
-            [str(extension.get("description", "")) for extension in self.origin_extensions]
+            [
+                str(extension.get("description", ""))
+                for extension in self.origin_extensions
+            ]
         )
         self.tags = [
             tag
@@ -211,8 +214,8 @@ class Resource:
         self.tags.append(self.path)
         # All other attributes
         attributes_key = [
-            "title", 
-            "version", 
+            "title",
+            "version",
             "author",
             "branch",
             "organization",
@@ -222,7 +225,7 @@ class Resource:
             "license",
             "category",
             "installable",
-         ]
+        ]
         for key in attributes_key:
             selected_value = None
             for ext in self.origin_extensions:
@@ -230,10 +233,7 @@ class Resource:
                 if value not in (None, ""):
                     selected_value = value
                     break
-            setattr(self, key,selected_value)
-
-
-
+            setattr(self, key, selected_value)
 
     def add_processor(self, process, **kargs):
         """Add a processor to the resource"""
@@ -328,7 +328,9 @@ class ResourceSet:
 
     def __sub__(self, other):
         if isinstance(other, ResourceSet):
-            return ResourceSet(resources=list(set(self.resources) - set(other.resources)))
+            return ResourceSet(
+                resources=list(set(self.resources) - set(other.resources))
+            )
         raise NotImplementedError(
             f"Subtraction is not supportd for {type(other)} to {type(ResourceSet)}"
         )

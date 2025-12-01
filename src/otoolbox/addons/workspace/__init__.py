@@ -8,7 +8,6 @@ Resources:
 import dotenv
 
 import typer
-from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
@@ -18,7 +17,7 @@ from otoolbox.constants import (
     RESOURCE_ROOT,
     RESOURCE_TAGS_ENV,
     RESOURCE_TAGS_AUTO_UPDATE,
-    RESOURCE_TAGS_AUTO_VERIFY
+    RESOURCE_TAGS_AUTO_VERIFY,
 )
 
 
@@ -56,8 +55,6 @@ def init():
         verify=[utils.is_file, utils.is_readable, utils.is_writable],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
-
-
 
 
 ###################################################################

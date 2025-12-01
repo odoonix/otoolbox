@@ -2,7 +2,7 @@
 # This script is used to apply changes to the Odoo modules based on recent edits.
 
 # Login as worker (woker is a user with permissions to commit changes to moonsun)
-# su - worker 
+# su - worker
 
 # Constants
 WORKDIR="$(pwd)"

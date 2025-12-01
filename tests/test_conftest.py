@@ -1,11 +1,12 @@
 """
-    Dummy conftest.py for otoolbox.
+Dummy conftest.py for otoolbox.
 
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    - https://docs.pytest.org/en/stable/fixture.html
-    - https://docs.pytest.org/en/stable/writing_plugins.html
+If you don't know what this is for, just leave it empty.
+Read more about conftest.py under:
+- https://docs.pytest.org/en/stable/fixture.html
+- https://docs.pytest.org/en/stable/writing_plugins.html
 """
+
 from otoolbox import environment
 
 # import pytest
@@ -16,7 +17,7 @@ import pytest
 
 
 def test_check_if_env_is_define():
-    assert environment.env != None
+    assert environment.env
 
 
 def add(a, b):

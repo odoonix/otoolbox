@@ -5,17 +5,14 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv, dotenv_values
+from dotenv import dotenv_values
 
 from otoolbox.base import Resource
 from otoolbox import env
 from otoolbox.constants import (
-    ERROR_CODE_PRE_VERIFICATION,
-    RESOURCE_ENV_FILE,
     PROCESS_SUCCESS,
     PROCESS_FAIL,
     PROCESS_EMPTY_MESSAGE,
-    PROCESS_NOT_IMP_MESSAGE,
 )
 
 _logger = logging.getLogger(__name__)
@@ -45,17 +42,17 @@ def _get_modif_date(context):
 def call_process_safe(command, **kwargs):
     """Execute a command in a subprocess and log the output"""
     if not kwargs.get("cwd"):
-        kwargs.update({
-            "cwd", env.get_workspace()
-        })
+        kwargs.update({"cwd", env.get_workspace()})
 
-    kwargs.update({
-        # Use shell=True if command is a string (be cautious with security)
-        'stdout': subprocess.PIPE,  # Capture stdout
-        'stderr': subprocess.PIPE,  # Capture stderr
-        'text': True,
-        'check': False,
-    })
+    kwargs.update(
+        {
+            # Use shell=True if command is a string (be cautious with security)
+            "stdout": subprocess.PIPE,  # Capture stdout
+            "stderr": subprocess.PIPE,  # Capture stderr
+            "text": True,
+            "check": False,
+        }
+    )
     _logger.info("Command: %s", kwargs)
     result = subprocess.run(command, **kwargs)
 
@@ -307,17 +304,14 @@ def _find_text_in_lines(text, pattern):
 def pipx_install(context: Resource):
     """Install an aplication  from pipx"""
     url = urlparse(context.path)
-    if url.scheme != 'application':
+    if url.scheme != "application":
         raise RuntimeError(
-            "Impossible to use PIPX installer for non application resources")
+            "Impossible to use PIPX installer for non application resources"
+        )
     application = url.netloc
     cwd = env.get_workspace_path(".")
     result = call_process_safe(
-        [
-            "pipx",
-            "install",
-            application
-        ],
+        ["pipx", "install", application],
         cwd=cwd,
     )
     if result.returncode:
@@ -336,17 +330,14 @@ def pipx_update(context: Resource):
 def pipx_is_install(context: Resource):
     """Check if the application is installed with pipx"""
     url = urlparse(context.path)
-    if url.scheme != 'application':
+    if url.scheme != "application":
         raise RuntimeError(
-            "Impossible to use PIPX installer for non application resources")
+            "Impossible to use PIPX installer for non application resources"
+        )
     application = url.netloc
     cwd = env.get_workspace_path(".")
     result = call_process_safe(
-        [
-            "pipx",
-            "list",
-            "--short"
-        ],
+        ["pipx", "list", "--short"],
         cwd=cwd,
     )
 
@@ -360,10 +351,7 @@ def pipx_ensurepath(context: Resource):
     """Check if pipx path is ok"""
     cwd = env.get_workspace_path(".")
     result = call_process_safe(
-        [
-            "pipx",
-            "ensurepath"
-        ],
+        ["pipx", "ensurepath"],
         cwd=cwd,
     )
     if result.returncode:
