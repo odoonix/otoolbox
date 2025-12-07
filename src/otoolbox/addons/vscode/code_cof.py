@@ -33,10 +33,11 @@ def set_workspace_conf_odoo_addons(context: Resource):
     data = _load_data(context)
     resource_set = env.resources.filter(
         lambda resource: (
-            resource.has_tag("addon")
+            resource.has_tag("repository")
             and resource.path != "odoo/odoo"
             and resource.enable_in_runtime
-            and _is_git(resource)
+            # and _is_git(resource) We can load manual addons
+            # and _is_git(resource) TODO: we must check if there is an addon
         )
     )
 
