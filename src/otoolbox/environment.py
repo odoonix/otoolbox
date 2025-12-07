@@ -5,7 +5,7 @@ import os
 import sys
 
 # 3th party
-import pkg_resources
+from importlib.resources import files
 from rich.console import Console
 
 # Odoo toolbox
@@ -27,16 +27,16 @@ class Environment:
         self.console = Console()
 
     def resource_string(
-        self, resource_name: str, packag_name: str = "otoolbox", encoding: str = "utf-8"
+        self, resource_name: str, package_name: str = "otoolbox", encoding: str = "utf-8"
     ):
         """Load resource"""
-        return pkg_resources.resource_string(packag_name, resource_name).decode(
-            encoding
-        )
+        text = files(package_name).joinpath(resource_name).read_text(encoding=encoding)
+        return text
 
-    def resource_stream(self, resource_name: str, packag_name: str = "otoolbox"):
+    def resource_stream(self, resource_name: str, package_name: str = "otoolbox"):
         """Load resource"""
-        return pkg_resources.resource_stream(packag_name, resource_name)
+        # return pkg_resources.resource_stream(package_name, resource_name)
+        return files(package_name).joinpath(resource_name).open('rb')
 
     def get_workspace(self):
         """Get the workspace"""

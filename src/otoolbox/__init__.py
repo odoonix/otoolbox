@@ -1,5 +1,6 @@
 """Load general CLI and tools related to odoo"""
 
+
 import importlib
 from importlib.metadata import PackageNotFoundError, version
 import chevron
@@ -182,8 +183,7 @@ def command_run(
         .executor(steps)
         .execute()
     )
-    if not env.context.get("silent"):
-        utils.print_result(result)
+    utils.print_result(result)
 
 
 ###################################################################
@@ -194,6 +194,13 @@ def _main():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
     env.context.update({"addons": addons_list})
+
+    # load extensions
+    package = importlib.import_module("otoolbox.addons")
+    package.init()
+    app.add_typer(package.app, name=package.app.__cli_name__)
+
+    # Load other extensions
     for addon in addons_list:
         package = importlib.import_module(addon)
         # Initialize the addon

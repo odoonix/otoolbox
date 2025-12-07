@@ -459,7 +459,7 @@ def init():
         description="Adding, removing, and updating repositories in the workspace is done through this file",
         init=[
             utils.constructor_copy_resource(
-                RESOURCE_REPOSITORIES_PATH, packag_name=__name__
+                RESOURCE_REPOSITORIES_PATH, package_name=__name__
             )
         ],
         udpate=[],

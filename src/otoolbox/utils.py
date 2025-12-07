@@ -136,11 +136,11 @@ def touch_dir(context: Resource):
     return PROCESS_SUCCESS, _get_modif_date(context=context)
 
 
-def constructor_copy_resource(path, packag_name: str = "otoolbox"):
+def constructor_copy_resource(path, package_name: str = "otoolbox"):
     """Create a constructor to copy resource with path"""
 
     def copy_resource(context: Resource):
-        stream = env.resource_stream(path, packag_name=packag_name)
+        stream = env.resource_stream(path, package_name=package_name)
         # Open the output file in write-binary mode
         out_file_path = env.get_workspace_path(context.path)
         with open(out_file_path, "wb") as out_file:
@@ -283,11 +283,13 @@ def print_result(result=None):
     counter = 0
     for processors, executor in result:
         counter += 1
-        env.console.print(
-            f"\n{executor.resource} ({counter}, {executor.resource.priority})"
-        )
+        if not env.context.get("silent"):
+            env.console.print(
+                f"\n{executor.resource} ({counter}, {executor.resource.priority})"
+            )
         for res, message, processor in processors:
-            env.console.print(f"[{res}] {processor} ({message})")
+            if not env.context.get("silent"):
+                env.console.print(f"[{res}] {processor} ({message})")
 
 
 ###################################################################

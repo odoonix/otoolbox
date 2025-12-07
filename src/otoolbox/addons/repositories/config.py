@@ -74,7 +74,7 @@ def _load_repository_list():
     if data:
         return json.loads(data)
     branch = env.context.get("odoo_version")
-    data = env.resource_string(RESOURCE_REPOSITORIES_PATH, packag_name=__name__)
+    data = env.resource_string(RESOURCE_REPOSITORIES_PATH, package_name=__name__)
     repo_list = json.loads(data)
     repo_list = [item for item in repo_list if branch in item.get("tags", [branch])]
     return repo_list
