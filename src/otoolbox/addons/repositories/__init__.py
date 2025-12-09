@@ -315,7 +315,7 @@ def command_sync_shielded(
         # 1. repo is not an organization
         # 2. repo is a git project in public_organization
         if repo.is_shielded:
-            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent) + 1 :]
+            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent) + 1:]
             result = utils.call_process_safe(
                 [
                     "rsync",
@@ -369,11 +369,17 @@ def command_new_branch(
     ] = None,
 ):
     """Create a new empty branch for all repositories"""
-
     current_branch = env.context.get("odoo_version")
     tags = tags if tags else []
-    repo_list = env.resources.filter(lambda resource: resource.has_tag(*tags))
+    repo_list = env.resources.filter(
+        lambda resource: resource.has_tag("repository")
+    )
+
+    repo_list = repo_list.filter(
+        lambda resource: resource.has_tag(*tags)
+    )
     for repo in repo_list:
+        env.console.print(f"Checkout repository {repo.path}")
         result = utils.call_process_safe(
             [
                 "git",
@@ -386,6 +392,7 @@ def command_new_branch(
             env.console.print(result.stderr)
             continue
 
+        env.console.print(f"Create branc {branch}")
         result = utils.call_process_safe(
             [
                 "git",
@@ -400,6 +407,7 @@ def command_new_branch(
             env.console.print(result.stderr)
             continue
 
+        env.console.print(f"Push branc {branch}")
         result = utils.call_process_safe(
             [
                 "git",

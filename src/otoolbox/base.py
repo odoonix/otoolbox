@@ -253,14 +253,16 @@ class Resource:
         # git or github
         flag = resource.has_tag('git', 'github')
 
+        resource must hase all tags.
+
         """
         if not len(args):
             return True
 
-        for arg in args:
-            if arg in self.tags:
-                return True
-        return False
+        target_tags = set(args)
+        source_tags = set(self.tags)
+
+        return target_tags.issubset(source_tags)
 
     def get_abs_path(self):
         """Gets abs path of the current resource"""

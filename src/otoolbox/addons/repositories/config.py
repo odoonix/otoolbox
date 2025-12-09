@@ -18,16 +18,14 @@ from otoolbox.addons.repositories.constants import (
 
 def _add_repo_to_resources(item):
     tags = list(
-        set(
-            item.get("tags", [])
-            + [
-                "git",
-                "repository",
-                f"{item.get('organization')}/{item.get('repository')}",
-                item.get("organization"),
-                item.get("branch"),
-            ]
-        )
+        set([
+            *item.get("tags", []),
+            "git",
+            "repository",
+            f"{item.get('organization')}/{item.get('repository')}",
+            item.get("organization"),
+            item.get("branch")
+        ])
     )
     item.update(
         {
