@@ -95,7 +95,7 @@ def addons_list(
             for resource in addons_list:
                 writer.writerow(
                     [
-                        f"{resource.name}_{branch.replace(".", "_")}",
+                        f"{resource.name}_{branch.replace('.', '_')}",
                         resource.name,
                         branch.replace(".", "_"),
                         1,
