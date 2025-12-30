@@ -14,8 +14,12 @@
 #############################################################################
 # Constants
 WORKDIR="$(pwd)"
-PROCESS_DATE=$(date +%Y-%m-%d)
-LOG_FILE="$WORKDIR/commit-log-$PROCESS_DATE.log"
+PRECOMMIT_DATE=$(date +%Y-%m-%d)
+LOG_FILE="$WORKDIR/precommit-log-$PRECOMMIT_DATE.log"
+
+
+# load variables
+source .env
 
 # copy changes to the moonsunsoft repo
 echo "Current directory is: $CURRENT_DIR"
@@ -29,7 +33,28 @@ for dir in "$WORKDIR/odoonix"/*/; do
         cd "$WORKDIR/odoonix/$project"
         pwd
         # commit and push changes
-        git add .
-        git commit -m "[CP] Commit all changes due to bulky process (such as precommit) on $PROCESS_DATE" >> "$LOG_FILE" 2>&1
+        # https://github.com/OCA/oca-addons-repo-template
+        # if the project is not init
+        cp -f \
+            "$WORKDIR/gen_addon_readme.rst.jinja" \
+            "$WORKDIR/odoonix/$project/gen_addon_readme.rst.jinja"
+        if [ ! -f ".copier-answers.yml" ]; then
+            echo "Project $project is not initialized, initializing..."
+            cp \
+                "$WORKDIR/copier-answers.yml" \
+                "$WORKDIR/odoonix/$project/.copier-answers.yml"
+            copier copy \
+                --UNSAFE \
+                --overwrite \
+                --answers-file ".copier-answers.yml" \
+                https://github.com/OCA/oca-addons-repo-template.git .
+        else
+            # if the project is init
+            echo "Project $project is already initialized."
+            copier update \
+                --UNSAFE \
+                --skip-answered \
+                --answers-file ".copier-answers.yml" 
+        fi
     fi
 done

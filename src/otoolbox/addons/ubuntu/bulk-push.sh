@@ -27,9 +27,8 @@ for dir in "$WORKDIR/odoonix"/*/; do
         project=$(basename "$dir")
         echo "Processing project: $project"
         cd "$WORKDIR/odoonix/$project"
-        pwd
         # commit and push changes
-        git add .
-        git commit -m "[CP] Commit all changes due to bulky process (such as precommit) on $PROCESS_DATE" >> "$LOG_FILE" 2>&1
+        git pull
+        git push
     fi
 done

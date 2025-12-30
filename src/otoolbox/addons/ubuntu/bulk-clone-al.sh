@@ -13,23 +13,43 @@
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
 # Constants
-WORKDIR="$(pwd)"
-PROCESS_DATE=$(date +%Y-%m-%d)
-LOG_FILE="$WORKDIR/commit-log-$PROCESS_DATE.log"
+repos=(
+    "odoonix/account" \
+    "odoonix/brand" \
+    "odoonix/cnp" \
+    "odoonix/connector" \
+    "odoonix/docker-postgres" \
+    "odoonix/education" \
+    "odoonix/exchange" \
+    "odoonix/exchange-mp" \
+    "odoonix/gmt" \
+    "odoonix/gpu" \
+    "odoonix/gym" \
+    "odoonix/hr" \
+    "odoonix/iot" \
+    "odoonix/municipality" \
+    "odoonix/nesa" \
+    "odoonix/odoo-book-development" \
+    "odoonix/online" \
+    "odoonix/partner-contact" \
+    "odoonix/payment" \
+    "odoonix/pep" \
+    "odoonix/pos" \
+    "odoonix/product" \
+    "odoonix/purchase" \
+    "odoonix/sale" \
+    "odoonix/server-tools" \
+    "odoonix/server-ux" \
+    "odoonix/sms" \
+    "odoonix/social" \
+    "odoonix/stock" \
+    "odoonix/tb-gateway" \
+    "odoonix/website" \
+)
 
-# copy changes to the moonsunsoft repo
-echo "Current directory is: $CURRENT_DIR"
-cd "$WORKDIR"
-
-#For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
-    if [ -d "$dir" ]; then
-        project=$(basename "$dir")
-        echo "Processing project: $project"
-        cd "$WORKDIR/odoonix/$project"
-        pwd
-        # commit and push changes
-        git add .
-        git commit -m "[CP] Commit all changes due to bulky process (such as precommit) on $PROCESS_DATE" >> "$LOG_FILE" 2>&1
-    fi
+for project in "${repos[@]}"; do
+    echo ">>> Processing: $project"
+    otoolbox --no-silent repo add $project
+    echo "---------------------------"
 done
+
