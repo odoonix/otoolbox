@@ -32,7 +32,11 @@ from otoolbox.addons.repositories.constants import (
     REPOSITORIES_PATH,
     RESOURCE_REPOSITORIES_PATH,
 )
-from otoolbox.addons.repositories import config
+from otoolbox.addons.repositories import (
+    config,
+    util
+)
+
 
 
 ###################################################################
@@ -451,6 +455,36 @@ def command_new_branch(
         if result.returncode != 0:
             env.console.print(result.stderr)
             continue
+
+
+
+
+
+
+@app.command(name="load-csv")
+def command_load_csv_file(
+    csv_file: Annotated[
+        str,
+        typer.Option(
+            prompt="The CSV file",
+            help="The repository list is load from CSV file."
+        ),
+    ] = None
+):
+    """Load CSV file and stor into the JSON list
+    
+    Then call update repos
+    """
+    
+
+    reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
+
+    repository_list_csv_to_json(
+        csv_file_path=csv_file
+        json_file_path=reposiotires_path
+    )
+
+
 
 
 ###################################################################
