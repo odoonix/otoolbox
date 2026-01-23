@@ -2,7 +2,7 @@
 
 import os
 import ast
-
+import traceback
 
 from otoolbox import env
 from otoolbox.addons.repositories.config import (
@@ -60,16 +60,21 @@ def _convert_addon_to_resources(item):
     return item
 
 
-def load_addon_resources():
-    """Load the resources for all addons dynamically
 
-    Each addon is added as a resource in the workspace. Addons are added
-    based on the repositoires.json.
+
+
+def load_addon_resources():
+    """Load the resources for all addons dynamically.
+
+    Each addon is added as a resource in the workspace.
+    Addons are discovered based on repositories.json.
     """
+
     repo_list = _load_repository_list()
     addons_list = []
+
     for item in repo_list:
-        # Load lis of addons
+        # Resolve addon root path
         if item.get("organization") == "odoo" and item.get("repository") == "odoo":
             repo_path = env.get_workspace_path(
                 item.get("organization"), item.get("repository"), "addons"
@@ -85,16 +90,24 @@ def load_addon_resources():
             repo_path = env.get_workspace_path(
                 item.get("organization"), item.get("repository")
             )
+
         if not os.path.isdir(repo_path):
-            # TODO: maso, 2025: add a logger
+            # Skip missing repositories
             continue
+
         for folder_name in os.listdir(repo_path):
             folder_path = os.path.join(repo_path, folder_name)
             manifest_path = os.path.join(folder_path, "__manifest__.py")
-            if os.path.isdir(folder_path) and os.path.isfile(manifest_path):
+
+            if not (os.path.isdir(folder_path) and os.path.isfile(manifest_path)):
+                continue
+
+            try:
                 with open(manifest_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                    manifest_dict = ast.literal_eval(content)
+
+                # Safely parse manifest file
+                manifest_dict = ast.literal_eval(content)
 
                 addons_list.append(
                     {
@@ -104,6 +117,29 @@ def load_addon_resources():
                     }
                 )
 
+            except (SyntaxError, ValueError) as exc:
+                # Print clear error and continue
+                print("=" * 80)
+                print("Invalid __manifest__.py detected")
+                print(f"Addon      : {folder_name}")
+                print(f"Path       : {manifest_path}")
+                print(f"Error type : {type(exc).__name__}")
+                print(f"Message    : {exc}")
+                print("=" * 80)
+                continue
+
+            except Exception:
+                # Catch any unexpected error to avoid breaking the scan
+                print("=" * 80)
+                print("Unexpected error while reading __manifest__.py")
+                print(f"Addon : {folder_name}")
+                print(f"Path  : {manifest_path}")
+                traceback.print_exc()
+                print("=" * 80)
+                continue
+
+    # Register addons as resources
     for addon in addons_list:
-        item = _convert_addon_to_resources(addon)
-        env.add_resource(**item)
+        resource = _convert_addon_to_resources(addon)
+        env.add_resource(**resource)
+
