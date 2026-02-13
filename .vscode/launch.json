@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "odooProjectPath",
+            "type": "promptString",
+            "description": "Enter the Odoo project path",
+            "default": "/path/to/odoo"
+        }
+    ],
+    "configurations": [
+        {
+            "name": "Python Debugger: otoolbox",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "update",
+                "--help"
+            ],
+            "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "Init Copilot",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "init",
+                "--tags",
+                "copilot"
+            ],
+            "cwd": "${input:odooProjectPath}"
+        }
+    ]
+}

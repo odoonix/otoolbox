@@ -163,10 +163,10 @@ def chmod_executable(context: Resource):
 
 
 def is_readable(context: Resource):
-    file_path = env.get_workspace_path(context.path)
+    resource_path = env.get_workspace_path(context.path)
     assert os.access(
-        file_path, os.R_OK
-    ), f"File {file_path} doesn't exist or isn't readable"
+        resource_path, os.R_OK
+    ), f"File/Folder {resource_path} doesn't exist or isn't readable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 

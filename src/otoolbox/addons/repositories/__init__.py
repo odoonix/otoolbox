@@ -475,12 +475,9 @@ def command_load_csv_file(
     
     Then call update repos
     """
-    
-
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-
     repository_list_csv_to_json(
-        csv_file_path=csv_file
+        csv_file_path=csv_file,
         json_file_path=reposiotires_path
     )
 
