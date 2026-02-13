@@ -25,6 +25,7 @@ LINUX_SCRIPTS = [
     "bulk-push-shielded.sh",
     "bulk-push.sh",
     "bulk-repo-init.sh",
+    "bulk-sync-shielded.sh",
     "ubuntu-install-apps.sh",
     "ubuntu-office-conf.sh",
 ]
