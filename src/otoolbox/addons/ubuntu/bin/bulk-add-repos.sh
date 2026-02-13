@@ -15,11 +15,15 @@
 
 
 # Supported repositoires
-paths=(
-    # OCA
-    "oca/pos"
+paths=( \
+    "oca/pos" \
+    "oca/connector" \
+    "oca/hr" \
+    "oca/queue" \
+    "oca/product" \
 
-    # Odoonix
+    "odoonix/connector" \
+    "odoonix/hr" \
 )
 
 # Add them all
@@ -30,12 +34,12 @@ done
 
 
 
-bulk-add-repos.sh 
-bulk-clone-al.sh 
-bulk-commit.sh 
-bulk-init-tests.sh 
-bulk-pre-commit.sh 
-bulk-pull.sh 
-bulk-push-shielded.sh 
-bulk-push.sh 
-bulk-repo-init.sh
+# bulk-add-repos.sh 
+# bulk-clone-al.sh 
+# bulk-commit.sh 
+# bulk-init-tests.sh 
+# bulk-pre-commit.sh 
+# bulk-pull.sh 
+# bulk-push-shielded.sh 
+# bulk-push.sh 
+# bulk-repo-init.sh

@@ -15,6 +15,21 @@ from otoolbox import utils
 from otoolbox.constants import RESOURCE_PRIORITY_DEFAULT
 
 
+LINUX_SCRIPTS = [
+    "bulk-add-repos.sh",
+    "bulk-clone-al.sh",
+    "bulk-commit.sh",
+    "bulk-init-tests.sh",
+    "bulk-pre-commit.sh",
+    "bulk-pull.sh",
+    "bulk-push-shielded.sh",
+    "bulk-push.sh",
+    "bulk-repo-init.sh",
+    "ubuntu-install-apps.sh",
+    "ubuntu-office-conf.sh",
+]
+
+
 ###################################################################
 # cli
 ###################################################################
@@ -44,21 +59,15 @@ def init():
         verify=[utils.is_dir, utils.is_readable],
     )
 
-    scripts = [
-        "bulk-commit.sh",
-        "bulk-pre-commit.sh",
-        "bulk-push-shielded.sh",
-        "ubuntu-install-apps.sh",
-        "ubuntu-office-conf.sh",
-    ]
-    for script in scripts:
+
+    for script in LINUX_SCRIPTS:
         env.add_resource(
             priority=RESOURCE_PRIORITY_DEFAULT,
             path=script,
             title=f"Ubuntu utility script {script}",
             description="Install all required application in ubuntu.",
             init=[
-                utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
+                utils.constructor_copy_resource(f"addons/ubuntu/bin/{script}"),
                 utils.chmod_executable,
                 utils.touch_file,
             ],
@@ -69,11 +78,8 @@ def init():
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_executable],
+            tags=["bash", "utility", "ubuntu"],
         )
-
-    # pipx install copier
-    # pipx install pre-commit
-    # pipx ensurepath
 
     env.add_resource(
         priority=RESOURCE_PRIORITY_DEFAULT,
@@ -81,7 +87,7 @@ def init():
         title="Copier tool",
         description="Copier",
         init=[utils.pipx_install, utils.pipx_ensurepath],
-        update=[utils.pipx_update, utils.pipx_ensurepath],
+        update=[],
         destroy=[utils.pipx_remove],
         verify=[utils.pipx_is_install, utils.pipx_ensurepath],
         tags=["application", "oca", "maintainer"],
