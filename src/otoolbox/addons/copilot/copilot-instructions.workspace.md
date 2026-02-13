@@ -27,10 +27,10 @@ with lates config run
   code, while the 'odoonix/' folder contains repositories related to Odoonix modules. 
   This structure helps to organize the repositories based on their relevance and 
   purpose.
-- each repository is consited of a list of odoo 18 addons that are developed by the 
+- each repository is consited of a list of odoo addons that are developed by the 
   respective organization. For example, the 'odoonix/' folder contains repositories 
-  that consist of Odoo 18 addons developed by Odoonix, while the 'moonsunsoft/' 
-  contains repositories that consist of Odoo 18 addons developed by Moonsunsoft. 
+  that consist of Odoo addons developed by Odoonix, while the 'moonsunsoft/' 
+  contains repositories that consist of Odoo addons developed by Moonsunsoft. 
   This structure helps to categorize the repositories based on the organization 
   responsible for their development.
 - all repositories are organized based on oca repository template, which provides a 
@@ -47,7 +47,6 @@ with lates config run
 
 # Development guidelines
 
-- We are developing odoo 18.0
 - all comments, helps, documentation, and code should be in English language.
   This ensures that the codebase is accessible and understandable to a wider audience, 
   including developers from different regions and backgrounds. Using English as the 
