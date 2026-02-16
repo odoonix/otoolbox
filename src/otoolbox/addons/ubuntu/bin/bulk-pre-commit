@@ -12,14 +12,20 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/.env"
+source "$COMMON_SCRIPT"
+bulk_init "$@"
 
-# Constants
-WORKDIR=$(pwd -P)  # Use pwd with -P flag for canonicalization
-PRECOMMIT_DATE=$(date +"%Y-%m-%d")  # Use format string to avoid locale issues
-LOG_FILE="${WORKDIR}/precommit-log-${PRECOMPUT_DATE}.log"  # Use double quotes and template strings
 
-# load variables
-source .env
+
+
 
 # ... rest of the code remains the same ...
 

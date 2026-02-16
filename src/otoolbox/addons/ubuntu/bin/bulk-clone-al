@@ -12,6 +12,18 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/.env"
+source "$COMMON_SCRIPT"
+bulk_init "$@"
+
+
 # Constants
 repos=(
     "odoonix/account" \

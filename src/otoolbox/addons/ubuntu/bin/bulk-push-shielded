@@ -12,24 +12,48 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-# Constants
-WORKDIR="$(pwd)"
-PROCESS_DATE=$(date +%Y-%m-%d)
-LOG_FILE="$WORKDIR/commit-log-$PROCESS_DATE.log"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/.env"
+source "$COMMON_SCRIPT"
+bulk_init "$@"
+
+
+# Pull all
+for dir in "$WORKDIR/moonsunsoft"/*; do
+    if [ -d "$dir" ]; then
+        project=$(basename "$dir")
+        echo "Pull project: $project"
+        cd "$dir"
+        git config --global --add safe.directory "$dir"
+        # commit and push changes
+        git pull >> "$LOG_FILE" 2>&1
+    fi
+done
+
 
 # copy changes to the moonsunsoft repo
 echo "Current directory is: $CURRENT_DIR"
+echo "Copying changes to moonsunsoft repository..."
 cd "$WORKDIR"
+otoolbox repo sync-shielded > "$LOG_FILE" 2>&1
 
-#For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
+# Push all
+for dir in "$WORKDIR/moonsunsoft"/*; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Processing project: $project"
-        cd "$WORKDIR/odoonix/$project"
-        pwd
+        echo "push changes to moonsunsoft/$project" >> "$LOG_FILE" 2>&1
+        cd "$dir"
+        git config --global --add safe.directory "$dir"
         # commit and push changes
-        git add .
-        git commit -m "[CP] Commit all changes due to bulky process (such as precommit) on $PROCESS_DATE" >> "$LOG_FILE" 2>&1
+        git add . >> "$LOG_FILE" 2>&1
+        git commit -m "[SYNC] Update to the latest release on $SYNC_DATE" >> "$LOG_FILE" 2>&1
+        git push >> "$LOG_FILE" 2>&1
     fi
 done

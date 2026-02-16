@@ -12,18 +12,17 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-# Constants
-WORKDIR="$(pwd)"
-PRECOMMIT_DATE=$(date +%Y-%m-%d)
-LOG_FILE="$WORKDIR/precommit-log-$PRECOMMIT_DATE.log"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/.env"
+source "$COMMON_SCRIPT"
+bulk_init "$@"
 
-
-# load variables
-source .env
-
-# copy changes to the moonsunsoft repo
-echo "Current directory is: $CURRENT_DIR"
-cd "$WORKDIR"
 
 #For each folder in moonsun (it must be part of a shielded project)
 for dir in "$WORKDIR/odoonix"/*/; do

@@ -10,24 +10,31 @@ import dotenv
 import typer
 from typing_extensions import Annotated
 
+import otoolbox
 from otoolbox import env
 from otoolbox import utils
 from otoolbox.constants import RESOURCE_PRIORITY_DEFAULT
 
 
 LINUX_SCRIPTS = [
-    "bulk-add-repos.sh",
-    "bulk-clone-al.sh",
-    "bulk-commit.sh",
-    "bulk-init-tests.sh",
-    "bulk-pre-commit.sh",
-    "bulk-pull.sh",
-    "bulk-push-shielded.sh",
-    "bulk-push.sh",
-    "bulk-repo-init.sh",
-    "bulk-sync-shielded.sh",
-    "ubuntu-install-apps.sh",
-    "ubuntu-office-conf.sh",
+    "bulk-common",
+    "bulk-add-repos",
+    "bulk-clone-al",
+    "bulk-commit",
+    "bulk-init-tests",
+    "bulk-pre-commit",
+    "bulk-pull",
+    "bulk-push-shielded",
+    "bulk-push",
+    "bulk-repo-init",
+    "bulk-sync-shielded",
+    "ubuntu-install-apps",
+    "ubuntu-office-conf",
+]
+
+PIPX_APPLICATIONS = [
+    "copier",
+    "pre-commit",
 ]
 
 
@@ -43,6 +50,16 @@ def install():
     env.console.print("Run ./ubuntu-install-apps.sh in terminal.")
 
 
+
+@app.command(name="init")
+def init():
+    env.console.print("Update working directory to the current workspace.")
+    otoolbox.command_run(
+        steps=["init", "update", "verify"],
+        tags=["ubuntu"],
+        ssh_auth=True,
+    )
+
 ###################################################################
 # init
 ###################################################################
@@ -52,19 +69,20 @@ def init():
     """Init the resources for the workspace"""
     env.add_resource(
         priority=RESOURCE_PRIORITY_DEFAULT,
-        path=".bin",
-        title="Workspace configuration directory",
-        description="All configuration related to current workspace are located in this folder",
+        path=".venv/bin",
+        title="Workspace binary tools directory",
+        description="All binary tools related to the current workspace are located in this folder",
+        destroy=[],
         init=[utils.makedir],
-        destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable],
+        tags=["ubuntu", "folder", ".venv/bin"],
     )
 
 
     for script in LINUX_SCRIPTS:
         env.add_resource(
             priority=RESOURCE_PRIORITY_DEFAULT,
-            path=script,
+            path=f".venv/bin/{script}",
             title=f"Ubuntu utility script {script}",
             description="Install all required application in ubuntu.",
             init=[
@@ -79,32 +97,22 @@ def init():
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_executable],
-            tags=["bash", "utility", "ubuntu"],
+            tags=["ubuntu", "tools", script],
         )
 
-    env.add_resource(
-        priority=RESOURCE_PRIORITY_DEFAULT,
-        path="application://copier",
-        title="Copier tool",
-        description="Copier",
-        init=[utils.pipx_install, utils.pipx_ensurepath],
-        update=[],
-        destroy=[utils.pipx_remove],
-        verify=[utils.pipx_is_install, utils.pipx_ensurepath],
-        tags=["application", "oca", "maintainer"],
-    )
+    for app in PIPX_APPLICATIONS:
+        env.add_resource(
+            priority=RESOURCE_PRIORITY_DEFAULT,
+            path=f"application://{app}",
+            title=f"{app} tool",
+            description=f"{app} tool installed via pipx",
+            init=[utils.pipx_install, utils.pipx_ensurepath],
+            update=[utils.pipx_update, utils.pipx_ensurepath],
+            destroy=[utils.pipx_remove],
+            verify=[utils.pipx_is_install, utils.pipx_ensurepath],
+            tags=["ubuntu", "tools", app],
+        )
 
-    env.add_resource(
-        priority=RESOURCE_PRIORITY_DEFAULT,
-        path="application://pre-commit",
-        title="pre-commit tool",
-        description="pre-commit",
-        init=[utils.pipx_install, utils.pipx_ensurepath],
-        update=[utils.pipx_update, utils.pipx_ensurepath],
-        destroy=[utils.pipx_remove],
-        verify=[utils.pipx_is_install, utils.pipx_ensurepath],
-        tags=["application", "oca", "maintainer"],
-    )
 
 
 ###################################################################

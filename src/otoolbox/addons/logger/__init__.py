@@ -3,6 +3,10 @@
 Resources:
 - README.md
 
+
+
+
+NOTE: logger must be configured via the .env or command line arguments
 """
 
 import logging

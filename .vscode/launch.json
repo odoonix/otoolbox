@@ -35,6 +35,18 @@
                 "copilot"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "Init Ubuntu",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "ubuntu",
+                "init"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }

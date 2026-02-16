@@ -12,34 +12,36 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$SCRIPT_DIR/.env"
+source "$COMMON_SCRIPT"
+bulk_init "$@"
 
 
-# Supported repositoires
-paths=( \
-    "oca/pos" \
-    "oca/connector" \
-    "oca/hr" \
-    "oca/queue" \
-    "oca/product" \
 
-    "odoonix/connector" \
-    "odoonix/hr" \
-)
+# Constants
+WORKDIR="$(pwd)"
+PROCESS_DATE=$(date +%Y-%m-%d)
+LOG_FILE="$WORKDIR/commit-log-$PROCESS_DATE.log"
 
-# Add them all
-for path in "${paths[@]}"; do
-    echo "Adding repo: $path"
-    otoolbox --silent --no-pre-check --no-post-check repo add "$path"
+# copy changes to the moonsunsoft repo
+echo "Current directory is: $CURRENT_DIR"
+cd "$WORKDIR"
+
+#For each folder in moonsun (it must be part of a shielded project)
+for dir in "$WORKDIR/odoonix"/*/; do
+    if [ -d "$dir" ]; then
+        project=$(basename "$dir")
+        echo "Processing project: $project"
+        cd "$WORKDIR/odoonix/$project"
+        # commit and push changes
+        git pull
+        git push
+    fi
 done
-
-
-
-# bulk-add-repos.sh 
-# bulk-clone-al.sh 
-# bulk-commit.sh 
-# bulk-init-tests.sh 
-# bulk-pre-commit.sh 
-# bulk-pull.sh 
-# bulk-push-shielded.sh 
-# bulk-push.sh 
-# bulk-repo-init.sh
