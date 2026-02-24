@@ -34,3 +34,8 @@ otoolbox run update --tags odoonix >> "$LOG_FILE" 2>&1
 echo "[2] Pulling latest changes from moonsunsoft repository..."
 sudo -u worker otoolbox run update --tags moonsunsoft >> "$LOG_FILE" 2>&1
 
+echo "[3] Pulling latest changes from oca and moonsunsoft repositories..."
+otoolbox run update --tags oca >> "$LOG_FILE" 2>&1
+
+echo "[4] Pulling latest changes from odoon and moonsunsoft repositories..."
+otoolbox run update --tags odoo >> "$LOG_FILE" 2>&1
