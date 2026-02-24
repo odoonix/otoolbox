@@ -26,6 +26,8 @@ bulk_init "$@"
 
 ########################################################################################
 # Pull latest changes from the repositories
+# TODO: maso, 2026: add ability in otoolbox to get list of repositories to pull
+# from config file or command line arguments.
 ########################################################################################
 echo
 echo "[1] Pulling latest changes from odoonix and moonsunsoft repositories..."
