@@ -19,25 +19,52 @@ if [[ ! -f "$COMMON_SCRIPT" ]]; then
     exit 1
 fi
 # shellcheck source=/dev/null
-source "$SCRIPT_DIR/../../.env"
 source "$COMMON_SCRIPT"
 bulk_init "$@"
 
 
 ########################################################################################
 # Pull latest changes from the repositories
-# TODO: maso, 2026: add ability in otoolbox to get list of repositories to pull
-# from config file or command line arguments.
 ########################################################################################
-echo
-echo "[1] Pulling latest changes from odoonix and moonsunsoft repositories..."
-otoolbox run update --tags odoonix >> "$LOG_FILE" 2>&1
+ORGANIZATIONS=(
+    "odoonix" \
+    "odoo" \
+    "oca" \
+)
 
-echo "[2] Pulling latest changes from moonsunsoft repository..."
-sudo -u worker otoolbox run update --tags moonsunsoft >> "$LOG_FILE" 2>&1
+for organization in "${ORGANIZATIONS[@]}"; do
+    if [[ -d "$WORKDIR/$organization" ]]; then
+        echo "Pulling latest changes from $organization organization."
+        otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
+    else
+        echo "Repository $organization not found, skipping pull for $organization organization"
+    fi
+done
 
-echo "[3] Pulling latest changes from oca and moonsunsoft repositories..."
-otoolbox run update --tags oca >> "$LOG_FILE" 2>&1
-
-echo "[4] Pulling latest changes from odoon and moonsunsoft repositories..."
-otoolbox run update --tags odoo >> "$LOG_FILE" 2>&1
+PROTECTED_ORGANIZATIONS=(
+    "moonsunsoft" \
+)
+for organization in "${PROTECTED_ORGANIZATIONS[@]}"; do
+    if [[ -d "$WORKDIR/$organization" ]]; then
+        echo "Pulling latest changes from $organization organization"
+        # Run otoolbox command as the worker user to pull changes from the protected repositories.
+        # if the wokere user is the same as the current user, we can run the otoolbox command directly without sudo.
+        if [[ "$WORKER_USER" == "$(whoami)" ]]; then
+            OTOOLBOX_BIN="$(command -v otoolbox)"
+            if [[ -z "$OTOOLBOX_BIN" ]]; then
+                echo "Error: otoolbox not found in PATH" >&2
+                exit 1
+            fi
+            "$OTOOLBOX_BIN" run update --tags "$organization" >> "$LOG_FILE" 2>&1
+        else
+            OTOOLBOX_BIN="$(sudo -u "$WORKER_USER" -H bash -lc 'command -v otoolbox')"
+            if [[ -z "$OTOOLBOX_BIN" ]]; then
+                echo "Error: otoolbox not found in $WORKER_USER PATH" >&2
+                exit 1
+            fi
+            sudo -u "$WORKER_USER" -H "$OTOOLBOX_BIN" run update --tags "$organization" >> "$LOG_FILE" 2>&1
+        fi
+    else
+        echo "Repository $organization not found, skipping pull for $organization organization"
+    fi
+done

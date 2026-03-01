@@ -54,6 +54,27 @@ function bulk_init_log_file() {
     echo "Log file: $LOG_FILE"
 }
 
+
+function bulk_init_users() {
+    # Intilize the worker user name. If the worker user is set in the .env file, use it.
+    # Otherwise, use the current user name.
+    CURRENT_USER="$(whoami)"
+    WORKER_USER="${WORKER_USER:-$CURRENT_USER}"
+}
+
+function bulk_load_env_file() {
+    # Load the environment variables from the .env file if it exists.
+    ENV_FILE="$WORKDIR/.env"
+    if [[ -f "$ENV_FILE" ]]; then
+        # shellcheck source=/dev/null
+        source "$ENV_FILE"
+        echo "Environment variables loaded from $ENV_FILE."
+    else
+        echo "No .env file found at $ENV_FILE, skipping loading environment variables."
+    fi
+}
+
+
 function bulk_init() {
     echo "#############################################################################"
     echo "Pre-requisites: Checking current directory and changing to workspace root if needed..."
@@ -67,9 +88,12 @@ function bulk_init() {
     bulk_init_working_dir
     bulk_init_temp_dir
     bulk_init_log_file
+    bulk_load_env_file
+    bulk_init_users
 
     echo
     echo
     echo "Pre-requisites check completed."
 }
 
+ 
