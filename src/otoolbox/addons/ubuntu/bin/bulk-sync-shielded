@@ -6,7 +6,7 @@ if [[ ! -f "$COMMON_SCRIPT" ]]; then
     exit 1
 fi
 # shellcheck source=/dev/null
-source "$SCRIPT_DIR/.env"
+source "$SCRIPT_DIR/../../.env"
 source "$COMMON_SCRIPT"
 bulk_init "$@"
 
