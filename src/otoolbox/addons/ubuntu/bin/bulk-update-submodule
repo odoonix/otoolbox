@@ -1,0 +1,65 @@
+#!/bin/bash
+
+
+# Current path
+CUSTOMER_DIR=$(pwd)
+
+# Load defaults and functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
+if [[ ! -f "$COMMON_SCRIPT" ]]; then
+    echo "Error: required script not found: $COMMON_SCRIPT" >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+source "$COMMON_SCRIPT"
+bulk_init "$@"
+
+
+cd "$CUSTOMER_DIR"
+if [[ "$WORKER_USER" != "$(whoami)" ]]; then
+    # run as worker (reload)
+    if command -v sudo >/dev/null 2>&1; then
+        exec sudo -u "$WORKER_USER" -H bash "$0" "$@"
+    else
+        echo "Error: sudo is required to run as user '$WORKER_USER'." >&2
+        exit 1
+    fi
+fi
+GIT_BIN="$(command -v git)"
+
+if ! "$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Error: not a git repository: $CUSTOMER_DIR" >&2
+    exit 1
+fi
+BRANCH=$("$GIT_BIN" branch)
+
+if [[ ! -f "$CUSTOMER_DIR/moonsun.env" ]]; then
+    echo "Warning: moonsun.env not found. The current folder may not be a Moonsun customer."
+    read -r -p "Are you sure this is a customer folder and you want to create this file? (y/N): " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        touch "$CUSTOMER_DIR/moonsun.env"
+        echo "Created moonsun.env"
+    else
+        echo "Aborted."
+        exit 1
+    fi
+fi
+
+source "$CUSTOMER_DIR/moonsun.env"
+
+echo
+echo "==================================================="
+echo "Updating Customer $CUSTOMER_NAME"
+echo "Working DIR    : $CUSTOMER_DIR"
+echo "Branch         : $BRANCH"
+echo "Odoo Branch    : $CUSTOMER_BRANCH"
+echo "==================================================="
+echo
+
+
+"$GIT_BIN" pull 
+"$GIT_BIN" submodule update --remote
+"$GIT_BIN" add -A
+"$GIT_BIN" commit -m "[UPD] submodule: update submodule to latest version"
+"$GIT_BIN" push 

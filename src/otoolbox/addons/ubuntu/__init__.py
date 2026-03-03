@@ -28,6 +28,7 @@ LINUX_SCRIPTS = [
     "bulk-push",
     "bulk-repo-init",
     "bulk-sync-shielded",
+    "bulk-update-submodule",
     "ubuntu-install-apps",
     "ubuntu-office-conf",
 ]
