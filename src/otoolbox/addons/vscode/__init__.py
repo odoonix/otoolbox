@@ -19,10 +19,11 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
-from otoolbox.constants import RESOURCE_PRIORITY_ROOT, RESOURCE_PRIORITY_DEFAULT
+from otoolbox.constants import RESOURCE_PRIORITY_ROOT, RESOURCE_PRIORITY_DEFAULT, RESOURCE_PRIORITY_EXTEND
 
 from otoolbox.addons.vscode import dev_env
 from otoolbox.addons.vscode import code_cof
+from otoolbox.addons.vscode import odools_conf
 
 
 ###################################################################
@@ -63,7 +64,7 @@ def init():
         description="Adding, removing, and updating repositories in the workspace is "
         "done through this file",
         init=[
-            utils.constructor_copy_resource("addons/vscode/workspace.json"),
+            utils.constructor_copy_resource("addons/vscode/data/workspace.json"),
             code_cof.set_workspace_conf_odoo_addons,
             code_cof.rebuile_folder_config,
         ],
@@ -113,6 +114,30 @@ def init():
         tags=["vscode", "python", "venv"],
         priority=RESOURCE_PRIORITY_DEFAULT,
     )
+
+    env.add_resource(
+        path="odools.toml",
+        parent=".",
+        title="Odools Configuration",
+        description="Configuration file for Odools.",
+        init=[
+            utils.touch_file,
+            utils.constructor_copy_resource("addons/vscode/data/odools.toml"),
+            odools_conf.set_odoo_path,
+            odools_conf.set_addons_paths,
+        ],
+        update=[
+            utils.touch_file, 
+            utils.constructor_copy_resource("addons/vscode/data/odools.toml"),
+            odools_conf.set_odoo_path,
+            odools_conf.set_addons_paths,
+        ],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
+        tags=["vscode", "odools"],
+        priority=RESOURCE_PRIORITY_EXTEND,
+    )
+
 
 
 ###################################################################

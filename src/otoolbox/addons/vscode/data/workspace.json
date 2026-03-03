@@ -92,22 +92,36 @@
       "bin": "${workspaceFolder}/odoo/odoo/odoo-bin",
       "addons": "${workspaceFolder}/odoo/odoo/addons,${workspaceFolder}/odoo/design-themes"
     },
-    "git.ignoreLimitWarning": true,
-    "editor.defaultFormatter": "ms-python.autopep8",
-    "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 90,
-    "editor.rulers": [88],
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-    "python.languageServer": "Pylance",
-    "python.analysis.autoImportCompletions": true,
-    "python.analysis.supportAllPythonDocuments": true,
-    "python.analysis.enableSyncServer": true,
-    "python.terminal.activateEnvInCurrentTerminal": true,
-    "search.exclude": {
-      "**/moonsunsoft/**": true
+    "git": {
+      "ignoreLimitWarning": true
     },
-    "files.exclude": {
-      "**/moonsunsoft": true
+    "editor": {
+      "defaultFormatter": "ms-python.autopep8",
+      "wordWrap": "on",
+      "wordWrapColumn": 90,
+      "rulers": [88]
+    },
+    "python": {
+      "defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+      "languageServer": "Pylance",
+      "analysis": {
+        "autoImportCompletions": true,
+        "supportAllPythonDocuments": true,
+        "enableSyncServer": true
+      },
+      "terminal":{
+        "activateEnvInCurrentTerminal": true
+    }
+    },
+    "search": {
+      "exclude": {
+        "**/moonsunsoft/**": true
+      }
+    },
+    "files": {
+      "exclude": {
+        "**/moonsunsoft": true
+      }
     }
   },
   "tasks": {
@@ -197,6 +211,18 @@
     ]
   },
   "extensions": {
-    "recommendations": ["odoo.odoo"]
+    "recommendations": [
+      "odoo.odoo",
+      "github.copilot",
+      "github.copilot-chat",
+      "ms-python.autopep8",
+      "ms-python.python",
+      "ms-python.debugpy",
+      "ms-python.vscode-python-envs",
+      "ms-azuretools.vscode-docker",
+      "ms-azuretools.vscode-containers",
+      "mechatroner.rainbow-csv",
+      "rioj7.command-variable"
+    ]
   }
 }

@@ -1,0 +1,6 @@
+[[config]]
+name = "Otoolbox"
+odoo_path = "/home/maso/Projects/17.0/odoo/odoo"
+addons_paths = [
+    "${workspaceFolder}/odoonix/brand"
+]
