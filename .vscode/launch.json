@@ -61,6 +61,20 @@
                 "odools.toml"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "Update README.rst",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "update",
+                "--tags",
+                "README.rst"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }

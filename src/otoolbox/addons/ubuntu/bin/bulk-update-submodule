@@ -1,5 +1,17 @@
 #!/bin/bash
-
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
 
 # Current path
 CUSTOMER_DIR=$(pwd)
@@ -51,9 +63,10 @@ source "$CUSTOMER_DIR/moonsun.env"
 echo
 echo "==================================================="
 echo "Updating Customer $CUSTOMER_NAME"
-echo "Working DIR    : $CUSTOMER_DIR"
-echo "Branch         : $BRANCH"
 echo "Odoo Branch    : $CUSTOMER_BRANCH"
+echo "Working DIR    : $CUSTOMER_DIR"
+echo "Branch         : "
+echo "$BRANCH"
 echo "==================================================="
 echo
 

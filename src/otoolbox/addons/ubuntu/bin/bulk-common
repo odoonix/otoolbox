@@ -1,5 +1,17 @@
 #!/bin/bash
-
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
 
 
 ########################################################################################
@@ -76,13 +88,6 @@ function bulk_load_env_file() {
 
 
 function bulk_init() {
-    echo "#############################################################################"
-    echo "Pre-requisites: Checking current directory and changing to workspace root if needed..."
-    echo
-    echo
-
-
-    # Inintialize the working directory and log file.
     echo "Initializing working dircitories and log file..."
     echo
     bulk_init_working_dir
@@ -90,8 +95,6 @@ function bulk_init() {
     bulk_init_log_file
     bulk_load_env_file
     bulk_init_users
-
-    echo
     echo
     echo "Pre-requisites check completed."
 }

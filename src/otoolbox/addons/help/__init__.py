@@ -13,6 +13,8 @@ import dotenv
 from otoolbox import env
 from otoolbox import utils
 
+from otoolbox.addons.help import help_utils
+
 ###################################################################
 # cli
 ###################################################################
@@ -26,12 +28,24 @@ app.__cli_name__ = "help"
 def init():
     """Init the resources for the workspace"""
     env.add_resource(
-        path="README.md",
+        path="README.rst",
         title="Workspace README",
         description="A readme that shows parts of the workspace",
-        init=[utils.constructor_copy_resource("addons/help/WORKSPACE_README.md")],
-        destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable],
+        init=[
+            utils.touch_file,
+            help_utils.update_readme
+        ],
+        update=[
+            utils.touch_file,
+            help_utils.update_readme
+        ],
+        destroy=[
+            utils.delete_file
+        ],
+        verify=[
+            utils.is_file, 
+            utils.is_readable
+        ],
     )
 
 
