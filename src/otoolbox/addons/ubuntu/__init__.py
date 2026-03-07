@@ -28,7 +28,10 @@ LINUX_SCRIPTS = [
     "bulk-push",
     "bulk-repo-init",
     "bulk-sync-shielded",
-    "bulk-update-submodule",
+    "customer-common",
+    "customer-config",
+    "customer-init",
+    "customer-update-submodule",
     "ubuntu-install-apps",
     "ubuntu-office-conf",
 ]

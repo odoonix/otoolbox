@@ -12,16 +12,9 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
-if [[ ! -f "$COMMON_SCRIPT" ]]; then
-    echo "Error: required script not found: $COMMON_SCRIPT" >&2
-    exit 1
-fi
-# shellcheck source=/dev/null
-source "$COMMON_SCRIPT"
-bulk_init "$@"
-
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/bulk-common"
+cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 
 # Constants
@@ -29,16 +22,16 @@ WORKDIR="$(pwd)"
 PROCESS_DATE=$(date +%Y-%m-%d)
 LOG_FILE="$WORKDIR/commit-log-$PROCESS_DATE.log"
 
-# copy changes to the moonsunsoft repo
+# copy changes to the shielded organization repo
 echo "Current directory is: $CURRENT_DIR"
 cd "$WORKDIR"
 
 #For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
+for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Processing project: $project"
-        cd "$WORKDIR/odoonix/$project"
+        cd "$WORKDIR/$PUBLIC_ORGANIZATION/$project"
         # commit and push changes
         git pull
         git push

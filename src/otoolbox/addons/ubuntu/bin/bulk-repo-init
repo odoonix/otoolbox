@@ -12,35 +12,29 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
-if [[ ! -f "$COMMON_SCRIPT" ]]; then
-    echo "Error: required script not found: $COMMON_SCRIPT" >&2
-    exit 1
-fi
-# shellcheck source=/dev/null
-source "$COMMON_SCRIPT"
-bulk_init "$@"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/bulk-common"
+cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 
 #For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
+for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Processing project: $project"
-        cd "$WORKDIR/odoonix/$project"
+        cd "$WORKDIR/$PUBLIC_ORGANIZATION/$project"
         pwd
         # commit and push changes
         # https://github.com/OCA/oca-addons-repo-template
         # if the project is not init
         cp -f \
             "$WORKDIR/gen_addon_readme.rst.jinja" \
-            "$WORKDIR/odoonix/$project/gen_addon_readme.rst.jinja"
+            "$WORKDIR/$PUBLIC_ORGANIZATION/$project/gen_addon_readme.rst.jinja"
         if [ ! -f ".copier-answers.yml" ]; then
             echo "Project $project is not initialized, initializing..."
             cp \
                 "$WORKDIR/copier-answers.yml" \
-                "$WORKDIR/odoonix/$project/.copier-answers.yml"
+                "$WORKDIR/$PUBLIC_ORGANIZATION/$project/.copier-answers.yml"
             copier copy \
                 --UNSAFE \
                 --overwrite \

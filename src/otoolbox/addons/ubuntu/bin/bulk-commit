@@ -12,23 +12,15 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
-if [[ ! -f "$COMMON_SCRIPT" ]]; then
-    echo "Error: required script not found: $COMMON_SCRIPT" >&2
-    exit 1
-fi
-# shellcheck source=/dev/null
-source "$COMMON_SCRIPT"
-bulk_init "$@"
-
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/bulk-common"
 
 #For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
+for dir in "$WORKSPACE_ROOT/$PUBLIC_ORGANIZATION"/*/; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Processing project: $project"
-        cd "$WORKDIR/odoonix/$project"
+        cd "$WORKSPACE_ROOT/$PUBLIC_ORGANIZATION/$project"
         pwd
         # commit and push changes
         git add .

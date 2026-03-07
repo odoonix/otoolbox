@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Load defaults and functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/bulk-common"
+source "$SCRIPT_DIR/customer-common"
+
+
+bulk_switch_to_worker "$@"
+customer_load_working_dir "$@"
+
+
+GIT_BIN="$(command -v git)"
+MKDIR_BIN="$(command -v mkdir)"
+
+
+"$MKDIR_BIN" -p "$CUSTOMER_ROOT_DIR/$ORG"
+
+if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone "$CLONE_URL")
+fi
+
+if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+    echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
+    exit 1
+else
+    echo "Repository cloned successfully: $ORG/$REPO"
+fi
+
+customer_init_working_dir "$CUSTOMER_DIR"
+customer_load_env_file "$CUSTOMER_DIR"
+customer_print_info

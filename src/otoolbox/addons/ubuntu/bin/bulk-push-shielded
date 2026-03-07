@@ -12,19 +12,13 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
-if [[ ! -f "$COMMON_SCRIPT" ]]; then
-    echo "Error: required script not found: $COMMON_SCRIPT" >&2
-    exit 1
-fi
-# shellcheck source=/dev/null
-source "$COMMON_SCRIPT"
-bulk_init "$@"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/bulk-common"
+cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 
 # Pull all
-for dir in "$WORKDIR/moonsunsoft"/*; do
+for dir in "$WORKDIR/$SHIELDED_ORGANIZATION"/*; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Pull project: $project"
@@ -36,18 +30,18 @@ for dir in "$WORKDIR/moonsunsoft"/*; do
 done
 
 
-# copy changes to the moonsunsoft repo
+# copy changes to the shielded organization repo
 echo "Current directory is: $CURRENT_DIR"
-echo "Copying changes to moonsunsoft repository..."
-cd "$WORKDIR"
+echo "Copying changes to $SHIELDED_ORGANIZATION repository..."
+cd "$WORKSPACE_ROOT"
 otoolbox repo sync-shielded > "$LOG_FILE" 2>&1
 
 # Push all
-for dir in "$WORKDIR/moonsunsoft"/*; do
+for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo "Processing project: $project"
-        echo "push changes to moonsunsoft/$project" >> "$LOG_FILE" 2>&1
+        echo "push changes to $SHIELDED_ORGANIZATION/$project" >> "$LOG_FILE" 2>&1
         cd "$dir"
         git config --global --add safe.directory "$dir"
         # commit and push changes

@@ -1,17 +1,5 @@
 #!/bin/bash
-#############################################################################
-#                                                                           #
-# This file is part of the "ubuntu" module of the otoolbox project.         #
-#                                                                           #
-# This script is open-source and intended for automation purposes.          #
-# It is distributed in the hope that it will be useful, but WITHOUT         #
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
-# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
-#                                                                           #
-# Use of this script is entirely at your own risk.                          #
-#                                                                           #
-# Copyright (c) The otoolbox contributors.                                  #
-#############################################################################
+
 
 
 ########################################################################################
@@ -35,19 +23,27 @@ function bulk_init_working_dir() {
     SCRIPT_NAME="$(basename "$(readlink -f "$0")")"
 
     TEMP_DIR="$SCRIPT_DIR/../.."
-    cd "$TEMP_DIR"
-    WORKSPACE_ROOT="$(pwd)"
+    # resolve absolute path of TEMP_DIR without changing the current directory
+    ABS_TEMP_DIR="$(readlink -f "$TEMP_DIR" 2>/dev/null || realpath "$TEMP_DIR" 2>/dev/null || (cd "$TEMP_DIR" 2>/dev/null && pwd -P))"
+    if [[ -z "$ABS_TEMP_DIR" ]]; then
+        echo "Error: cannot resolve absolute path of $TEMP_DIR" >&2
+        exit 1
+    fi
+
+    # ensure subsequent $(pwd) yields the full TEMP_DIR path while keeping the shell's cwd unchanged
+    export WORKSPACE_ROOT="$ABS_TEMP_DIR"
+
+    cd "$CURRENT_DIR" || { echo "Warning: failed to return to $CURRENT_DIR" >&2; }
 
     # [] workspace root
     echo "Working director: $WORKSPACE_ROOT."
     echo "Current directory: $CURRENT_DIR."
-    cd "$WORKSPACE_ROOT"
 }
 
 
 function bulk_init_temp_dir() {
     # Create a temporary directory to store the log file.
-    WORKDIR="$(pwd)"
+    WORKDIR="$WORKSPACE_ROOT"
     TEMP_DIR="${WORKDIR}/.tmp"
     if [[ ! -d "$TEMP_DIR" ]]; then
         mkdir -p  "$TEMP_DIR"
@@ -56,7 +52,7 @@ function bulk_init_temp_dir() {
 }
 
 function bulk_init_log_file() {
-    WORKDIR="$(pwd)"
+    WORKDIR="$WORKSPACE_ROOT"
     PROCESS_DATE=$(date +%Y-%m-%d)
     LOG_FILE="${WORKDIR}/.tmp/${SCRIPT_NAME}-${PROCESS_DATE}.log"
     if [[ -f "$LOG_FILE" ]]; then
@@ -76,7 +72,7 @@ function bulk_init_users() {
 
 function bulk_load_env_file() {
     # Load the environment variables from the .env file if it exists.
-    ENV_FILE="$WORKDIR/.env"
+    ENV_FILE="$WORKSPACE_ROOT/.env"
     if [[ -f "$ENV_FILE" ]]; then
         # shellcheck source=/dev/null
         source "$ENV_FILE"
@@ -99,4 +95,19 @@ function bulk_init() {
     echo "Pre-requisites check completed."
 }
 
- 
+
+function bulk_switch_to_worker(){
+    if [[ "$WORKER_USER" != "$(whoami)" ]]; then
+        # run as worker (reload)
+        if command -v sudo >/dev/null 2>&1; then
+            exec sudo -u "$WORKER_USER" -H bash "$0" "$@"
+        else
+            echo "Error: sudo is required to run as user '$WORKER_USER'." >&2
+            exit 1
+        fi
+    fi
+}
+
+
+# Init the working directory, log file and users.
+bulk_init "$@"

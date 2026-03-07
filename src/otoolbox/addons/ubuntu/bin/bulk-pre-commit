@@ -12,18 +12,9 @@
 #                                                                           #
 # Copyright (c) The otoolbox contributors.                                  #
 #############################################################################
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_SCRIPT="$SCRIPT_DIR/bulk-common"
-if [[ ! -f "$COMMON_SCRIPT" ]]; then
-    echo "Error: required script not found: $COMMON_SCRIPT" >&2
-    exit 1
-fi
-# shellcheck source=/dev/null
-source "$COMMON_SCRIPT"
-bulk_init "$@"
-
-
-
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/bulk-common"
+cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 
 # ... rest of the code remains the same ...
@@ -40,7 +31,7 @@ cd "$WORKDIR"
 
 
 #For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/odoonix"/*/; do
+for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         echo ""
@@ -51,7 +42,7 @@ for dir in "$WORKDIR/odoonix"/*/; do
         cd "$dir"
         
 
-        for addon_dir in "$WORKDIR/odoonix/$project"/*; do
+        for addon_dir in "$WORKDIR/$PUBLIC_ORGANIZATION/$project"/*; do
             if [ -d "$addon_dir" ]; then
                 if [ -f "$addon_dir/__manifest__.py" ]; then
                     addon_name=$(basename "$addon_dir")
