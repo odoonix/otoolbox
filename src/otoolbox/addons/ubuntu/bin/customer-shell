@@ -1,0 +1,89 @@
+#!/bin/bash
+
+
+function customer_shell_is_sourced() {
+    [[ "${BASH_SOURCE[0]}" != "$0" ]]
+}
+
+
+function customer_shell_finish() {
+    local status="$1"
+    if customer_shell_is_sourced; then
+        return "$status"
+    fi
+    exit "$status"
+}
+
+
+function customer_shell_main() {
+    local git_bin
+    local mkdir_bin
+
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    source "$SCRIPT_DIR/bulk-common"
+    source "$SCRIPT_DIR/customer-common"
+
+    customer_load_working_dir "$@" || return 1
+
+    git_bin="$(command -v git)"
+    mkdir_bin="$(command -v mkdir)"
+
+    if [[ -z "$git_bin" ]]; then
+        echo "Error: git not found in PATH" >&2
+        return 1
+    fi
+    if [[ -z "$mkdir_bin" ]]; then
+        echo "Error: mkdir not found in PATH" >&2
+        return 1
+    fi
+
+    "$mkdir_bin" -p "$CUSTOMER_ROOT_DIR/$ORG"
+
+    if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+        (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$git_bin" clone "$CLONE_URL") || return 1
+    fi
+
+    if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+        echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
+        return 1
+    fi
+
+    customer_load_env_file "$CUSTOMER_DIR" || return 1
+
+    if customer_shell_is_sourced; then
+        if [[ "$WORKER_USER" != "$(whoami)" ]]; then
+            echo "Error: a sourced script can change the current directory, but it cannot change the current shell user to '$WORKER_USER'." >&2
+            echo "Run 'customer-shell' normally to open a worker shell, or source it only when WORKER_USER matches the current user." >&2
+            return 1
+        fi
+
+        cd "$CUSTOMER_DIR" || {
+            echo "Error: failed to change directory to $CUSTOMER_DIR" >&2
+            return 1
+        }
+
+        customer_print_info
+        return 0
+    fi
+
+    if [[ "$WORKER_USER" != "$(whoami)" ]]; then
+        if ! command -v sudo >/dev/null 2>&1; then
+            echo "Error: sudo is required to run as user '$WORKER_USER'." >&2
+            return 1
+        fi
+
+        exec sudo -u "$WORKER_USER" -H env CUSTOMER_DIR="$CUSTOMER_DIR" bash -lc 'cd "$CUSTOMER_DIR" || exit 1; exec bash -i'
+    fi
+
+    cd "$CUSTOMER_DIR" || {
+        echo "Error: failed to change directory to $CUSTOMER_DIR" >&2
+        return 1
+    }
+
+    customer_print_info
+    echo "Tip: to keep this directory in the current shell, run: source customer-shell $*"
+}
+
+
+customer_shell_main "$@"
+customer_shell_finish "$?"

@@ -31,6 +31,8 @@ LINUX_SCRIPTS = [
     "customer-common",
     "customer-config",
     "customer-init",
+    "customer-info",
+    "customer-shell",
     "customer-update-submodule",
     "ubuntu-install-apps",
     "ubuntu-office-conf",

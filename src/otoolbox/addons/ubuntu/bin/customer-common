@@ -28,9 +28,10 @@ function customer_load_working_dir() {
             echo "Error: CUSTOMER_ROOT_DIR is set but is not a directory: $CUSTOMER_ROOT_DIR" >&2
             exit 1
         fi
+    else
+        CUSTOMER_ROOT_DIR=$(pwd)
     fi
 
-    CUSTOMER_ROOT_DIR=$(pwd)
 
 
     if [[ $# -lt 1 ]]; then
@@ -184,13 +185,21 @@ function customer_load_env_file() {
 
 
 function customer_print_info() {
+    # Load remote branch names
+    BRANCH=$(git -C "$CUSTOMER_DIR" branch -r 2>/dev/null | sed 's/^[ *]*//;s/ ->.*$//' | sort)
+    # Load current branch name of the repository
+    CURRENT_BRANCH=$(git -C "$CUSTOMER_DIR" branch --show-current 2>/dev/null)
+    if [[ -n "$CURRENT_BRANCH" ]]; then
+        BRANCH="${BRANCH//$CURRENT_BRANCH/($CURRENT_BRANCH)}"
+    fi
     echo
     echo "==================================================="
     echo "Customer Name   : $CUSTOMER_NAME"
     echo "Odoo Branch     : $CUSTOMER_BRANCH"
     echo "Working DIR     : $CUSTOMER_DIR"
-    echo "Branch          : "
+    echo "Current Branch  : $CURRENT_BRANCH"
+    echo "Branchs         : "
     echo "$BRANCH"
     echo "==================================================="
     echo
-}   
+}
