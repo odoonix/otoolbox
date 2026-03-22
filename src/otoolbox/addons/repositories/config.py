@@ -212,7 +212,25 @@ def _load_repository_list():
     return [_enrich_repository_item(item) for item in merged_repo_list]
 
 
-def _save_repository_list(repo_list):
+def save_repository_list(repo_list):
+    """Save the repository list to the configuration file
+    
+    Repositories in the list should have the following format:
+    {
+    "organization": "odoonix",
+    "repository": "cnp",
+    "branch": "17.0",
+    "enable_in_runtime": False,
+    "is_shielded": True,
+    "linked_shielded_repository": "cnp",
+    "linked_shielded_organization": "odoonix",
+    "linked_shielded_repo": "cnp",
+    ...
+    }
+
+    You have more control over the repositoy item by adding more fields in the item, 
+    but the above fields are required for the basic functionality of the repository management.
+    """
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
     _save_json_file(reposiotires_path, repo_list)
 
@@ -241,7 +259,8 @@ def add_repository(new_repo):
         ) == new_repo.get("repository"):
             return
     new_repo_list.append(new_repo)
-    _save_repository_list(new_repo_list)
+    # NOTE: No need to save the list.
+    # _save_repository_list(new_repo_list)
     _add_repo_to_resources(new_repo)
 
 
@@ -255,7 +274,8 @@ def remove_repository(organization, repository):
             d.get("repository") == repository and d.get("organization") == organization
         )
     ]
-    _save_repository_list(new_repo_list)
+    # NOTE: No need to save the list.
+    # _save_repository_list(new_repo_list)
 
 
 # Merge db
