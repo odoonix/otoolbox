@@ -90,12 +90,21 @@ def command_list():
     table = Table(title="Repositories")
     table.add_column("Parent", justify="left", style="cyan", no_wrap=True)
     table.add_column("Title", justify="left", style="green", no_wrap=True)
+    table.add_column("Mirror", justify="left", style="green", no_wrap=True)
+    table.add_column("Tags", justify="left", style="green", no_wrap=True)
 
     repo_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
     )
     for repo in repo_list:
-        table.add_row(repo.parent, repo.title)
+        table.add_row(
+            repo.parent, 
+            repo.title,
+            "{repository}/{organization}".format(
+                repository=repo.linked_shielded_repository, organization=repo.linked_shielded_organization
+            ) if repo.has_mirror else "N/A",
+            ", ".join([str(tag) for tag in repo.tags]),
+        )
 
     console = Console()
     console.print(table)
@@ -328,6 +337,8 @@ def command_sync_shielded(
                     "--delete",
                     "--exclude",
                     ".git",
+                    "--exclude",
+                    "otoolbox.toml",
                     repo.path + "/",
                     shielded_organization.path + "/" + repo_name + "/",
                 ],

@@ -1,0 +1,147 @@
+[
+  {
+    "repository": "odoo",
+    "organization": "odoo"
+  },
+  {
+    "repository": "design-themes",
+    "organization": "odoo"
+  },
+  {
+    "repository": "fleet",
+    "organization": "oca"
+  },
+  {
+    "repository": "queue",
+    "organization": "oca"
+  },
+  {
+    "repository": "reporting-engine",
+    "organization": "oca"
+  },
+  {
+    "repository": "spreadsheet",
+    "organization": "oca"
+  },
+  {
+    "repository": "geospatial",
+    "organization": "oca"
+  },
+  {
+    "repository": "OpenUpgrade",
+    "organization": "oca"
+  },
+  {
+    "repository": "iot",
+    "organization": "oca"
+  },
+  {
+    "repository": "server-ux",
+    "organization": "oca"
+  },
+  {
+    "repository": "connector",
+    "organization": "oca"
+  },
+  {
+    "repository": "account-invoicing",
+    "organization": "oca"
+  },
+  {
+    "repository": "account-invoice-reporting",
+    "organization": "oca"
+  },
+  {
+    "repository": "account-reconcile",
+    "organization": "oca"
+  },
+  {
+    "repository": "account-financial-reporting",
+    "organization": "oca"
+  },
+  {
+    "repository": "account-financial-tools",
+    "organization": "oca"
+  },
+  {
+    "repository": "bank-statement-import",
+    "organization": "oca"
+  },
+  {
+    "repository": "credit-control",
+    "organization": "oca"
+  },
+  {
+    "repository": "margin-analysis",
+    "organization": "oca"
+  },
+  {
+    "repository": "brand",
+    "organization": "oca"
+  },
+  {
+    "repository": "management-system",
+    "organization": "oca"
+  },
+  {
+    "repository": "purchase-workflow",
+    "organization": "oca"
+  },
+  {
+    "repository": "pos",
+    "organization": "oca"
+  },
+  {
+    "repository": "web",
+    "organization": "oca"
+  },
+  {
+    "repository": "website",
+    "organization": "oca"
+  },
+  {
+    "repository": "hr",
+    "organization": "oca"
+  },
+  {
+    "repository": "payroll",
+    "organization": "oca"
+  },
+  {
+    "repository": "project",
+    "organization": "oca"
+  },
+  {
+    "repository": "sale-workflow",
+    "organization": "oca"
+  },
+  {
+    "repository": "server-auth",
+    "organization": "oca"
+  },
+  {
+    "repository": "server-tools",
+    "organization": "oca"
+  },
+  {
+    "repository": "server-brand",
+    "organization": "oca"
+  },
+  {
+    "repository": "product-attribute",
+    "organization": "oca"
+  },
+  {
+    "repository": "partner-contact",
+    "organization": "oca"
+  },
+  {
+    "repository": "knowledge",
+    "organization": "oca"
+  },
+  {
+    "repository": "dms",
+    "organization": "oca"
+  }
+
+]

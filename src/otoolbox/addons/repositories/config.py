@@ -4,6 +4,14 @@ import os
 import json
 import re
 
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        tomllib = None
+
 from otoolbox import env
 from otoolbox import utils
 
@@ -43,6 +51,7 @@ def _add_repo_to_resources(item):
             "verify": [utils.is_dir, utils.is_readable],
             "tags": tags,
             "branch": item.get("branch"),
+            "is_existe": item.get("is_existe", False),
         }
     )
     env.add_resource(**item)
@@ -62,6 +71,129 @@ def _add_organization_to_resources(organization):
     )
 
 
+def _discover_workspace_repositories():
+    workspace_path = env.get_workspace()
+    if not os.path.isdir(workspace_path):
+        return []
+
+    repo_list = []
+    for organization_entry in sorted(os.scandir(workspace_path), key=lambda entry: entry.name):
+        if not organization_entry.is_dir():
+            continue
+
+        for repository_entry in sorted(
+            os.scandir(organization_entry.path), key=lambda entry: entry.name
+        ):
+            if not repository_entry.is_dir():
+                continue
+
+            git_dir = os.path.join(repository_entry.path, ".git")
+            if os.path.isdir(git_dir):
+                repo_list.append(
+                    {
+                        "repository": repository_entry.name,
+                        "organization": organization_entry.name,
+                    }
+                )
+
+    return repo_list
+
+
+def _is_git_repository(repository_path):
+    if not os.path.isdir(repository_path):
+        return False
+
+    git_path = os.path.join(repository_path, ".git")
+    return os.path.isdir(git_path) or os.path.isfile(git_path)
+
+
+def _load_repository_toml(organization, repository):
+    if tomllib is None:
+        return {}
+
+    toml_path = env.get_workspace_path(organization, repository, "otoolbox.toml")
+    if not os.path.isfile(toml_path):
+        return {}
+
+    with open(toml_path, "rb") as file:
+        data = tomllib.load(file)
+
+    if isinstance(data.get("repository"), dict):
+        return data.get("repository", {})
+    if isinstance(data.get("resource"), dict):
+        return data.get("resource", {})
+    if (
+        isinstance(data.get("otoolbox"), dict)
+        and isinstance(data["otoolbox"].get("repository"), dict)
+    ):
+        return data["otoolbox"]["repository"]
+    return data if isinstance(data, dict) else {}
+
+
+def _extract_first_mirror(toml_data):
+    mirror_list = toml_data.get("mirror")
+    if not isinstance(mirror_list, list):
+        return None
+
+    for mirror_item in mirror_list:
+        if isinstance(mirror_item, dict):
+            return mirror_item
+    return None
+
+
+def _enrich_repository_item(item):
+    organization = item.get("organization")
+    repository = item.get("repository")
+    if not organization or not repository:
+        return item
+
+    repo_path = env.get_workspace_path(organization, repository)
+
+    merged_item = dict(item)
+    toml_data = _load_repository_toml(organization, repository)
+    merged_item.update(toml_data)
+
+    first_mirror = _extract_first_mirror(toml_data)
+    if first_mirror:
+        linked_shielded_repository = first_mirror.get("repository")
+        linked_shielded_organization = first_mirror.get("organization")
+        merged_item.update(
+            {
+                "enable_in_runtime": False,
+                "is_shielded": True,
+                "linked_shielded_repository": linked_shielded_repository,
+                "linked_shielded_organization": linked_shielded_organization,
+                "linked_shielded_repo": linked_shielded_repository,
+            }
+        )
+
+    merged_item.setdefault("organization", organization)
+    merged_item.setdefault("repository", repository)
+    merged_item["is_existe"] = _is_git_repository(repo_path)
+    merged_item["has_mirror"] = bool(merged_item.get("is_shielded", False))
+    return merged_item
+
+
+def _merge_repository_lists(repo_list, extra_repo_list):
+    merged_repo_list = []
+    seen = set()
+
+    for item in [*repo_list, *extra_repo_list]:
+        organization = item.get("organization")
+        repository = item.get("repository")
+        if not organization or not repository:
+            continue
+
+        repo_key = (organization, repository)
+        if repo_key in seen:
+            continue
+
+        seen.add(repo_key)
+        merged_repo_list.append(item)
+
+    return merged_repo_list
+
+
 def _load_repository_list():
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
     data = False
@@ -70,12 +202,14 @@ def _load_repository_list():
             data = f.read()
 
     if data:
-        return json.loads(data)
-    branch = env.context.get("odoo_version")
-    data = env.resource_string(RESOURCE_REPOSITORIES_PATH, package_name=__name__)
-    repo_list = json.loads(data)
-    repo_list = [item for item in repo_list if branch in item.get("tags", [branch])]
-    return repo_list
+        repo_list = json.loads(data)
+    else:
+        data = env.resource_string(RESOURCE_REPOSITORIES_PATH, package_name=__name__)
+        repo_list = json.loads(data)
+
+    workspace_repo_list = _discover_workspace_repositories()
+    merged_repo_list = _merge_repository_lists(repo_list, workspace_repo_list)
+    return [_enrich_repository_item(item) for item in merged_repo_list]
 
 
 def _save_repository_list(repo_list):

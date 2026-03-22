@@ -1,5 +1,5 @@
 REPOSITORIES_PATH = "repositoires.json"
-RESOURCE_REPOSITORIES_PATH = "repositories.json"
+RESOURCE_REPOSITORIES_PATH = "data/repositories.json"
 GIT_ADDRESS_HTTPS = "https://github.com/{path}.git"
 GIT_ADDRESS_SSH = "git@github.com:{path}.git"
 

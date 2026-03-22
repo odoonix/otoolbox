@@ -153,6 +153,13 @@ class Resource:
         self.enable_in_runtime = kargs.get("enable_in_runtime", True)
         self.is_shielded = kargs.get("is_shielded", False)
         self.linked_shielded_repo = kargs.get("linked_shielded_repo", None)
+        self.linked_shielded_repository = kargs.get(
+            "linked_shielded_repository", self.linked_shielded_repo
+        )
+        self.linked_shielded_organization = kargs.get(
+            "linked_shielded_organization", None
+        )
+        self.has_mirror = kargs.get("has_mirror", False)
         self.priority = kargs.get("priority", RESOURCE_PRIORITY_DEFAULT)
         # Odoo addons
         self.organization = kargs.get("organization")
@@ -162,6 +169,7 @@ class Resource:
         self.license = kargs.get("license")
         self.category = kargs.get("category")
         self.installable = kargs.get("installable")
+        self.is_existe = kargs.get("is_existe", False)
         # TODO: add other addons __manifist__.py keys
         self.extend(**kargs)
 
@@ -225,6 +233,13 @@ class Resource:
             "license",
             "category",
             "installable",
+            "is_existe",
+            "enable_in_runtime",
+            "is_shielded",
+            "linked_shielded_repo",
+            "linked_shielded_repository",
+            "linked_shielded_organization",
+            "has_mirror",
         ]
         for key in attributes_key:
             selected_value = None

@@ -4,3 +4,21 @@ odoo_path = "/home/maso/Projects/17.0/odoo/odoo"
 addons_paths = [
     "${workspaceFolder}/odoonix/brand"
 ]
+addons_merge = "merge"
+python_path="./.venv/bin/python3"
+
+
+[[config.diagnostic_filters]]
+codes = ["OLS.*"]
+paths = [
+    "**/odoo/*", 
+    "**/oca/*"
+]
+path_type = "in"
+types=[
+    "Error", 
+    "Warning", 
+    "Info",
+    "Hint"
+]
+

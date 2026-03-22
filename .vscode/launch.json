@@ -75,6 +75,18 @@
                 "README.rst"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "List of repositories",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "repo",
+                "list"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }
