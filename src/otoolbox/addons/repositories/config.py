@@ -148,10 +148,12 @@ def _enrich_repository_item(item):
         return item
 
     repo_path = env.get_workspace_path(organization, repository)
-
-    merged_item = dict(item)
     toml_data = _load_repository_toml(organization, repository)
+
+    merged_item = {}
     merged_item.update(toml_data)
+    # the repositories data is higher priority than the data in toml.
+    merged_item.update(dict(item))
 
     first_mirror = _extract_first_mirror(toml_data)
     if first_mirror:
