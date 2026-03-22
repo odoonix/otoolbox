@@ -150,10 +150,10 @@ def _enrich_repository_item(item):
     repo_path = env.get_workspace_path(organization, repository)
     toml_data = _load_repository_toml(organization, repository)
 
-    merged_item = {}
+    # Priority: otoolbox.toml overrides repositories.json
+    # Start with the lower-priority base (JSON), then let TOML win.
+    merged_item = dict(item)
     merged_item.update(toml_data)
-    # the repositories data is higher priority than the data in toml.
-    merged_item.update(dict(item))
 
     first_mirror = _extract_first_mirror(toml_data)
     if first_mirror:

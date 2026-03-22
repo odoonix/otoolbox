@@ -87,6 +87,18 @@
                 "list"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "repo sync-shielded",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "repo",
+                "sync-shielded"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }

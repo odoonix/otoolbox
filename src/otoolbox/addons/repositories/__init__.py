@@ -295,55 +295,89 @@ def command_init(
 
 
 @app.command(name="sync-shielded")
-def command_sync_shielded(
-    public_name: Annotated[
-        str,
-        typer.Option(
-            prompt="The source organization",
-            help="The source organization to copy from.",
-            envvar="PUBLIC_ORGANIZATION",
-        ),
-    ] = None,
-    shielded_name: Annotated[
-        str,
-        typer.Option(
-            prompt="The target organization",
-            help="The target organization name.",
-            envvar="SHIELDED_ORGANIZATION",
-        ),
-    ] = None,
-):
-    """Copy from public to shielded organization and remove history of the git"""
-    # rsync -av --delete --exclude '.git' "$source/" "$dist/"
-    public_organization = env.resources.filter(
-        lambda resource: resource.path == public_name
-    )[0]
-    shielded_organization = env.resources.filter(
-        lambda resource: resource.path == shielded_name
-    )[0]
+def command_sync_shielded():
+    """Sync repositories that have a mirror to their target mirror location.
+
+    Finds all git resources with a mirror defined (has_mirror=True), verifies
+    the source repository exists locally, and copies its content (excluding .git
+    and otoolbox.toml) to the mirror target path using rsync.
+    """
+    # Collect all paths that are mirror targets so we can detect cycles:
+    # a repo that is itself a mirror target must not be re-synced elsewhere.
+    mirror_target_paths = set()
+    for resource in env.resources.filter(
+        lambda r: r.has_tag(RESOURCE_TAGS_GIT) and getattr(r, "has_mirror", False)
+    ):
+        mirror_org = getattr(resource, "linked_shielded_organization", None)
+        mirror_repo = getattr(resource, "linked_shielded_repository", None)
+        if mirror_org and mirror_repo:
+            mirror_target_paths.add(f"{mirror_org}/{mirror_repo}")
+
+    # Only process repos that have a mirror AND are not themselves a mirror target
     repo_list = env.resources.filter(
-        lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
-    ).filter(lambda resource: resource.parent == public_organization.path)
+        lambda r: (
+            r.has_tag(RESOURCE_TAGS_GIT)
+            and getattr(r, "has_mirror", False)
+            and r.path not in mirror_target_paths
+        )
+    )
+
     for repo in repo_list:
-        # 1. repo is not an organization
-        # 2. repo is a git project in public_organization
-        if repo.is_shielded:
-            repo_name = repo.linked_shielded_repo or repo.path[len(repo.parent) + 1:]
-            result = utils.call_process_safe(
-                [
-                    "rsync",
-                    "-a",
-                    "-v",
-                    "--delete",
-                    "--exclude",
-                    ".git",
-                    "--exclude",
-                    "otoolbox.toml",
-                    repo.path + "/",
-                    shielded_organization.path + "/" + repo_name + "/",
-                ],
-                cwd=env.get_workspace(),
-                timeout=60,
+        mirror_org = getattr(repo, "linked_shielded_organization", None)
+        mirror_repo = (
+            getattr(repo, "linked_shielded_repository", None)
+            or getattr(repo, "linked_shielded_repo", None)
+        )
+
+        if not mirror_org or not mirror_repo:
+            env.console.print(
+                f"[yellow]Skipping {repo.path}: mirror target not configured.[/yellow]"
+            )
+            continue
+
+        source_path = env.get_workspace_path(repo.path)
+        target_path = env.get_workspace_path(mirror_org, mirror_repo)
+
+        if not os.path.isdir(source_path):
+            env.console.print(
+                f"[red]Skipping {repo.path}: source directory does not exist.[/red]"
+            )
+            continue
+
+        if not os.path.isdir(target_path):
+            env.console.print(
+                f"[red]Skipping {repo.path}: mirror target "
+                f"'{mirror_org}/{mirror_repo}' does not exist in the workspace.[/red]"
+            )
+            continue
+
+        env.console.print(
+            f"[cyan]Syncing [bold]{repo.path}[/bold] → "
+            f"[bold]{mirror_org}/{mirror_repo}[/bold] ...[/cyan]"
+        )
+
+        result = utils.call_process_safe(
+            [
+                "rsync",
+                "-a",
+                "-v",
+                "--delete",
+                "--exclude", ".git",
+                "--exclude", "otoolbox.toml",
+                source_path + "/",
+                target_path + "/",
+            ],
+            cwd=env.get_workspace(),
+            timeout=60,
+        )
+
+        if result.returncode == 0:
+            env.console.print(
+                f"[green]✓ Synced {repo.path} → {mirror_org}/{mirror_repo}[/green]"
+            )
+        else:
+            env.console.print(
+                f"[red]✗ rsync failed for {repo.path}:[/red]\n{result.stderr}"
             )
 
 
