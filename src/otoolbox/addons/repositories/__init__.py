@@ -335,25 +335,25 @@ def command_sync_shielded():
             )
             continue
 
-        source_path = env.get_workspace_path(repo.path)
-        target_path = env.get_workspace_path(mirror_org, mirror_repo)
+        source_path = env.get_workspace_path(mirror_org, mirror_repo)
+        target_path = env.get_workspace_path(repo.path)
 
         if not os.path.isdir(source_path):
             env.console.print(
-                f"[red]Skipping {repo.path}: source directory does not exist.[/red]"
+                f"[red]Skipping {repo.path}: mirror source "
+                f"'{mirror_org}/{mirror_repo}' does not exist in the workspace.[/red]"
             )
             continue
 
         if not os.path.isdir(target_path):
             env.console.print(
-                f"[red]Skipping {repo.path}: mirror target "
-                f"'{mirror_org}/{mirror_repo}' does not exist in the workspace.[/red]"
+                f"[red]Skipping {repo.path}: local target directory does not exist.[/red]"
             )
             continue
 
         env.console.print(
-            f"[cyan]Syncing [bold]{repo.path}[/bold] → "
-            f"[bold]{mirror_org}/{mirror_repo}[/bold] ...[/cyan]"
+            f"[cyan]Syncing [bold]{mirror_org}/{mirror_repo}[/bold] → "
+            f"[bold]{repo.path}[/bold] ...[/cyan]"
         )
 
         result = utils.call_process_safe(
@@ -373,7 +373,7 @@ def command_sync_shielded():
 
         if result.returncode == 0:
             env.console.print(
-                f"[green]✓ Synced {repo.path} → {mirror_org}/{mirror_repo}[/green]"
+                f"[green]✓ Synced {mirror_org}/{mirror_repo} → {repo.path}[/green]"
             )
         else:
             env.console.print(
