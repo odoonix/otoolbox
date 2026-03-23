@@ -18,8 +18,7 @@ source "$SCRIPT_DIR/bulk-common"
 cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 # copy changes to the shielded organization repo
-otoolbox run update --tags "$PUBLIC_ORGANIZATION" >> "$LOG_FILE" 2>&1
-otoolbox run update --tags "$SHIELDED_ORGANIZATION" >> "$LOG_FILE" 2>&1
+bulk-pull
 otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
 
 
