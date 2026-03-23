@@ -49,7 +49,11 @@ def _add_repo_to_resources(item):
                 utils.touch_dir,
             ],
             "destroy": [utils.delete_dir],
-            "verify": [utils.is_dir, utils.is_readable],
+            "verify": [
+                utils.is_dir, 
+                utils.is_readable,
+                git.is_git_repository,
+            ],
             "tags": tags,
             "branch": item.get("branch"),
             "is_existe": item.get("is_existe", False),

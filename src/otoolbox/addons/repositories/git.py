@@ -133,3 +133,7 @@ def git_add_safe_directory(context: Resource):
         raise RuntimeError(result.stderr)
     return PROCESS_SUCCESS, f"safe.directory added: {repository_path}"
 
+def is_git_repository(path):
+    """Check if the given path is a git repository."""
+    git_dir = path / ".git"
+    return git_dir.is_dir()
