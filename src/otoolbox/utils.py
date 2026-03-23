@@ -282,16 +282,17 @@ def print_result(result=None):
         return
     counter = 0
     for processors, executor in result:
-        if not processors:
+        processor_results = list(processors)
+        if not processor_results:
             continue
         counter += 1
         if not env.context.get("silent"):
             env.console.print(
                 f"\n{executor.resource} ({counter}, {executor.resource.priority})"
             )
-        for res, message, processor in processors:
+        for res, message, processor in processor_results:
             if not env.context.get("silent"):
-                env.console.print(f"[{res}] {processor} ({message})")
+                env.console.print(f"[{res}] {processor} ({message.strip()})")
 
 
 ###################################################################

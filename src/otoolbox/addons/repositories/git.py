@@ -61,13 +61,13 @@ def _get_branch_info(context: Resource):
 def _get_branch_name(context: Resource):
     cwd = env.get_workspace_path(context.path)
     result = subprocess.run(
-        [GIT_COMMAND, "rev-parse", "--abrev-ref", "HEAD"],
+        [GIT_COMMAND, "rev-parse", "--abbrev-ref", "HEAD"],
         capture_output=True,
         text=True,
         cwd=cwd,
         check=False,
     )
-    return str.strip(result.stdout)
+    return next((line.strip() for line in result.stdout.splitlines() if line.strip()), "")
 
 ######################################################################################
 #                             Resource Processors                                    #
