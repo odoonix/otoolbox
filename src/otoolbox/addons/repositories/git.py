@@ -6,6 +6,8 @@ from otoolbox import utils
 from otoolbox.base import Resource
 from otoolbox.constants import (
     PROCESS_SUCCESS,
+    PROCESS_FAIL,
+    PROCESS_EMPTY_MESSAGE
 )
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
@@ -56,6 +58,16 @@ def _get_branch_info(context: Resource):
     )
     return str.strip(result.stdout)
 
+def _get_branch_name(context: Resource):
+    cwd = env.get_workspace_path(context.path)
+    result = subprocess.run(
+        [GIT_COMMAND, "rev-parse", "--abrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        check=False,
+    )
+    return str.strip(result.stdout)
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -88,7 +100,7 @@ def git_clone(context: Resource):
 
     if result.returncode:
         raise RuntimeError(result.stderr)
-    return PROCESS_SUCCESS, _get_branch_info(context=context)
+    return PROCESS_SUCCESS, _get_branch_name(context=context)
 
 
 def git_pull(context: Resource):
@@ -98,7 +110,7 @@ def git_pull(context: Resource):
 
     if result.returncode:
         raise RuntimeError(result.stderr)
-    return PROCESS_SUCCESS, _get_branch_info(context=context)
+    return PROCESS_SUCCESS, _get_branch_name(context=context)
 
 
 def git_checkout(context: Resource):
@@ -111,7 +123,7 @@ def git_checkout(context: Resource):
 
     if result.returncode:
         raise RuntimeError(result.stderr)
-    return PROCESS_SUCCESS, _get_branch_info(context=context)
+    return PROCESS_SUCCESS, _get_branch_name(context=context)
 
 
 def git_add_safe_directory(context: Resource):
@@ -136,4 +148,7 @@ def git_add_safe_directory(context: Resource):
 def is_git_repository(path):
     """Check if the given path is a git repository."""
     git_dir = path / ".git"
-    return git_dir.is_dir()
+    if git_dir.is_dir():
+        return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+    return PROCESS_FAIL, "Not a git repository."
+
