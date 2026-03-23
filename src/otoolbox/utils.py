@@ -282,6 +282,8 @@ def print_result(result=None):
         return
     counter = 0
     for processors, executor in result:
+        if not processors:
+            continue
         counter += 1
         if not env.context.get("silent"):
             env.console.print(
