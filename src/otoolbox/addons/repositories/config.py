@@ -41,8 +41,9 @@ def _add_repo_to_resources(item):
             "parent": item.get("organization"),
             "title": item.get("repository"),
             "description": """Automaticaly added resources from git.""",
-            "init": [git.git_clone],
+            "init": [git.git_add_safe_directory, git.git_clone],
             "update": [
+                git.git_add_safe_directory,
                 git.git_checkout,
                 git.git_pull,
                 utils.touch_dir,

@@ -112,3 +112,24 @@ def git_checkout(context: Resource):
     if result.returncode:
         raise RuntimeError(result.stderr)
     return PROCESS_SUCCESS, _get_branch_info(context=context)
+
+
+def git_add_safe_directory(context: Resource):
+    """Add repository path to global git safe.directory list."""
+    repository_path = env.get_workspace_path(context.path)
+    result = utils.call_process_safe(
+        [
+            GIT_COMMAND,
+            "config",
+            "--global",
+            "--add",
+            "safe.directory",
+            repository_path,
+        ],
+        cwd=env.get_workspace(),
+    )
+
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, f"safe.directory added: {repository_path}"
+
