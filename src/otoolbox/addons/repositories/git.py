@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import os
 
 from otoolbox import env
 from otoolbox import utils
@@ -68,6 +69,13 @@ def _get_branch_name(context: Resource):
         check=False,
     )
     return next((line.strip() for line in result.stdout.splitlines() if line.strip()), "")
+
+def _is_git_repository(repository_path):
+    if not os.path.isdir(repository_path):
+        return False
+
+    git_path = os.path.join(repository_path, ".git")
+    return os.path.isdir(git_path) or os.path.isfile(git_path)
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -145,10 +153,21 @@ def git_add_safe_directory(context: Resource):
         raise RuntimeError(result.stderr)
     return PROCESS_SUCCESS, f"safe.directory added: {repository_path}"
 
-def is_git_repository(path):
+def is_git_repository(context: Resource):
     """Check if the given path is a git repository."""
-    git_dir = path / ".git"
-    if git_dir.is_dir():
+    git_dir = env.get_workspace_path(context.path)
+    if _is_git_repository(git_dir):
         return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
     return PROCESS_FAIL, "Not a git repository."
 
+
+def is_repository_branch_match_with_odoo_version(context: Resource):
+    """Check if the repository branch matches with the odoo version."""
+    branch_name = _get_branch_name(context)
+    odoo_version = env.context.get("odoo_version", "18.0")
+    if branch_name == odoo_version:
+        return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+    return (
+        PROCESS_FAIL,
+        f"Repository branch '{branch_name}' does not match with Odoo version '{odoo_version}'.",
+    )

@@ -52,7 +52,9 @@ def _add_repo_to_resources(item):
             "verify": [
                 utils.is_dir, 
                 utils.is_readable,
+                utils.has_otoolbox_toml,
                 git.is_git_repository,
+                git.is_repository_branch_match_with_odoo_version,
             ],
             "tags": tags,
             "branch": item.get("branch"),
@@ -104,12 +106,7 @@ def _discover_workspace_repositories():
     return repo_list
 
 
-def _is_git_repository(repository_path):
-    if not os.path.isdir(repository_path):
-        return False
 
-    git_path = os.path.join(repository_path, ".git")
-    return os.path.isdir(git_path) or os.path.isfile(git_path)
 
 
 def _load_repository_toml(organization, repository):
@@ -176,7 +173,7 @@ def _enrich_repository_item(item):
 
     merged_item.setdefault("organization", organization)
     merged_item.setdefault("repository", repository)
-    merged_item["is_existe"] = _is_git_repository(repo_path)
+    merged_item["is_existe"] = git._is_git_repository(env.get_workspace_path(repo_path))
     merged_item["has_mirror"] = bool(merged_item.get("is_shielded", False))
     return merged_item
 

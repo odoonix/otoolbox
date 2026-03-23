@@ -12,6 +12,7 @@ from otoolbox import env
 from otoolbox.constants import (
     PROCESS_SUCCESS,
     PROCESS_FAIL,
+    PROCESS_WAR,
     PROCESS_EMPTY_MESSAGE,
 )
 
@@ -200,6 +201,14 @@ def is_executable(context: Resource):
     assert mode & (0o100 | 0o010 | 0o001), f"File {file_path} isn't executable"
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
+
+def has_otoolbox_toml(context: Resource):
+    file_path = env.get_workspace_path(context.path)
+    toml_path = env.get_workspace_path(context.path, "otoolbox.toml")
+    if not os.path.isfile(toml_path):
+        return PROCESS_WAR, f"File otoolbox.toml doesn't exist or isn't readable"
+
+    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 ###################################################################
 # destructors

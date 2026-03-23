@@ -41,5 +41,6 @@ STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 
 PROCESS_SUCCESS = "[green]OK[/green]"
 PROCESS_FAIL = "[red]FAIL[/red]"
+PROCESS_WAR = "[yellow]WARN[/yellow]"
 PROCESS_EMPTY_MESSAGE = ""
 PROCESS_NOT_IMP_MESSAGE = "The resource processor is not implemented yet!"
