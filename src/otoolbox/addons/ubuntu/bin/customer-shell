@@ -79,7 +79,7 @@ function customer_shell_main() {
         echo "Error: failed to change directory to $CUSTOMER_DIR" >&2
         return 1
     }
-
+    exec bash -i
     customer_print_info
     echo "Tip: to keep this directory in the current shell, run: source customer-shell $*"
 }

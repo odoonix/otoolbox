@@ -179,7 +179,6 @@ function customer_load_env_file() {
         source "$CUSTOMER_DIR/moonsun.env"
     else
         echo "Error: moonsun.env file not found in $CUSTOMER_DIR" >&2
-        exit 1
     fi
 }
 
