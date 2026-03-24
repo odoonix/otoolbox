@@ -25,7 +25,7 @@ app.__cli_name__ = "help"
 ###################################################################
 # init
 ###################################################################
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         path="README.rst",

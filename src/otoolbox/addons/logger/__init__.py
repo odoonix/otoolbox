@@ -19,8 +19,11 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.constants import (
+    LOG_FILE,
+    LOG_FOLDER,
+)
 
-LOG_FILE = ".logs.txt"
 
 ###################################################################
 # cli
@@ -43,7 +46,7 @@ def command_show():
 ###################################################################
 
 
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         path=LOG_FILE,
@@ -57,7 +60,7 @@ def init():
     )
 
     # Logging
-    file_handler = logging.FileHandler(filename=env.get_workspace_path(".logs.txt"))
+    file_handler = logging.FileHandler(filename=env.get_workspace_path(LOG_FOLDER, LOG_FILE))
     handlers = [file_handler]
     verbose = env.context.get("verbose")
     if verbose:

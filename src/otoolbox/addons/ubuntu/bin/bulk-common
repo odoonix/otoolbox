@@ -108,6 +108,45 @@ function bulk_switch_to_worker(){
     fi
 }
 
+run_otoolbox_as_worker() {
+    if [[ "$WORKER_USER" == "$(whoami)" ]]; then
+        otoolbox "$@"
+        return
+    fi
+
+    local worker_home
+    worker_home="$(getent passwd "$WORKER_USER" | cut -d: -f6)"
+
+    if [[ -z "$worker_home" ]]; then
+        echo "Error: unable to resolve home directory for user '$WORKER_USER'." >&2
+        return 1
+    fi
+
+    local worker_path
+    worker_path="$worker_home/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    sudo -u "$WORKER_USER" -H env PATH="$worker_path" otoolbox "$@"
+}
+
+run_git_as_worker() {
+    if [[ "$WORKER_USER" == "$(whoami)" ]]; then
+        git "$@"
+        return
+    fi
+
+    local worker_home
+    worker_home="$(getent passwd "$WORKER_USER" | cut -d: -f6)"
+
+    if [[ -z "$worker_home" ]]; then
+        echo "Error: unable to resolve home directory for user '$WORKER_USER'." >&2
+        return 1
+    fi
+
+    local worker_path
+    worker_path="$worker_home/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    sudo -u "$WORKER_USER" -H env PATH="$worker_path" git "$@"
+}
 
 # Init the working directory, log file and users.
 bulk_init "$@"

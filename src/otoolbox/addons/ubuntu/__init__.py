@@ -19,13 +19,13 @@ from otoolbox.constants import RESOURCE_PRIORITY_DEFAULT
 LINUX_SCRIPTS = [
     "bulk-common",
     "bulk-add-repos",
-    "bulk-clone-al",
     "bulk-commit",
     "bulk-init-tests",
     "bulk-pre-commit",
     "bulk-pull",
     "bulk-push-shielded",
     "bulk-push",
+    "bulk-repo-add-all",
     "bulk-repo-init",
     "bulk-sync-shielded",
     "customer-common",
@@ -71,7 +71,7 @@ def init():
 ###################################################################
 
 
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         priority=RESOURCE_PRIORITY_DEFAULT,

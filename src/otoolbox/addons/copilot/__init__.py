@@ -14,6 +14,7 @@ from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
+from . import copilot_utils
 
 AGENT_FOLDER =  ".github/agents"
 
@@ -23,8 +24,8 @@ AGENT_FILES = [
     "Odoo_19_Backend.agent.md"
 ]
 
-COPILOT_INSTRAUCTIONS_ODOONIX = "copilot-instructions.odoonix.md"
-COPILOT_INSTRAUCTIONS_WORKSPACE = "copilot-instructions.workspace.md"
+COPILOT_INSTRAUCTIONS_WORKSPACE = "workspace.md"
+COPILOT_INSTRAUCTIONS_ODOONIX = "odoonix.md"
 
 ###################################################################
 # cli
@@ -45,7 +46,7 @@ def command_show():
 ###################################################################
 # init
 ###################################################################
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         path=AGENT_FOLDER,
@@ -92,9 +93,18 @@ def init():
         init=[utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}")],
         update=[utils.touch_file, utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}")],
         destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable],
+        verify=[
+            utils.is_file, 
+            utils.is_readable
+        ],
         tags=["copilot", "instructions", "odoonix"],
     )
+
+    
+
+def post_process(addon):
+    copilot_utils.init_verification_process()
+    copilot_utils.load_copilot_configuration_resource()
 
 ###################################################################
 # Application entry point

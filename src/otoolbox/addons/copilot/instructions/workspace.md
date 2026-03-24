@@ -4,6 +4,7 @@ with lates config run
 
   otoolbox run update --tags copilot
 
+NOTE: instruction for workspace
 -->
 
 # Folder structure

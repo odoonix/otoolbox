@@ -54,7 +54,7 @@ def command_start():
 ###################################################################
 # init
 ###################################################################
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.context.update({"venv_path": ".venv"})
 

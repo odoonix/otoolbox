@@ -205,11 +205,19 @@ def _main():
         package = importlib.import_module(addon)
         # Initialize the addon
         if hasattr(package, "init"):
-            package.init()
+            package.init(package)
 
         # Load the CLI for the addon
         if hasattr(package, "app"):
             app.add_typer(package.app, name=package.app.__cli_name__)
+
+    # Post process for addons
+    for addon in addons_list:
+        package = importlib.import_module(addon)
+        # post_process the addon
+        if hasattr(package, "post_process"):
+            package.post_process(package)
+
 
     # Load the application
     app()

@@ -32,7 +32,7 @@ app.__cli_name__ = "workspace"
 ###################################################################
 
 
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,

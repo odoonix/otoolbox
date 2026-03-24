@@ -4,6 +4,7 @@ with lates config run
 
   otoolbox run update --tags copilot
 
+NOTE: instruction for all addons in odoonix (our implementation)
 -->
 # Odoo Development Guidelines for GitHub Copilot
 
@@ -14,12 +15,14 @@ rewrite it in English. If any guidance or text in files is written in English, r
 in Persian.
 
 ### OCA Repository Templates
+
 - **MUST** follow [OCA (Odoo Community Association)](https://github.com/OCA) repository templates and guidelines
 - Adhere to OCA module structure standards
 - Follow OCA coding conventions and best practices
 - Use OCA's module template for scaffolding new addons
 
 ### Code Quality Standards
+
 - **MUST** follow all pylint configurations defined in each repository
 - Respect `.pylintrc` settings in the repository root
 - Adhere to clean code principles:
@@ -33,31 +36,33 @@ in Persian.
 
 Each Odoo addon **MUST** contain the following folder structure:
 
-```
-addon_name/
-├── __init__.py
-├── __manifest__.py
-├── constants.py          # All addon constants
-├── exceptions.py         # All addon exceptions
-├── controllers/          # Odoo MVC controllers
-│   └── __init__.py
-├── models/               # ORM models of Odoo
-│   └── __init__.py
-├── data/                 # Addon data files (XML/CSV)
-├── readme/               # README segments in RST format (OCA guideline)
-│   ├── CONFIGURE.rst
-│   ├── CONTRIBUTORS.rst
-│   ├── DESCRIPTION.rst
-│   ├── HISTORY.rst
-│   └── USAGE.rst
-├── doc/                  # Documentation for apps.odoo.com
-│   └── index.rst         # User guide and admin help
-├── security/             # Security files (ir.model.access.csv, rules)
-│   └── ir.model.access.csv
-├── static/               # Static assets (CSS, JS, images)
-│   ├── description/
-│   │   └── icon.png
-│   ├── src/
+
+  addon_name/
+  ├── __init__.py
+  ├── __manifest__.py
+  ├── constants.py          # All addon constants
+  ├── exceptions.py         # All addon exceptions
+  ├── controllers/          # Odoo MVC controllers
+  │   └── __init__.py
+  ├── models/               # ORM models of Odoo
+  │   └── __init__.py
+  ├── data/                 # Addon data files (XML/CSV)
+  ├── readme/               # README segments in RST format (OCA guideline)
+  │   ├── CONFIGURE.rst
+  │   ├── CONTRIBUTORS.rst
+  │   ├── DESCRIPTION.rst
+  │   ├── HISTORY.rst
+  │   └── USAGE.rst
+  ├── doc/                  # Documentation for apps.odoo.com
+  │   └── index.rst         # User guide and admin help
+  ├── security/             # Security files (ir.model.access.csv, rules)
+  │   └── ir.model.access.csv
+  ├── static/               # Static assets (CSS, JS, images)
+  │   ├── description/
+  │   │   └── icon.png
+  │   ├── src/              # Widget, and JS application
+
+
 # Copilot Instructions for Odoo Development
 
 ## Language and Translation
@@ -78,31 +83,29 @@ addon_name/
 - Prefer small, single-purpose functions and clear naming.
 - Avoid duplication and unnecessary complexity.
 
-## Required Addon Structure
+## Odoo Addon Structure
 
 Each addon **MUST** include these folders and files:
 
-```
-addon_name/
-├── __init__.py
-├── __manifest__.py
-├── constants.py
-├── exceptions.py
-├── controllers/
-├── models/
-├── data/
-├── readme/
-├── doc/
-│   └── index.rst
-├── security/
-├── static/
-├── tests/
-├── views/
-├── wizards/
-└── components/
-```
 
-## Required Files
+  addon_name/
+  ├── __init__.py
+  ├── __manifest__.py
+  ├── constants.py
+  ├── exceptions.py
+  ├── README.rst        # Auto generated readme file
+  ├── controllers/      # Odoo controller in python
+  ├── models/           # ORM data model in python
+  ├── data/             # Odoo data file in CSV, and XML file
+  ├── readme/           # Document in RST file based on OCA guild line for readme
+  ├── doc/              # User and Admin document for apps.odoo.com website
+  ├── security/         # Odoo data file for security layer
+  ├── static/           # Static file CSS, HTML, JS for website, and js application
+  ├── tests/            # Odoo test file in Python unit test
+  ├── views/            # QWeb design of odoo views
+  ├── wizards/          # Model, view and odoo data file to implement wizards
+  └── components/       # Component based on OCA Queue, and job model
+
 
 ### `constants.py`
 
@@ -119,4 +122,4 @@ addon_name/
 - Use OCA-style README segments in the `readme/` folder.
 - Provide admin and user guidance in `doc/index.rst`.
 - Keep documentation concise, accurate, and in English.
-```
+

@@ -106,7 +106,7 @@ def addons_list(
 ###################################################################
 # init
 ###################################################################
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     # load all available addons
     config.load_addon_resources()

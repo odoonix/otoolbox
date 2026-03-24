@@ -99,6 +99,20 @@
                 "sync-shielded"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "Check copilot",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "verify",
+                "--tags",
+                "git"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }

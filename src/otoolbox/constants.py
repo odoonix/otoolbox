@@ -1,7 +1,15 @@
+
+#######################################################################################
+# Errors
+#######################################################################################
 ERROR_CODE_PRE_VERIFICATION = 19841
 ERROR_CODE_POST_VERIFICATION = 19842
 
 
+
+#######################################################################################
+# Resources
+#######################################################################################
 RESOURCE_PREFIX_VIRTUAL = "virtual://"
 RESOURCE_PREFIX_APPLICATION = "app://"
 
@@ -42,5 +50,16 @@ STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 PROCESS_SUCCESS = "[green]OK[/green]"
 PROCESS_FAIL = "[red]FAIL[/red]"
 PROCESS_WAR = "[yellow]WARN[/yellow]"
+
 PROCESS_EMPTY_MESSAGE = ""
 PROCESS_NOT_IMP_MESSAGE = "The resource processor is not implemented yet!"
+
+
+#######################################################################################
+# Logger
+#######################################################################################
+
+LOG_FILE = "logs.txt"
+LOG_FOLDER = ".tmp"
+LOG_FILE_PATTERN = "log-{title}-{date}.txt"
+

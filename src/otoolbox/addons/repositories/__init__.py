@@ -534,7 +534,7 @@ def command_load_csv_file(
 ###################################################################
 
 
-def init():
+def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,
