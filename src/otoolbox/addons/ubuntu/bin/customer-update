@@ -17,7 +17,10 @@ MKDIR_BIN="$(command -v mkdir)"
 "$MKDIR_BIN" -p "$CUSTOMER_ROOT_DIR/$ORG"
 
 if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone --recurse-submodules "$CLONE_URL")
+    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone "$CLONE_URL")
+else
+    (cd "$CUSTOMER_ROOT_DIR/$ORG/$REPO" && git pull --recurse-submodules)
+    (cd "$CUSTOMER_ROOT_DIR/$ORG/$REPO" && git submodule update --init --recursive)
 fi
 
 if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then

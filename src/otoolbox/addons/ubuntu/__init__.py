@@ -31,6 +31,7 @@ LINUX_SCRIPTS = [
     "customer-common",
     "customer-config",
     "customer-init",
+    "customer-update",
     "customer-info",
     "customer-shell",
     "customer-update-submodule",
