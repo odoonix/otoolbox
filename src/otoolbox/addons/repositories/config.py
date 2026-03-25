@@ -42,6 +42,7 @@ def _add_repo_to_resources(item):
             "title": item.get("repository"),
             "description": """Automaticaly added resources from git.""",
             "init": [git.git_add_safe_directory, git.git_clone],
+            "enable_in_runtime": item.get("enable_in_runtime", True),
             "update": [
                 git.git_add_safe_directory,
                 git.git_checkout,

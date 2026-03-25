@@ -113,6 +113,20 @@
                 "git"
             ],
             "cwd": "${input:odooProjectPath}"
+        },
+        {
+            "name": "Update VS Code path",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "update",
+                "--tags",
+                "odoo-dev.code-workspace"
+            ],
+            "cwd": "${input:odooProjectPath}"
         }
     ]
 }
