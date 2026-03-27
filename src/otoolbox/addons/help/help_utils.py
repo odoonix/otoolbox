@@ -34,8 +34,6 @@ def _find_first_markers(lines: list[str]) -> tuple[int, int] | None:
 
 
 def copy_into_marked_section(src_text: str, dst_path: str) -> None:
-    # with open(src_path, "r", encoding="utf-8") as f:
-    #     src_text = f.read()
 
     with open(dst_path, "r", encoding="utf-8") as f:
         dst_text = f.read()
