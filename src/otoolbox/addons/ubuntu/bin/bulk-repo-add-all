@@ -18,6 +18,7 @@ cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_
 
 # Constants
 repos=(
+    "auxico" \
     "account" \
     "brand" \
     "cnp" \
