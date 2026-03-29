@@ -28,6 +28,7 @@ LINUX_SCRIPTS = [
     "bulk-repo-add-all",
     "bulk-repo-init",
     "bulk-sync-shielded",
+    "bulk-tests-by-repo",
     "customer-common",
     "customer-config",
     "customer-init",
