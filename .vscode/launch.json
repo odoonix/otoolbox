@@ -6,127 +6,38 @@
             "type": "promptString",
             "description": "Enter the Odoo project path",
             "default": "/path/to/odoo"
+        },
+        {
+            "id": "otoolboxCliArgs",
+            "type": "pickString",
+            "description": "Select command-line arguments",
+            "options": [
+                "run update --help",
+                "run init --tags copilot",
+                "ubuntu init",
+                "run update --tags odools.toml",
+                "run update --tags README.rst",
+                "repo list",
+                "repo sync-shielded",
+                "run verify --tags git",
+                "run update --tags odoo-dev.code-workspace"
+            ],
+            "default": "run update --help"
         }
     ],
     "configurations": [
         {
-            "name": "Python Debugger: otoolbox",
+            "name": "Run otoolbox (select args)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
+            "program": "${workspaceFolder}/.vscode/otoolbox_debug_runner.py",
+            "python": "${workspaceFolder}/.venv/bin/python",
             "console": "integratedTerminal",
             "args": [
-                "run",
-                "update",
-                "--help"
+                "${input:otoolboxCliArgs}"
             ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Init Copilot",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "init",
-                "--tags",
-                "copilot"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Init Ubuntu",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "ubuntu",
-                "init"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Update odools.toml",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "update",
-                "--tags",
-                "odools.toml"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Update README.rst",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "update",
-                "--tags",
-                "README.rst"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "List of repositories",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "repo",
-                "list"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "repo sync-shielded",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "repo",
-                "sync-shielded"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Check copilot",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "verify",
-                "--tags",
-                "git"
-            ],
-            "cwd": "${input:odooProjectPath}"
-        },
-        {
-            "name": "Update VS Code path",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/otoolbox/__init__.py",
-            "console": "integratedTerminal",
-            "args": [
-                "run",
-                "update",
-                "--tags",
-                "odoo-dev.code-workspace"
-            ],
-            "cwd": "${input:odooProjectPath}"
+            "cwd": "${input:odooProjectPath}",
+            "justMyCode": false
         }
     ]
 }

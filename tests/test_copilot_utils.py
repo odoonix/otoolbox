@@ -2,9 +2,9 @@ from types import SimpleNamespace
 from importlib import import_module
 
 from otoolbox import env
-from otoolbox.constants import PROCESS_SUCCESS, PROCESS_FAIL, STEP_VERIFY
+from otoolbox.constants import PROCESS_SUCCESS, PROCESS_WAR, STEP_VERIFY
 
-copilot_utils = import_module("otoolbox.addons.copilot.utils")
+copilot_utils = import_module("otoolbox.addons.copilot.copilot_utils")
 
 
 def test_is_copilot_configured_success(tmp_path, monkeypatch):
@@ -26,7 +26,7 @@ def test_is_copilot_configured_missing_file_returns_fail(tmp_path, monkeypatch):
 
     result, message = copilot_utils.is_copilot_configured(context)
 
-    assert result == PROCESS_FAIL
+    assert result == PROCESS_WAR
     assert ".copilot-instructions.md" in message
 
 

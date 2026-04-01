@@ -154,8 +154,10 @@ def _enrich_repository_item(item):
     toml_data = _load_repository_toml(organization, repository)
 
     # Priority: otoolbox.toml overrides repositories.json
-    # Start with the lower-priority base (JSON), then let TOML win.
-    merged_item = dict(toml_data.get('defaults') if isinstance(toml_data.get('defaults'), dict) else {})
+    # Start with JSON base fields, then let TOML override.
+    merged_item = dict(item)
+    if isinstance(toml_data.get("defaults"), dict):
+        merged_item.update(toml_data.get("defaults"))
     merged_item.update(toml_data)
 
     first_mirror = _extract_first_mirror(toml_data)
