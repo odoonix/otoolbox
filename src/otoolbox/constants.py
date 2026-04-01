@@ -47,6 +47,8 @@ STEP_VERIFY = "verify"
 STEP_UPDATE = "update"
 STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 
+MANIFEST_NAMES=["__manifest__.py", "__openerp__.py"]
+
 PROCESS_SUCCESS = "[green]OK[/green]"
 PROCESS_FAIL = "[red]FAIL[/red]"
 PROCESS_WAR = "[yellow]WARN[/yellow]"

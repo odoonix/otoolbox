@@ -10,6 +10,7 @@ from rich.console import Console
 
 # Odoo toolbox
 from otoolbox.base import Resource, ResourceSet
+from otoolbox.constants import (MANIFEST_NAMES)
 
 
 class Environment:
@@ -60,6 +61,22 @@ class Environment:
         else:
             resource.extend(**kargs)
         return sys.modules[__name__]
+
+
+
+    def is_addons_path(self, resource):
+        assert isinstance(resource, Resource)
+        path = self.get_workspace_path(resource.path)
+        if not os.path.isdir(path):
+            return False
+        for f in os.listdir(path):
+            modpath = os.path.join(path, f)
+            if os.path.isdir(modpath):
+                def hasfile(filename):
+                    return os.path.isfile(os.path.join(modpath, filename))
+                if hasfile('__init__.py') and any(hasfile(mname) for mname in MANIFEST_NAMES):
+                    return True
+        return False
 
 
 # Create the environment
