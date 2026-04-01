@@ -40,7 +40,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
         echo "Path: $dir"
         echo "===================================================================="
         cd "$dir"
-        
+
 
         for addon_dir in "$WORKDIR/$PUBLIC_ORGANIZATION/$project"/*; do
             if [ -d "$addon_dir" ]; then
@@ -110,5 +110,3 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
         fi
     fi
 done
-
-

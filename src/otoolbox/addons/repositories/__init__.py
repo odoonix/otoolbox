@@ -11,12 +11,14 @@ package offers a reliable and streamlined solution for maintenance operations.
 """
 
 import os
-import json
+
+# import json
 from typing import List
 import re
 
 import dotenv
 import typer
+
 from typing_extensions import Annotated
 from rich.console import Console
 from rich.table import Table
@@ -32,12 +34,7 @@ from otoolbox.addons.repositories.constants import (
     REPOSITORIES_PATH,
     RESOURCE_REPOSITORIES_PATH,
 )
-from otoolbox.addons.repositories import (
-    config,
-    util
-)
-
-
+from otoolbox.addons.repositories import config, util
 
 ###################################################################
 # Utils
@@ -98,11 +95,14 @@ def command_list():
     )
     for repo in repo_list:
         table.add_row(
-            repo.parent, 
+            repo.parent,
             repo.title,
             "{repository}/{organization}".format(
-                repository=repo.linked_shielded_repository, organization=repo.linked_shielded_organization
-            ) if repo.has_mirror else "N/A",
+                repository=repo.linked_shielded_repository,
+                organization=repo.linked_shielded_organization,
+            )
+            if repo.has_mirror
+            else "N/A",
             ", ".join([str(tag) for tag in repo.tags]),
         )
 
@@ -324,9 +324,8 @@ def command_sync_shielded():
 
     for repo in repo_list:
         mirror_org = getattr(repo, "linked_shielded_organization", None)
-        mirror_repo = (
-            getattr(repo, "linked_shielded_repository", None)
-            or getattr(repo, "linked_shielded_repo", None)
+        mirror_repo = getattr(repo, "linked_shielded_repository", None) or getattr(
+            repo, "linked_shielded_repo", None
         )
 
         if not mirror_org or not mirror_repo:
@@ -362,8 +361,10 @@ def command_sync_shielded():
                 "-a",
                 "-v",
                 "--delete",
-                "--exclude", ".git",
-                "--exclude", "otoolbox.toml",
+                "--exclude",
+                ".git",
+                "--exclude",
+                "otoolbox.toml",
                 source_path + "/",
                 target_path + "/",
             ],
@@ -420,13 +421,9 @@ def command_new_branch(
     """Create a new empty branch for all repositories"""
     current_branch = env.context.get("odoo_version")
     tags = tags if tags else []
-    repo_list = env.resources.filter(
-        lambda resource: resource.has_tag("repository")
-    )
+    repo_list = env.resources.filter(lambda resource: resource.has_tag("repository"))
 
-    repo_list = repo_list.filter(
-        lambda resource: resource.has_tag(*tags)
-    )
+    repo_list = repo_list.filter(lambda resource: resource.has_tag(*tags))
     for repo in repo_list:
         env.console.print(f"Checkout repository {repo.path}")
         result = utils.call_process_safe(
@@ -502,31 +499,23 @@ def command_new_branch(
             continue
 
 
-
-
-
-
 @app.command(name="load-csv")
 def command_load_csv_file(
     csv_file: Annotated[
         str,
         typer.Option(
-            prompt="The CSV file",
-            help="The repository list is load from CSV file."
+            prompt="The CSV file", help="The repository list is load from CSV file."
         ),
-    ] = None
+    ] = None,
 ):
     """Load CSV file and stor into the JSON list
-    
+
     Then call update repos
     """
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
-    repository_list_csv_to_json(
-        csv_file_path=csv_file,
-        json_file_path=reposiotires_path
+    util.repository_list_csv_to_json(
+        csv_file_path=csv_file, json_file_path=reposiotires_path
     )
-
-
 
 
 ###################################################################

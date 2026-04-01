@@ -93,5 +93,3 @@ echo "---------------------------"
 for customer in "${customers[@]}"; do
     customer-init "$customer"
 done
-
-

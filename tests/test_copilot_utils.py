@@ -59,9 +59,7 @@ def test_init_verification_process_adds_verify_processor(monkeypatch):
     assert calls[0]["title"] == "Verify copilot settings"
 
 
-def test_load_copilot_configuration_resource_adds_existing_files(
-    tmp_path, monkeypatch
-):
+def test_load_copilot_configuration_resource_adds_existing_files(tmp_path, monkeypatch):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     added_resources = []
 
@@ -84,7 +82,9 @@ def test_load_copilot_configuration_resource_adds_existing_files(
             return [resource for resource in resources if predicate(resource)]
 
     monkeypatch.setattr(env, "resources", FakeResourceSet())
-    monkeypatch.setattr(env, "add_resource", lambda **kwargs: added_resources.append(kwargs))
+    monkeypatch.setattr(
+        env, "add_resource", lambda **kwargs: added_resources.append(kwargs)
+    )
 
     existing_file = tmp_path / "odoonix" / "payment" / ".copilot-instructions.md"
     existing_file.parent.mkdir(parents=True)

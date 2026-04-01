@@ -1,10 +1,8 @@
-
 #######################################################################################
 # Errors
 #######################################################################################
 ERROR_CODE_PRE_VERIFICATION = 19841
 ERROR_CODE_POST_VERIFICATION = 19842
-
 
 
 #######################################################################################
@@ -47,7 +45,7 @@ STEP_VERIFY = "verify"
 STEP_UPDATE = "update"
 STEPS = [STEP_INIT, STEP_BUILD, STEP_DESTROY, STEP_VERIFY, STEP_UPDATE]
 
-MANIFEST_NAMES=["__manifest__.py", "__openerp__.py"]
+MANIFEST_NAMES = ["__manifest__.py", "__openerp__.py"]
 
 PROCESS_SUCCESS = "[green]OK[/green]"
 PROCESS_FAIL = "[red]FAIL[/red]"
@@ -64,4 +62,3 @@ PROCESS_NOT_IMP_MESSAGE = "The resource processor is not implemented yet!"
 LOG_FILE = "logs.txt"
 LOG_FOLDER = ".tmp"
 LOG_FILE_PATTERN = "log-{title}-{date}.txt"
-

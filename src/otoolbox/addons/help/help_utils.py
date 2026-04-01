@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-import re
 
 from otoolbox import env
 from otoolbox.base import Resource
 from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
-
-
-
 
 
 BEGIN_MARKER = ".. ODOONIX-AUTO-GENERATED-CONTENT-BEGIN"
@@ -15,7 +11,11 @@ END_MARKER = ".. ODOONIX-AUTO-GENERATED-CONTENT-END"
 
 
 def _strip_markers(text: str) -> str:
-    lines = [line for line in text.splitlines() if line.strip() not in (BEGIN_MARKER, END_MARKER)]
+    lines = [
+        line
+        for line in text.splitlines()
+        if line.strip() not in (BEGIN_MARKER, END_MARKER)
+    ]
     return "\n".join(lines).strip("\n")
 
 
@@ -34,7 +34,6 @@ def _find_first_markers(lines: list[str]) -> tuple[int, int] | None:
 
 
 def copy_into_marked_section(src_text: str, dst_path: str) -> None:
-
     with open(dst_path, "r", encoding="utf-8") as f:
         dst_text = f.read()
 
@@ -85,13 +84,11 @@ def copy_into_marked_section(src_text: str, dst_path: str) -> None:
         f.write(new_text)
 
 
-
-
 def update_readme(context: Resource):
-    """Copies content of WORKSPACE_README.rst file to root README.rst file between markers. 
-    
-    If there is no marker, it will add the content at the end of the file with markers. 
-    
+    """Copies content of WORKSPACE_README.rst file to root README.rst file between markers.
+
+    If there is no marker, it will add the content at the end of the file with markers.
+
     """
     readme_path = env.get_workspace_path(context.path)
     content = env.resource_string("addons/help/data/README.rst")

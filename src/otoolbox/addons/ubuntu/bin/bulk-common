@@ -8,11 +8,11 @@
 # maso, 2025: check if the current directory is workspace root. The workspace
 # root is the dirctory that contains the .venv/bin/bulk-pull.sh script (current script).
 # If not, change the current directory to the workspace root.
-# 
-# The script may be a symbol link, we need to resolve the symbol link to get the actual 
+#
+# The script may be a symbol link, we need to resolve the symbol link to get the actual
 # directory of the script.
-# We must store current direcotry before changing it to the workspace root, because 
-# we need to return to the original directory after pulling changes from the 
+# We must store current direcotry before changing it to the workspace root, because
+# we need to return to the original directory after pulling changes from the
 # repositories even there is error.
 ########################################################################################
 

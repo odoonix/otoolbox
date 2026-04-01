@@ -1,13 +1,14 @@
-""" Utilities for otoolbox to mainpulate odools.toml configuration file.
+"""Utilities for otoolbox to mainpulate odools.toml configuration file.
 
 This file is part of otoolbox.
 
-OdooLS is using (since 0.8.0) configuration files to detect your odoo setup and use right 
+OdooLS is using (since 0.8.0) configuration files to detect your odoo setup and use right
 configuration variables according to your needs.
 
 This module provides utilities to create and manage odools.toml configuration file in your project.
 
 """
+
 import re
 
 from otoolbox import env
@@ -16,9 +17,9 @@ from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def set_odoo_path(context: Resource):
-    """ Sets odoo_path varibale in odools.toml configuration file to context.path.
+    """Sets odoo_path varibale in odools.toml configuration file to context.path.
 
-    The odools.toml is depends on all modules. So we suppose this funcition is called after all 
+    The odools.toml is depends on all modules. So we suppose this funcition is called after all
     resources are initialized. So we can be sure that odools.toml file is created and we can edit it.
 
     odoo_path is the abslote path of odoo/odoo resource.
@@ -32,7 +33,7 @@ def set_odoo_path(context: Resource):
     with open(odools_path, "r", encoding="utf-8") as f:
         odools_config_data = f.read()
     pattern = r"^odoo_path\s*=\s*.*$"
-    replacement = f"odoo_path = \"{odoo_path}\""
+    replacement = f'odoo_path = "{odoo_path}"'
     if re.search(pattern, odools_config_data, flags=re.MULTILINE):
         odools_config_data = re.sub(
             pattern, replacement, odools_config_data, flags=re.MULTILINE
@@ -44,21 +45,19 @@ def set_odoo_path(context: Resource):
     with open(odools_path, "w", encoding="utf-8") as f:
         f.write(odools_config_data)
 
-
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
-
 
 
 def set_addons_paths(context: Resource):
     """Sets addons_paths variable in odools.toml configuration file to list of all addons paths in the workspace.
-    
+
 
     here is an example of addons_paths variable in odools.toml file:
- 
+
     addons_paths = [
         "${workspaceFolder}/odoonix/brand"
-    ]   
-    
+    ]
+
     """
     resource_set = env.resources.filter(
         lambda resource: (
@@ -75,10 +74,11 @@ def set_addons_paths(context: Resource):
     addons_paths = [
         "${workspaceFolder}/" + resource.path for resource in sorted_resources
     ]
-    
-    
+
     # create str value
-    addons_paths_str = "[\n" + ",\n".join(f"    \"{path}\"" for path in addons_paths) + "\n]"
+    addons_paths_str = (
+        "[\n" + ",\n".join(f'    "{path}"' for path in addons_paths) + "\n]"
+    )
     pattern = r"^addons_paths\s*=\s*\[.*?\]$"
     replacement = f"addons_paths = {addons_paths_str}"
 
@@ -87,7 +87,9 @@ def set_addons_paths(context: Resource):
         odools_config_data = f.read()
 
     if re.search(pattern, odools_config_data, flags=re.MULTILINE | re.DOTALL):
-        odools_config_data = re.sub(pattern, replacement, odools_config_data, flags=re.MULTILINE | re.DOTALL)
+        odools_config_data = re.sub(
+            pattern, replacement, odools_config_data, flags=re.MULTILINE | re.DOTALL
+        )
     else:
         if not odools_config_data.endswith("\n"):
             odools_config_data += "\n"
@@ -95,6 +97,5 @@ def set_addons_paths(context: Resource):
 
     with open(odools_path, "w", encoding="utf-8") as f:
         f.write(odools_config_data)
-
 
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE

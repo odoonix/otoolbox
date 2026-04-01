@@ -12,15 +12,16 @@ import csv
 from typing import List
 
 from otoolbox import env
-from otoolbox import utils
+
+# from otoolbox import utils
 from rich.console import Console
 from rich.table import Table
 
 
-from otoolbox.constants import (
-    RESOURCE_PRIORITY_ROOT,
-    RESOURCE_TAGS_GIT,
-)
+# from otoolbox.constants import (
+#     RESOURCE_PRIORITY_ROOT,
+#     RESOURCE_TAGS_GIT,
+# )
 
 from . import config
 

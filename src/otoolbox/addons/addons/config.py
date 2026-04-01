@@ -60,9 +60,6 @@ def _convert_addon_to_resources(item):
     return item
 
 
-
-
-
 def load_addon_resources():
     """Load the resources for all addons dynamically.
 
@@ -119,27 +116,26 @@ def load_addon_resources():
 
             except (SyntaxError, ValueError) as exc:
                 # Print clear error and continue
-                print("=" * 80)
-                print("Invalid __manifest__.py detected")
-                print(f"Addon      : {folder_name}")
-                print(f"Path       : {manifest_path}")
-                print(f"Error type : {type(exc).__name__}")
-                print(f"Message    : {exc}")
-                print("=" * 80)
+                env.console.print("=" * 80)
+                env.console.print("Invalid __manifest__.py detected")
+                env.console.print(f"Addon      : {folder_name}")
+                env.console.print(f"Path       : {manifest_path}")
+                env.console.print(f"Error type : {type(exc).__name__}")
+                env.console.print(f"Message    : {exc}")
+                env.console.print("=" * 80)
                 continue
 
             except Exception:
                 # Catch any unexpected error to avoid breaking the scan
-                print("=" * 80)
-                print("Unexpected error while reading __manifest__.py")
-                print(f"Addon : {folder_name}")
-                print(f"Path  : {manifest_path}")
+                env.console.print("=" * 80)
+                env.console.print("Unexpected error while reading __manifest__.py")
+                env.console.print(f"Addon : {folder_name}")
+                env.console.print(f"Path  : {manifest_path}")
                 traceback.print_exc()
-                print("=" * 80)
+                env.console.print("=" * 80)
                 continue
 
     # Register addons as resources
     for addon in addons_list:
         resource = _convert_addon_to_resources(addon)
         env.add_resource(**resource)
-

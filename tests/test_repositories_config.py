@@ -5,7 +5,9 @@ from otoolbox.addons.repositories.config import _load_repository_list
 from otoolbox.addons.repositories.constants import REPOSITORIES_PATH
 
 
-def test_load_repository_list_adds_git_repositories_from_workspace(tmp_path, monkeypatch):
+def test_load_repository_list_adds_git_repositories_from_workspace(
+    tmp_path, monkeypatch
+):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     monkeypatch.setitem(env.context, "odoo_version", "17.0")
     monkeypatch.setattr(
@@ -36,7 +38,9 @@ def test_load_repository_list_adds_git_repositories_from_workspace(tmp_path, mon
     ]
 
 
-def test_load_repository_list_does_not_duplicate_workspace_repositories(tmp_path, monkeypatch):
+def test_load_repository_list_does_not_duplicate_workspace_repositories(
+    tmp_path, monkeypatch
+):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
 
     repositories_path = tmp_path / REPOSITORIES_PATH
@@ -127,9 +131,9 @@ def test_load_repository_list_sets_mirror_flags_from_toml(tmp_path, monkeypatch)
 
     repositories_path = tmp_path / REPOSITORIES_PATH
     repositories_path.write_text(
-        json.dumps([
-            {"organization": "moonsunsoft", "repository": "cnp", "branch": "17.0"}
-        ]),
+        json.dumps(
+            [{"organization": "moonsunsoft", "repository": "cnp", "branch": "17.0"}]
+        ),
         encoding="utf8",
     )
 

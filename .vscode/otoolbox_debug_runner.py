@@ -1,3 +1,8 @@
+""" A virtual runner for otoolbox that allows to run the application in a debug mode
+with the current source code without installing it.
+
+
+"""
 import shlex
 import sys
 from pathlib import Path

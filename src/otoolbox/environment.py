@@ -10,7 +10,7 @@ from rich.console import Console
 
 # Odoo toolbox
 from otoolbox.base import Resource, ResourceSet
-from otoolbox.constants import (MANIFEST_NAMES)
+from otoolbox.constants import MANIFEST_NAMES
 
 
 class Environment:
@@ -28,7 +28,10 @@ class Environment:
         self.console = Console()
 
     def resource_string(
-        self, resource_name: str, package_name: str = "otoolbox", encoding: str = "utf-8"
+        self,
+        resource_name: str,
+        package_name: str = "otoolbox",
+        encoding: str = "utf-8",
     ):
         """Load resource"""
         text = files(package_name).joinpath(resource_name).read_text(encoding=encoding)
@@ -37,7 +40,7 @@ class Environment:
     def resource_stream(self, resource_name: str, package_name: str = "otoolbox"):
         """Load resource"""
         # return pkg_resources.resource_stream(package_name, resource_name)
-        return files(package_name).joinpath(resource_name).open('rb')
+        return files(package_name).joinpath(resource_name).open("rb")
 
     def get_workspace(self):
         """Get the workspace"""
@@ -62,8 +65,6 @@ class Environment:
             resource.extend(**kargs)
         return sys.modules[__name__]
 
-
-
     def is_addons_path(self, resource):
         assert isinstance(resource, Resource)
         path = self.get_workspace_path(resource.path)
@@ -72,9 +73,13 @@ class Environment:
         for f in os.listdir(path):
             modpath = os.path.join(path, f)
             if os.path.isdir(modpath):
+
                 def hasfile(filename):
                     return os.path.isfile(os.path.join(modpath, filename))
-                if hasfile('__init__.py') and any(hasfile(mname) for mname in MANIFEST_NAMES):
+
+                if hasfile("__init__.py") and any(
+                    hasfile(mname) for mname in MANIFEST_NAMES
+                ):
                     return True
         return False
 

@@ -1,6 +1,5 @@
 """Load general CLI and tools related to odoo"""
 
-
 import importlib
 from importlib.metadata import PackageNotFoundError, version
 import chevron
@@ -217,7 +216,6 @@ def _main():
         # post_process the addon
         if hasattr(package, "post_process"):
             package.post_process(package)
-
 
     # Load the application
     app()

@@ -46,7 +46,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
             copier update \
                 --UNSAFE \
                 --skip-answered \
-                --answers-file ".copier-answers.yml" 
+                --answers-file ".copier-answers.yml"
         fi
     fi
 done

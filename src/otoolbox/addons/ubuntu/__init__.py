@@ -4,11 +4,11 @@ Resources:
 - .bin
 """
 
-import os
+# import os
 import dotenv
 
 import typer
-from typing_extensions import Annotated
+# from typing_extensions import Annotated
 
 import otoolbox
 from otoolbox import env
@@ -58,15 +58,15 @@ def install():
     env.console.print("Run ./ubuntu-install-apps.sh in terminal.")
 
 
-
 @app.command(name="init")
-def init():
+def init_command():
     env.console.print("Update working directory to the current workspace.")
     otoolbox.command_run(
         steps=["init", "update", "verify"],
         tags=["ubuntu"],
         ssh_auth=True,
     )
+
 
 ###################################################################
 # init
@@ -85,7 +85,6 @@ def init(addon):
         verify=[utils.is_dir, utils.is_readable],
         tags=["ubuntu", "folder", ".venv/bin"],
     )
-
 
     for script in LINUX_SCRIPTS:
         env.add_resource(
@@ -120,7 +119,6 @@ def init(addon):
             verify=[utils.pipx_is_install, utils.pipx_ensurepath],
             tags=["ubuntu", "tools", app],
         )
-
 
 
 ###################################################################

@@ -14,7 +14,7 @@ import sys
 import dotenv
 
 import typer
-from typing_extensions import Annotated
+# from typing_extensions import Annotated
 
 
 from otoolbox import env
@@ -60,7 +60,9 @@ def init(addon):
     )
 
     # Logging
-    file_handler = logging.FileHandler(filename=env.get_workspace_path(LOG_FOLDER, LOG_FILE))
+    file_handler = logging.FileHandler(
+        filename=env.get_workspace_path(LOG_FOLDER, LOG_FILE)
+    )
     handlers = [file_handler]
     verbose = env.context.get("verbose")
     if verbose:

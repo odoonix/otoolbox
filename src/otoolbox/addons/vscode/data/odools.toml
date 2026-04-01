@@ -11,14 +11,13 @@ python_path="./.venv/bin/python3"
 [[config.diagnostic_filters]]
 codes = ["OLS.*"]
 paths = [
-    "**/odoo/*", 
+    "**/odoo/*",
     "**/oca/*"
 ]
 path_type = "in"
 types=[
-    "Error", 
-    "Warning", 
+    "Error",
+    "Warning",
     "Info",
     "Hint"
 ]
-

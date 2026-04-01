@@ -6,7 +6,8 @@ Resources:
 """
 
 import typer
-from typing_extensions import Annotated
+
+# from typing_extensions import Annotated
 import dotenv
 
 
@@ -31,21 +32,10 @@ def init(addon):
         path="README.rst",
         title="Workspace README",
         description="A readme that shows parts of the workspace",
-        init=[
-            utils.touch_file,
-            help_utils.update_readme
-        ],
-        update=[
-            utils.touch_file,
-            help_utils.update_readme
-        ],
-        destroy=[
-            utils.delete_file
-        ],
-        verify=[
-            utils.is_file, 
-            utils.is_readable
-        ],
+        init=[utils.touch_file, help_utils.update_readme],
+        update=[utils.touch_file, help_utils.update_readme],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
     )
 
 

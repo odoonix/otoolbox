@@ -15,11 +15,15 @@ import subprocess
 import dotenv
 
 import typer
-from typing_extensions import Annotated
+# from typing_extensions import Annotated
 
 from otoolbox import env
 from otoolbox import utils
-from otoolbox.constants import RESOURCE_PRIORITY_ROOT, RESOURCE_PRIORITY_DEFAULT, RESOURCE_PRIORITY_EXTEND
+from otoolbox.constants import (
+    RESOURCE_PRIORITY_ROOT,
+    RESOURCE_PRIORITY_DEFAULT,
+    RESOURCE_PRIORITY_EXTEND,
+)
 
 from otoolbox.addons.vscode import dev_env
 from otoolbox.addons.vscode import code_cof
@@ -127,7 +131,7 @@ def init(addon):
             odools_conf.set_addons_paths,
         ],
         update=[
-            utils.touch_file, 
+            utils.touch_file,
             utils.constructor_copy_resource("addons/vscode/data/odools.toml"),
             odools_conf.set_odoo_path,
             odools_conf.set_addons_paths,
@@ -137,7 +141,6 @@ def init(addon):
         tags=["vscode", "odools"],
         priority=RESOURCE_PRIORITY_EXTEND,
     )
-
 
 
 ###################################################################

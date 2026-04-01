@@ -37,8 +37,8 @@ else
 fi
 
 
-"$GIT_BIN" pull 
+"$GIT_BIN" pull
 "$GIT_BIN" submodule update --remote
 "$GIT_BIN" add -A
 "$GIT_BIN" commit -m "[UPD] submodule: update submodule to latest version"
-"$GIT_BIN" push 
+"$GIT_BIN" push

@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
+
 try:  # for Sphinx >= 1.7
     from sphinx.ext import apidoc
 except ImportError:
@@ -39,7 +40,7 @@ module_dir = os.path.join(__location__, "../src/otoolbox")
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
-    pass
+    logging.info(f"Output directory {output_dir} does not exist, skipping cleanup.")
 
 try:
     import sphinx
@@ -89,7 +90,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "utils"
-copyright = "2025, Odoonix"
+copyright_text = "2025, Odoonix"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

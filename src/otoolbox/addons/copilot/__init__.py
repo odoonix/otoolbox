@@ -1,27 +1,29 @@
-""" Otoolbox Copilot Addons
+"""Otoolbox Copilot Addons
 
 This addons is designe to manage all resources related to copilot.
 
 """
 
-import logging
-import sys
+# import logging
+# import sys
 import dotenv
 
 import typer
-from typing_extensions import Annotated
+# from typing_extensions import Annotated
 
-
+from otoolbox.constants import (
+    LOG_FILE,
+)
 from otoolbox import env
 from otoolbox import utils
 from . import copilot_utils
 
-AGENT_FOLDER =  ".github/agents"
+AGENT_FOLDER = ".github/agents"
 
 AGENT_FILES = [
     "Odoo_17_Backend.agent.md",
     "Odoo_18_Backend.agent.md",
-    "Odoo_19_Backend.agent.md"
+    "Odoo_19_Backend.agent.md",
 ]
 
 COPILOT_INSTRAUCTIONS_WORKSPACE = "workspace.md"
@@ -66,8 +68,13 @@ def init(addon):
             parent=AGENT_FOLDER,
             title=f"Copilot agent file: {agent_file}",
             description=f"Copilot agent file for {agent_file.split('.')[0]}",
-            init=[utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}")],
-            update=[utils.touch_file, utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}")],
+            init=[
+                utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}")
+            ],
+            update=[
+                utils.touch_file,
+                utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}"),
+            ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_readable],
             tags=["copilot", "agent", "github", f"{AGENT_FOLDER}/{agent_file}"],
@@ -78,8 +85,17 @@ def init(addon):
         path=".copilot-instructions.md",
         title="Copilot instructions for workspace",
         description="Instructions for using copilot in the workspace",
-        init=[utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}")],
-        update=[utils.touch_file, utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}")],
+        init=[
+            utils.constructor_copy_resource(
+                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}"
+            )
+        ],
+        update=[
+            utils.touch_file,
+            utils.constructor_copy_resource(
+                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}"
+            ),
+        ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["copilot", "instructions", "workspace"],
@@ -90,21 +106,27 @@ def init(addon):
         path="odoonix/.copilot-instructions.md",
         title="Copilot instructions for ODOONIX",
         description="Instructions for using copilot in ODOONIX",
-        init=[utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}")],
-        update=[utils.touch_file, utils.constructor_copy_resource(f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}")],
-        destroy=[utils.delete_file],
-        verify=[
-            utils.is_file, 
-            utils.is_readable
+        init=[
+            utils.constructor_copy_resource(
+                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}"
+            )
         ],
+        update=[
+            utils.touch_file,
+            utils.constructor_copy_resource(
+                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}"
+            ),
+        ],
+        destroy=[utils.delete_file],
+        verify=[utils.is_file, utils.is_readable],
         tags=["copilot", "instructions", "odoonix"],
     )
 
-    
 
 def post_process(addon):
     copilot_utils.init_verification_process()
     copilot_utils.load_copilot_configuration_resource()
+
 
 ###################################################################
 # Application entry point

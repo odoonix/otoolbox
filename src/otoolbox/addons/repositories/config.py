@@ -26,14 +26,16 @@ from otoolbox.addons.repositories.constants import (
 
 def _add_repo_to_resources(item):
     tags = list(
-        set([
-            *item.get("tags", []),
-            "git",
-            "repository",
-            f"{item.get('organization')}/{item.get('repository')}",
-            item.get("organization"),
-            item.get("branch")
-        ])
+        set(
+            [
+                *item.get("tags", []),
+                "git",
+                "repository",
+                f"{item.get('organization')}/{item.get('repository')}",
+                item.get("organization"),
+                item.get("branch"),
+            ]
+        )
     )
     item.update(
         {
@@ -51,7 +53,7 @@ def _add_repo_to_resources(item):
             ],
             "destroy": [utils.delete_dir],
             "verify": [
-                utils.is_dir, 
+                utils.is_dir,
                 utils.is_readable,
                 utils.has_otoolbox_toml,
                 git.is_git_repository,
@@ -85,7 +87,9 @@ def _discover_workspace_repositories():
         return []
 
     repo_list = []
-    for organization_entry in sorted(os.scandir(workspace_path), key=lambda entry: entry.name):
+    for organization_entry in sorted(
+        os.scandir(workspace_path), key=lambda entry: entry.name
+    ):
         if not organization_entry.is_dir():
             continue
 
@@ -107,9 +111,6 @@ def _discover_workspace_repositories():
     return repo_list
 
 
-
-
-
 def _load_repository_toml(organization, repository):
     if tomllib is None:
         return {}
@@ -125,9 +126,8 @@ def _load_repository_toml(organization, repository):
         return data.get("repository", {})
     if isinstance(data.get("resource"), dict):
         return data.get("resource", {})
-    if (
-        isinstance(data.get("otoolbox"), dict)
-        and isinstance(data["otoolbox"].get("repository"), dict)
+    if isinstance(data.get("otoolbox"), dict) and isinstance(
+        data["otoolbox"].get("repository"), dict
     ):
         return data["otoolbox"]["repository"]
     return data if isinstance(data, dict) else {}
@@ -221,7 +221,7 @@ def _load_repository_list():
 
 def save_repository_list(repo_list):
     """Save the repository list to the configuration file
-    
+
     Repositories in the list should have the following format:
     {
     "organization": "odoonix",
@@ -235,7 +235,7 @@ def save_repository_list(repo_list):
     ...
     }
 
-    You have more control over the repositoy item by adding more fields in the item, 
+    You have more control over the repositoy item by adding more fields in the item,
     but the above fields are required for the basic functionality of the repository management.
     """
     reposiotires_path = env.get_workspace_path(REPOSITORIES_PATH)
@@ -283,6 +283,7 @@ def remove_repository(organization, repository):
     ]
     # NOTE: No need to save the list.
     # _save_repository_list(new_repo_list)
+    return new_repo_list
 
 
 # Merge db

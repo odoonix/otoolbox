@@ -5,11 +5,7 @@ import os
 from otoolbox import env
 from otoolbox import utils
 from otoolbox.base import Resource
-from otoolbox.constants import (
-    PROCESS_SUCCESS,
-    PROCESS_FAIL,
-    PROCESS_EMPTY_MESSAGE
-)
+from otoolbox.constants import PROCESS_SUCCESS, PROCESS_FAIL, PROCESS_EMPTY_MESSAGE
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
     GIT_ADDRESS_SSH,
@@ -59,6 +55,7 @@ def _get_branch_info(context: Resource):
     )
     return str.strip(result.stdout)
 
+
 def _get_branch_name(context: Resource):
     cwd = env.get_workspace_path(context.path)
     result = subprocess.run(
@@ -68,7 +65,10 @@ def _get_branch_name(context: Resource):
         cwd=cwd,
         check=False,
     )
-    return next((line.strip() for line in result.stdout.splitlines() if line.strip()), "")
+    return next(
+        (line.strip() for line in result.stdout.splitlines() if line.strip()), ""
+    )
+
 
 def _is_git_repository(repository_path):
     if not os.path.isdir(repository_path):
@@ -76,6 +76,7 @@ def _is_git_repository(repository_path):
 
     git_path = os.path.join(repository_path, ".git")
     return os.path.isdir(git_path) or os.path.isfile(git_path)
+
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -152,6 +153,7 @@ def git_add_safe_directory(context: Resource):
     if result.returncode:
         raise RuntimeError(result.stderr)
     return PROCESS_SUCCESS, f"safe.directory added: {repository_path}"
+
 
 def is_git_repository(context: Resource):
     """Check if the given path is a git repository."""
