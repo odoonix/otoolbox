@@ -131,7 +131,7 @@ class ResourceProcessor:
         return result, message
 
     def __str__(self):
-        return self.process.__name__
+        return self.title if self.title else self.process.__name__
 
 
 class Resource:
@@ -181,7 +181,7 @@ class Resource:
         if path != self.path:
             raise RuntimeError("Imposible to modifie path")
         parent = kargs.get("parent", None)
-        if parent != self.parent:
+        if parent and parent != self.parent:
             raise RuntimeError("Imposible to modifie parent")
 
         self.origin_extensions.append(kargs)

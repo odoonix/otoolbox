@@ -28,6 +28,7 @@ from otoolbox.constants import (
 from otoolbox.addons.vscode import dev_env
 from otoolbox.addons.vscode import code_cof
 from otoolbox.addons.vscode import odools_conf
+from otoolbox.addons.vscode.extensions import set_recommanded_extensions, verify_recommanded_extensions
 
 
 ###################################################################
@@ -71,13 +72,19 @@ def init(addon):
             utils.constructor_copy_resource("addons/vscode/data/workspace.json"),
             code_cof.set_workspace_conf_odoo_addons,
             code_cof.rebuile_folder_config,
+            set_recommanded_extensions,
         ],
         update=[
             code_cof.set_workspace_conf_odoo_addons,
             code_cof.rebuile_folder_config,
+            set_recommanded_extensions,
         ],
         destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable],
+        verify=[
+            utils.is_file, 
+            utils.is_readable,
+            verify_recommanded_extensions
+        ],
         tags=["vscode"],
     )
 
@@ -111,10 +118,22 @@ def init(addon):
         parent=".",
         title="Custom dependencies",
         description="Libs required in development environemnt.",
-        init=[utils.touch_file, dev_env.pyenv_install],
-        update=[utils.touch_file, dev_env.pyenv_install],
+        init=[
+            utils.touch_file,
+            utils.constructor_add_text_line("dotenv"),
+            dev_env.pyenv_install
+        ],
+        update=[
+            utils.touch_file, 
+            utils.constructor_add_text_line("dotenv"),
+            dev_env.pyenv_install
+        ],
         destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable],
+        verify=[
+            utils.is_file, 
+            utils.is_readable,
+            utils.constructor_contains_text("dotenv")
+        ],
         tags=["vscode", "python", "venv"],
         priority=RESOURCE_PRIORITY_DEFAULT,
     )

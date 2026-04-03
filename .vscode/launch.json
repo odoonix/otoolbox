@@ -17,6 +17,8 @@
                 "ubuntu init",
                 "run update --tags odools.toml",
                 "run update --tags README.rst",
+                "run update --tags unitest",
+                "run update --tags requirements.txt",
                 "repo list",
                 "repo sync-shielded",
                 "run verify --tags git",

@@ -152,6 +152,29 @@ def constructor_copy_resource(path, package_name: str = "otoolbox"):
     return copy_resource
 
 
+
+def constructor_contains_text(text: str):
+    def contains_text(context: Resource):
+        file_path = env.get_workspace_path(context.path)
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            if text in content:
+                return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+        return PROCESS_FAIL, f"File {file_path} doesn't contain the text: {text}"
+    contains_text.__name__ = f"contains_text('{text}')"
+    return contains_text
+
+
+def constructor_add_text_line(text: str):
+    def add_text_line(context: Resource):
+        file_path = env.get_workspace_path(context.path)
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(text + "\n")
+        return PROCESS_SUCCESS, _get_modif_date(context=context)
+    add_text_line.__name__ = f"add_text_line('{text}')"
+    return add_text_line
+
+
 def chmod_executable(context: Resource):
     file_path = env.get_workspace_path(context.path)
     os.chmod(file_path, 0o755)
@@ -209,6 +232,7 @@ def has_otoolbox_toml(context: Resource):
         return PROCESS_WAR, "File otoolbox.toml doesn't exist or isn't readable"
 
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
 
 
 ###################################################################
