@@ -10,7 +10,6 @@ from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 _jsonpath_addons_expr = parse("$.settings.odoo.addons")
 _jsonpath_folders_expr = parse("$.folders")
 
-
 def _load_data(context: Resource):
     with open(context.get_abs_path(), "r", encoding="utf-8") as file:
         data = json.load(file)
@@ -37,8 +36,6 @@ def set_workspace_conf_odoo_addons(context: Resource):
             and resource.path != "odoo/odoo"
             and env.is_addons_path(resource)
             and resource.enable_in_runtime
-            # and _is_git(resource) We can load manual addons
-            # and _is_git(resource) TODO: we must check if there is an addon
         )
     )
 

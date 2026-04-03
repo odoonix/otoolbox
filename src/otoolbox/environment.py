@@ -3,6 +3,7 @@
 # Standard
 import os
 import sys
+import dotenv
 
 # 3th party
 from importlib.resources import files
@@ -50,6 +51,21 @@ class Environment:
         """Gets subfolder/file with in workspace"""
         assert path, "Path is requried"
         return os.path.join(self.get_workspace(), *path)
+
+
+    def get_env_variable(self, name, default=None):
+        """Get environment variable
+        
+        Loads .env file in workspace and get the variable value.
+        If the variable is not found, return default value.
+        """
+        dotenv_path = self.get_workspace_path(".env")
+        if os.path.isfile(dotenv_path):
+            dotenv.load_dotenv(dotenv_path)
+        value = os.environ.get(name, default)
+        if isinstance(default, list):
+            value = value.split(",")
+        return value
 
     #################################################################################
     # Resource

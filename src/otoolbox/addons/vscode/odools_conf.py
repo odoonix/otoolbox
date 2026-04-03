@@ -59,13 +59,19 @@ def set_addons_paths(context: Resource):
     ]
 
     """
+    # Get list of target repostiory TARGET_REPOSITORIES which is an array
+    # of string like "odoo" or "moonsunsoft". This is an environment 
+    # variable that can be set in .env file.
+    # eg: TARGET_REPOSITORIES=("odoo" "moonsunsoft")
+    target_repositories = env.get_env_variable("TARGET_REPOSITORIES", [])
+
     resource_set = env.resources.filter(
         lambda resource: (
             resource.has_tag("repository")
             and resource.path != "odoo/odoo"
             and resource.enable_in_runtime
-            # and _is_git(resource) We can load manual addons
-            # and _is_git(resource) TODO: we must check if there is an addon
+            and env.is_addons_path(resource)
+            and (not target_repositories or resource.parent in target_repositories)
         )
     )
 
