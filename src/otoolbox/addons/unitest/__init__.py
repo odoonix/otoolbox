@@ -28,7 +28,7 @@ from otoolbox.addons.unitest.unitest_utils import (
 ###################################################################
 app = typer.Typer()
 app.__cli_name__ = "unitest"
-app.__depends_on__ = ["vscode"]
+app.__depends_on__ = ["vscode", "workspace"]
 
 
 ###################################################################

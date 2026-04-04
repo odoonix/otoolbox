@@ -38,6 +38,11 @@ class Environment:
         text = files(package_name).joinpath(resource_name).read_text(encoding=encoding)
         return text
 
+    def list_resources(self, directory: str, package_name: str = "otoolbox"):
+        """List all resources in the specified directory"""
+        resource_path = files(package_name).joinpath(directory)
+        return [f.name for f in resource_path.iterdir() if f.is_file()]
+
     def resource_stream(self, resource_name: str, package_name: str = "otoolbox"):
         """Load resource"""
         # return pkg_resources.resource_stream(package_name, resource_name)

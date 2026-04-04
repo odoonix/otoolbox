@@ -16,9 +16,10 @@ from otoolbox.constants import (
 )
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.constants import (
+    RESOURCE_TAGS_DOCUMENTATION
+)
 from . import copilot_utils
-
-AGENT_FOLDER = ".github/agents"
 
 AGENT_FILES = [
     "Odoo_17_Backend.agent.md",
@@ -51,7 +52,8 @@ def command_show():
 def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
-        path=AGENT_FOLDER,
+        path=".github/agents",
+        parent=".github",
         title="Folder for copilot agents",
         description="Contains all copilot agent files",
         init=[utils.makedir],
@@ -64,63 +66,44 @@ def init(addon):
     # add resourse for each agent file
     for agent_file in AGENT_FILES:
         env.add_resource(
-            path=f"{AGENT_FOLDER}/{agent_file}",
-            parent=AGENT_FOLDER,
+            path=f".github/agents/{agent_file}",
+            parent=".github/agents",
             title=f"Copilot agent file: {agent_file}",
             description=f"Copilot agent file for {agent_file.split('.')[0]}",
             init=[
-                utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}")
+                utils.constructor_copy_resource(f"addons/copilot/data/agents/{agent_file}")
             ],
             update=[
                 utils.touch_file,
-                utils.constructor_copy_resource(f"addons/copilot/agents/{agent_file}"),
+                utils.constructor_copy_resource(f"addons/copilot/data/agents/{agent_file}"),
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_readable],
-            tags=["copilot", "agent", "github", f"{AGENT_FOLDER}/{agent_file}"],
+            tags=["copilot", RESOURCE_TAGS_DOCUMENTATION],
         )
 
     # add copilot instructions for workspace
     env.add_resource(
-        path=".copilot-instructions.md",
+        path=".github/copilot-instructions.md",
+        parent=".github",
         title="Copilot instructions for workspace",
         description="Instructions for using copilot in the workspace",
         init=[
             utils.constructor_copy_resource(
-                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}"
+                f"addons/copilot/data/copilot-instructions.md"
             )
         ],
         update=[
             utils.touch_file,
             utils.constructor_copy_resource(
-                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_WORKSPACE}"
+                f"addons/copilot/data/copilot-instructions.md"
             ),
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
-        tags=["copilot", "instructions", "workspace"],
+        tags=["copilot", "instructions", RESOURCE_TAGS_DOCUMENTATION],
     )
 
-    # add copilot instructions for odoonix
-    env.add_resource(
-        path="odoonix/.copilot-instructions.md",
-        title="Copilot instructions for ODOONIX",
-        description="Instructions for using copilot in ODOONIX",
-        init=[
-            utils.constructor_copy_resource(
-                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}"
-            )
-        ],
-        update=[
-            utils.touch_file,
-            utils.constructor_copy_resource(
-                f"addons/copilot/instructions/{COPILOT_INSTRAUCTIONS_ODOONIX}"
-            ),
-        ],
-        destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable],
-        tags=["copilot", "instructions", "odoonix"],
-    )
 
 
 def post_process(addon):

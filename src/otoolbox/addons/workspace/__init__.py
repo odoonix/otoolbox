@@ -47,12 +47,37 @@ def init(addon):
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,
         path=RESOURCE_ENV_FILE,
+        parent=RESOURCE_ROOT,
         title="Envirenments Variables",
         description="The env variables file",
         init=[utils.touch_file, utils.set_to_env_all],
         update=[utils.set_to_env_all],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable, utils.is_writable],
+        tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+    )
+    env.add_resource(
+        priority=RESOURCE_PRIORITY_ROOT,
+        path=".github",
+        parent=RESOURCE_ROOT,
+        title="GitHub directory",
+        description="The GitHub directory",
+        init=[utils.makedir],
+        update=[utils.touch_dir],
+        destroy=[utils.delete_dir],
+        verify=[utils.is_dir, utils.is_readable, utils.is_writable],
+        tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+    )
+    env.add_resource(
+        priority=RESOURCE_PRIORITY_ROOT,
+        path=".tmp",
+        parent=RESOURCE_ROOT,
+        title="Temporary directory",
+        description="The temporary directory",
+        init=[utils.makedir],
+        update=[utils.touch_dir],
+        destroy=[utils.delete_dir],
+        verify=[utils.is_dir, utils.is_readable, utils.is_writable],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
 

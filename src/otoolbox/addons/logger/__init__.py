@@ -50,6 +50,7 @@ def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
         path=LOG_FILE,
+        parent=LOG_FOLDER,
         title="Default logging resource",
         description="Containes all logs from the sysem",
         init=[utils.touch_file],
