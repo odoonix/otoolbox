@@ -23,6 +23,65 @@ cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_
 echo "Current directory is: $CURRENT_DIR"
 cd "$WORKDIR"
 
+TEMPLATE_TMP_DIR="$WORKSPACE_ROOT/.tmp"
+TEMPLATE_TMP_FILE="$TEMPLATE_TMP_DIR/gen_addon_readme.rst.jinja"
+
+mkdir -p "$TEMPLATE_TMP_DIR"
+{
+    echo '{#'
+    echo '   addon_name: the addon name from manifest'
+    echo '   authors: authors from manifest'
+    echo '   badges: badges ???'
+    echo '   branch: branch ???'
+    echo '   fragments: list of fragments file which is a fixed list'
+    echo '   manifest: the addon manifest file'
+    echo '   org_name: github organization name which is part of github path'
+    echo '   repo_name: the repository name which is part of github path'
+    echo '   development_status: development_status???'
+    echo '   source_digest: source_digest???'
+    echo $'   level3_underline: "~" if fragments_format == ".rst" else "-",'
+    echo ''
+    echo ''
+    echo ''
+    echo '   FRAGMENTS:'
+    echo ''
+    echo '   - DESCRIPTION'
+    echo '   - CONTEXT'
+    echo '   - INSTALL'
+    echo '   - CONFIGURE'
+    echo '   - USAGE'
+    echo '   - ROADMAP'
+    echo '   - DEVELOP'
+    echo '   - CONTRIBUTORS'
+    echo '   - CREDITS'
+    echo '   - HISTORY'
+    echo ''
+    echo ''
+    echo '#}'
+    echo ''
+    echo ''
+    echo ''
+    echo "{%- macro fragment(name, title, sub='=') %}"
+    echo '{%- if name in fragments %}'
+    echo '{{- title }}'
+    echo '{{ sub * title|length }}'
+    echo ''
+    echo '{{ fragments[name] }}'
+    echo '{% endif %}'
+    echo '{%- endmacro -%}'
+    echo ''
+    echo ''
+    echo "{{ fragment('DESCRIPTION', 'Description') }}"
+    echo "{{ fragment('CONTEXT', 'Usecase') }}"
+    echo "{{ fragment('INSTALL', 'Installation') }}"
+    echo "{{ fragment('CONFIGURE', 'Configuration') }}"
+    echo "{{ fragment('USAGE', 'Usage') }}"
+    echo "{{ fragment('CONTRIBUTORS', 'Contributer') }}"
+    echo "{{ fragment('CREDITS', 'Credits') }}"
+    echo "{{ fragment('HISTORY', 'History') }}"
+    echo "{{ fragment('DEVELOP', 'Development') }}"
+} > "$TEMPLATE_TMP_FILE"
+
 # install or update maintainer tools
 # pipx \
 #     install \
@@ -75,7 +134,6 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
                     done
 
                     for doc_file in "${doc_files[@]}";do
-
                         if [ -f "${addon_dir}/${doc_file}.md" ]; then
                             mv -f \
                                 "${addon_dir}/${doc_file}.md" \
@@ -95,10 +153,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
         #
         # Generage customer readme
         #
-        if [ -f "$WORKDIR/gen_addon_readme.rst.jinja" ]; then
-            cp -f "$WORKDIR/gen_addon_readme.rst.jinja" "$dir/gen_addon_readme.rst.jinja"
-        fi
-        if [ -f "$dir/gen_addon_readme.rst.jinja" ]; then
+        if [ -f "$TEMPLATE_TMP_FILE" ]; then
             oca-gen-addon-readme \
                 --addons-dir="$dir" \
                 --branch=${ODOO_VERSION} \
@@ -106,7 +161,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
                 --repo-name=$project \
                 --if-source-changed \
                 --keep-source-digest \
-                --template-filename=./gen_addon_readme.rst.jinja
+                --template-filename="$TEMPLATE_TMP_FILE"
         fi
     fi
 done

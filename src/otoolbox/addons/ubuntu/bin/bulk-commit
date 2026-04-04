@@ -18,6 +18,62 @@ cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_
 
 
 ########################################################################################
+# Parse CLI arguments
+########################################################################################
+COMMIT_MESSAGE="bulk: automated commit"
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -m|--message)
+            shift
+            if [[ -z "${1:-}" ]]; then
+                echo "Error: missing value for --message" >&2
+                exit 1
+            fi
+            COMMIT_MESSAGE="$1"
+            ;;
+        -h|--help)
+            cat <<'EOF'
+Usage: bulk-commit [OPTIONS] [MESSAGE]
+
+Commit all pending changes in configured organizations.
+
+Options:
+  -m, --message TEXT   Commit message to use
+  -h, --help           Show this help and exit
+
+Examples:
+  bulk-commit -m "chore: sync updates"
+  bulk-commit "chore: sync updates"
+EOF
+            exit 0
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -* )
+            echo "Error: unknown option '$1'" >&2
+            exit 1
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            ;;
+    esac
+    shift
+done
+
+if [[ ${#POSITIONAL_ARGS[@]} -gt 0 ]]; then
+    COMMIT_MESSAGE="${POSITIONAL_ARGS[*]}"
+fi
+
+
+########################################################################################
 # Pull latest changes from the repositories
 ########################################################################################
 ORGANIZATIONS=(
@@ -28,37 +84,18 @@ ORGANIZATIONS=(
 
 for organization in "${ORGANIZATIONS[@]}"; do
     if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
-        echo "Pulling latest changes from $organization organization."
-        otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
+        echo "Committing changes in $organization organization"
+        find "$WORKSPACE_ROOT/$organization" -maxdepth 1 -type d -name ".git" -prune -o -type d -print | while read -r repo; do
+            if [[ -d "$repo/.git" ]]; then
+                cd "$repo" || continue
+                if [[ -n $(git status -s) ]]; then
+                    git add -A
+                    git commit -m "$COMMIT_MESSAGE" >> "$LOG_FILE" 2>&1
+                fi
+            fi
+        done
     else
-        echo "Repository $organization not found, skipping pull for $organization organization"
+        echo "Repository $organization not found, skipping commit for $organization organization"
     fi
 done
 
-PROTECTED_ORGANIZATIONS=(
-    "$SHIELDED_ORGANIZATION" \
-)
-for organization in "${PROTECTED_ORGANIZATIONS[@]}"; do
-    if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
-        echo "Pulling latest changes from $organization organization"
-        # Run otoolbox command as the worker user to pull changes from the protected repositories.
-        # if the wokere user is the same as the current user, we can run the otoolbox command directly without sudo.
-        if [[ "$WORKER_USER" == "$(whoami)" ]]; then
-            OTOOLBOX_BIN="$(command -v otoolbox)"
-            if [[ -z "$OTOOLBOX_BIN" ]]; then
-                echo "Error: otoolbox not found in PATH" >&2
-                exit 1
-            fi
-            "$OTOOLBOX_BIN" run update --tags "$organization" >> "$LOG_FILE" 2>&1
-        else
-            OTOOLBOX_BIN="$(sudo -u "$WORKER_USER" -H bash -lc 'command -v otoolbox')"
-            if [[ -z "$OTOOLBOX_BIN" ]]; then
-                echo "Error: otoolbox not found in $WORKER_USER PATH" >&2
-                exit 1
-            fi
-            sudo -u "$WORKER_USER" -H "$OTOOLBOX_BIN" run update --tags "$organization" >> "$LOG_FILE" 2>&1
-        fi
-    else
-        echo "Repository $organization not found, skipping pull for $organization organization"
-    fi
-done
