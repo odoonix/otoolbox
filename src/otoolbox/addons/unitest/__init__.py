@@ -17,6 +17,10 @@ import dotenv
 
 from otoolbox import env
 from otoolbox import utils
+from otoolbox.constants import (
+    RESOURCE_TAGS_DOCUMENTATION,
+    RESOURCE_ROOT,
+)
 from otoolbox.addons.vscode import dev_env
 from otoolbox.addons.unitest.unitest_utils import (
     add_python_testing_config,
@@ -37,7 +41,8 @@ app.__depends_on__ = ["vscode", "workspace"]
 def init(addon):
     """Init the resources for the workspace"""
     env.add_resource(
-        path="ODOO_TEST_FRAMEWORK_GUIDE.md",
+        path="docs/ODOO_TEST_FRAMEWORK_GUIDE.md",
+        parent="docs",
         title="Guide for odoo test framework",
         description="""Guide for odoo test framework""",
         init=[
@@ -50,12 +55,13 @@ def init(addon):
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
-        tags=["unitest"],
+        tags=["unitest", RESOURCE_TAGS_DOCUMENTATION],
     )
 
 
     env.add_resource(
         path="conftest.py",
+        parent=RESOURCE_ROOT,
         title="Conftest for odoo test framework",
         description="""Conftest for odoo test framework""",
         init=[
@@ -74,6 +80,7 @@ def init(addon):
 
     env.add_resource(
         path="pytest.ini",
+        parent=RESOURCE_ROOT,
         title="Pytest configuration for odoo test framework",
         description="""Pytest configuration for odoo test framework""",
         init=[
