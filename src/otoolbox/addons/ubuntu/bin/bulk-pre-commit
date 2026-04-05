@@ -182,12 +182,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
                         done
 
                         for doc_file in "${doc_files[@]}";do
-                            if [ -f "${addon_dir}/${doc_file}.md" ]; then
-                                mv -f \
-                                    "${addon_dir}/${doc_file}.md" \
-                                    "${addon_dir}/${doc_file}.rst"
-                            fi
-                            touch "${addon_dir}/${doc_file}.rst"
+                            touch "${addon_dir}/${doc_file}.md"
                         done
                     fi
                 fi
@@ -210,6 +205,7 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
                 --repo-name=$project \
                 --if-source-changed \
                 --keep-source-digest \
+                --convert-fragments-to-markdown \
                 --template-filename="$TEMPLATE_TMP_FILE"
         fi
     fi
