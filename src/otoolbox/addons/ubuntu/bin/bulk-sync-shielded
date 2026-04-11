@@ -14,11 +14,42 @@
 #############################################################################
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+print_help() {
+    cat <<'EOF'
+Usage: bulk-sync-shielded [OPTIONS]
+
+Options:
+  --no-pull    Skip running bulk-pull before syncing shielded repositories.
+  --help       Show this help message and exit.
+EOF
+}
+
+NO_PULL=0
+for arg in "$@"; do
+    case "$arg" in
+        --help)
+            print_help
+            exit 0
+            ;;
+        --no-pull)
+            NO_PULL=1
+            ;;
+        *)
+            echo "Error: unknown option: $arg" >&2
+            echo "Try '--help' for usage." >&2
+            exit 1
+            ;;
+    esac
+done
+
 source "$SCRIPT_DIR/bulk-common"
 cd "$WORKSPACE_ROOT" || { echo "Error: failed to change directory to $WORKSPACE_ROOT" >&2; exit 1; }
 
 # copy changes to the shielded organization repo
-bulk-pull
+if [ "$NO_PULL" -eq 0 ]; then
+    bulk-pull
+fi
 otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
 
 
