@@ -189,7 +189,8 @@ def command_run(
 # Application entry point
 # Launch application if called directly
 ###################################################################
-def _main():
+
+def _load_application():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
     env.context.update({"addons": addons_list})
@@ -217,9 +218,25 @@ def _main():
         if hasattr(package, "post_process"):
             package.post_process(package)
 
-    # Load the application
+def _main():
+    _load_application()
     app()
 
+
+def _doctor():
+    """Run checks to verify if the environment is set up correctly."""
+    _load_application()
+    steps= "verify"
+    resources = env.resources
+
+    # TODO: maso, 2025: check if all base resources are loaded or load them.
+
+    env.console.print("Running doctor checks...")
+    result = resources.executor(steps).execute()
+    utils.print_result(result)
+
+
+    
 
 if __name__ == "__main__":
     _main()
