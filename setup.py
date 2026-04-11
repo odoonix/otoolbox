@@ -8,10 +8,23 @@ Learn more under: https://pyscaffold.org/
 """
 
 from setuptools import setup
+import sys
+
+
+def _platform_scripts():
+    scripts = [
+        "bin/otoolbox-doctor"
+    ]
+    if sys.platform.startswith("win"):
+        scripts = [item + ".bat" for item in scripts]
+    return scripts
 
 if __name__ == "__main__":
     try:
-        setup(use_scm_version={"version_scheme": "no-guess-dev"})
+        setup(
+            use_scm_version={"version_scheme": "no-guess-dev"},
+            scripts=_platform_scripts(),
+        )
     except:  # noqa
         # pylint: disable=W8116
         print(

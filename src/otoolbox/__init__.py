@@ -222,21 +222,5 @@ def _main():
     _load_application()
     app()
 
-
-def _doctor():
-    """Run checks to verify if the environment is set up correctly."""
-    _load_application()
-    steps= "verify"
-    resources = env.resources
-
-    # TODO: maso, 2025: check if all base resources are loaded or load them.
-
-    env.console.print("Running doctor checks...")
-    result = resources.executor(steps).execute()
-    utils.print_result(result)
-
-
-    
-
 if __name__ == "__main__":
     _main()
