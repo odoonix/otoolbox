@@ -108,7 +108,7 @@ function bulk_switch_to_worker(){
     fi
 }
 
-run_otoolbox_as_worker() {
+function run_otoolbox_as_worker() {
     if [[ "$WORKER_USER" == "$(whoami)" ]]; then
         otoolbox "$@"
         return
@@ -128,7 +128,7 @@ run_otoolbox_as_worker() {
     sudo -u "$WORKER_USER" -H env PATH="$worker_path" otoolbox "$@"
 }
 
-run_git_as_worker() {
+function run_git_as_worker() {
     if [[ "$WORKER_USER" == "$(whoami)" ]]; then
         git "$@"
         return

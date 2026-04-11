@@ -1,4 +1,76 @@
-#!/usr/bin/env bash
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
 set -e
 
-otoolbox run verify
+# Resolve the script's directory, handling symlinks and aliases
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+# Load common functions and variables
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+
+show_help() {
+	cat <<'EOF'
+Usage: otoolbox-doctor [--help] [--verbose] [--debug]
+
+Options:
+  --help      Show this help message and exit.
+  --verbose   Print extra information before running checks.
+  --debug     Enable shell debug trace (set -x).
+EOF
+}
+
+export VERBOSE=false
+export DEBUG=false
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--help|-h)
+			show_help
+			exit 0
+			;;
+		--verbose)
+			VERBOSE=true
+			shift
+			;;
+		--debug)
+			VERBOSE=true
+			DEBUG=true
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			show_help >&2
+			exit 2
+			;;
+	esac
+done
+
+
+command=(otoolbox run verify)
+if [[ "$VERBOSE" == "true" ]]; then
+	echo "Running: ${command[*]}"
+fi
+_ot_init
+"${command[@]}"

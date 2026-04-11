@@ -1,0 +1,176 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+
+
+########################################################################################
+#                                 Pre-requisites                                       #
+########################################################################################
+# maso, 2025: check if the current directory is workspace root. The workspace
+# root is the dirctory that contains the .venv/bin/bulk-pull.sh script (current script).
+# If not, change the current directory to the workspace root.
+#
+# The script may be a symbol link, we need to resolve the symbol link to get the actual
+# directory of the script.
+# We must store current direcotry before changing it to the workspace root, because
+# we need to return to the original directory after pulling changes from the
+# repositories even there is error.
+########################################################################################
+
+function _ot_log_error() {
+    local message="$1"
+    echo "[ERROR] $message" >&2
+}
+
+function _ot_log_warning() {
+    local message="$1"
+    echo "[WARNING] $message" >&2
+}
+
+function _ot_log_info() {
+    local message="$1"
+    [[ "$VERBOSE" == "true" ]] && echo "[INFO] $message" || true
+}
+
+function _ot_log_debug() {
+    local message="$1"
+    [[ "$DEBUG" == "true" ]] && echo "[DEBUG] $message" || true
+}
+
+function _ot_init_working_dir() {
+    CURRENT_DIR="$(pwd)"
+    export SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+    export SCRIPT_NAME="$(basename "$(readlink -f "$0")")"
+
+    # resolve absolute path of TEMP_DIR without changing the current directory
+    ABS_CURRENT_DIR="$(readlink -f "$CURRENT_DIR" 2>/dev/null || realpath "$CURRENT_DIR" 2>/dev/null || (cd "$CURRENT_DIR" 2>/dev/null && pwd -P))"
+    if [[ -z "$ABS_CURRENT_DIR" ]]; then
+        _ot_log_error "Cannot resolve absolute path of $CURRENT_DIR. Please check if the directory exists and is accessible."
+        exit 1
+    fi
+
+    # ensure subsequent $(pwd) yields the full TEMP_DIR path while keeping the shell's cwd unchanged
+    export WORKSPACE_ROOT="$ABS_CURRENT_DIR"
+    export CURRENT_DIR="$ABS_CURRENT_DIR"
+
+    cd "$CURRENT_DIR" || { _ot_log_warning "Failed to return to $CURRENT_DIR"; }
+
+    # [] workspace root
+    _ot_log_debug "Working director: $WORKSPACE_ROOT."
+    _ot_log_debug "Current directory: $CURRENT_DIR."
+}
+
+
+function _ot_init_temp_dir() {
+    # Create a temporary directory to store the log file.
+    export TEMP_DIR="${WORKSPACE_ROOT}/.tmp"
+    if [[ ! -d "$TEMP_DIR" ]]; then
+        mkdir -p  "$TEMP_DIR"
+    fi
+    _ot_log_debug "Temporary directory: $TEMP_DIR."
+}
+
+function _ot_init_log_file() {
+    PROCESS_DATE=$(date +%Y-%m-%d)
+    export LOG_FILE="${WORKSPACE_ROOT}/.tmp/${SCRIPT_NAME}-${PROCESS_DATE}.log"
+    if [[ -f "$LOG_FILE" ]]; then
+        rm -f "$LOG_FILE"
+        touch "$LOG_FILE"
+    fi
+
+    # debug
+    _ot_log_debug "Log file: $LOG_FILE"
+}
+
+
+function _ot_init_users() {
+    # Intilize the worker user name. If the worker user is set in the .env file, use it.
+    # Otherwise, use the current user name.
+    export CURRENT_USER="$(whoami)"
+    export WORKER_USER="${WORKER_USER:-$CURRENT_USER}"
+
+    # debug
+    _ot_log_debug "Current user: $CURRENT_USER."
+    _ot_log_debug "Worker user: $WORKER_USER."
+}
+
+function _ot_load_env_file() {
+    # Load the environment variables from the .env file if it exists.
+    export ENV_FILE="$WORKSPACE_ROOT/.env"
+    if [[ -f "$ENV_FILE" ]]; then
+        # shellcheck source=/dev/null
+        source "$ENV_FILE"
+        _ot_log_debug "Environment variables loaded from $ENV_FILE."
+    else
+        _ot_log_debug "No .env file found at $ENV_FILE, skipping loading environment variables."
+    fi
+}
+
+function _ot_switch_to_worker(){
+    if [[ "$WORKER_USER" != "$(whoami)" ]]; then
+        _ot_log_debug "Switching to worker user '$WORKER_USER' to run the script..."
+        # run as worker (reload)
+        if command -v sudo >/dev/null 2>&1; then
+            exec sudo -u "$WORKER_USER" -H bash "$0" "$@"
+        else
+            _ot_log_error "sudo is required to run as user '$WORKER_USER'."
+            exit 1
+        fi
+    fi
+}
+
+function _ot_run_as_worker() {
+    command=("$@")
+    _ot_log_debug "Command to run as worker: ${command[*]}"
+    if [[ "$WORKER_USER" == "$(whoami)" ]]; then
+        "${command[@]}"
+        return
+    fi
+
+    local worker_home
+    worker_home="$(getent passwd "$WORKER_USER" | cut -d: -f6)"
+
+    if [[ -z "$worker_home" ]]; then
+        _ot_log_error "Unable to resolve home directory for user '$WORKER_USER'."
+        return 1
+    fi
+
+    local worker_path
+    worker_path="$worker_home/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    sudo -u "$WORKER_USER" -H env PATH="$worker_path" "${command[@]}"
+}
+
+
+_ot_load_venv() {
+    if [[ -f "$WORKSPACE_ROOT/.venv/bin/activate" ]]; then
+        # shellcheck source=/dev/null
+        source "$WORKSPACE_ROOT/.venv/bin/activate"
+        _ot_log_debug "Virtual environment activated from $WORKSPACE_ROOT/.venv."
+    else
+        _ot_log_error "No virtual environment found at $WORKSPACE_ROOT/.venv, skipping virtual environment activation."
+    fi
+}
+
+
+function _ot_init() {
+    _ot_log_info "Initializing working dircitories and log file..."
+    _ot_init_working_dir
+    _ot_init_temp_dir
+    _ot_init_log_file
+    _ot_load_env_file
+    _ot_init_users
+    _ot_load_venv
+    _ot_log_info "Pre-requisites check completed."
+}

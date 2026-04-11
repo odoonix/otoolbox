@@ -1,0 +1,108 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+# Resolve the script's directory, handling symlinks and aliases
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+# Load common functions and variables
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+
+# Parse command-line arguments
+VERBOSE=false
+DEBUG=false
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Pull latest changes from all configured repositories.
+
+OPTIONS:
+  --help, -h      Show this help message and exit
+  --verbose       Enable verbose output
+  --debug         Enable debug mode (set -x)
+
+EOF
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+    esac
+done
+
+########################################################################################
+# Pull latest changes from the repositories
+#
+# ORGANIZATIONS
+# PROTECTED_ORGANIZATIONS
+########################################################################################
+
+_ot_init
+
+# for organization in "${ORGANIZATIONS[@]}"; do
+#     if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
+#         _ot_log_info "Pulling latest changes from $organization organization."
+#         otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
+#     else
+#         _ot_log_warning "Repository $organization not found, skipping pull for $organization organization"
+#     fi
+# done
+
+for organization in "${PROTECTED_ORGANIZATIONS[@]}"; do
+    if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
+        _ot_log_info "Pulling latest changes from $organization organization"
+        # Run otoolbox command as the worker user to pull changes from the protected repositories.
+        # if the wokere user is the same as the current user, we can run the otoolbox command directly without sudo.
+        if [[ "$WORKER_USER" == "$CURRENT_USER" ]]; then
+            _ot_log_debug "Running otoolbox command directly as current user '$CURRENT_USER' for organization '$organization'."
+            otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
+        else
+            _ot_log_debug "Running otoolbox command as worker user '$WORKER_USER' for organization '$organization'."
+            _ot_run_as_worker otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
+        fi
+    else
+        _ot_log_warning "Repository $organization not found, skipping pull for $organization organization"
+    fi
+done

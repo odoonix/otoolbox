@@ -13,7 +13,9 @@ import sys
 
 def _platform_scripts():
     scripts = [
-        "bin/otoolbox-doctor"
+        "bin/otoolbox-common",
+        "bin/otoolbox-doctor",
+        "bin/otoolbox-pull"
     ]
     if sys.platform.startswith("win"):
         scripts = [item + ".bat" for item in scripts]
