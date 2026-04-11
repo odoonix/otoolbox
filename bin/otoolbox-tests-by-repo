@@ -1,0 +1,263 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+function resolve_script_path() {
+        local source="${BASH_SOURCE[0]}"
+        while [[ -L "$source" ]]; do
+                local dir
+                dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+                source="$(readlink "$source")"
+                [[ $source != /* ]] && source="$dir/$source"
+        done
+        echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+
+VERBOSE=false
+DEBUG=false
+
+REPO_PATH=""
+INIT_MODULES=""
+TEST_MODULES=""
+DB_SUFFIX=""
+DRY_RUN=false
+
+show_help() {
+        cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Run Odoo tests by repository (interactive or via CLI args).
+
+OPTIONS:
+    --help, -h          Show this help message and exit
+    --verbose           Enable verbose output
+    --debug             Enable debug mode
+    --repo PATH         Repository path (absolute or relative to workspace)
+    --init MODULES      Comma-separated list for --init
+    --test-tags MODULES Comma-separated list for --test-tag
+    --db-suffix VALUE   Database suffix for odooiottest<VALUE>
+    --dry-run           Print command only, do not execute
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+                --verbose)
+                        export VERBOSE=true
+                        shift
+                        ;;
+                --debug)
+                        export VERBOSE=true
+                        export DEBUG=true
+                        shift
+                        ;;
+        --repo)
+            REPO_PATH="$2"
+            shift 2
+            ;;
+        --init)
+            INIT_MODULES="$2"
+            shift 2
+            ;;
+        --test-tags)
+            TEST_MODULES="$2"
+            shift 2
+            ;;
+        --db-suffix)
+            DB_SUFFIX="$2"
+            shift 2
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+    esac
+done
+
+_ot_init
+
+ODOO_BIN="${WORKSPACE_ROOT}/odoo/odoo/odoo-bin"
+PYTHON_BIN="$(command -v python 2>/dev/null || true)"
+
+if [[ -z "$PYTHON_BIN" ]]; then
+    _ot_log_error "Python executable not found in PATH."
+    exit 1
+fi
+
+_ot_log_info "Using python executable: $PYTHON_BIN"
+
+if [[ ! -x "${ODOO_BIN}" ]]; then
+    _ot_log_error "odoo-bin not found or not executable: ${ODOO_BIN}"
+    exit 1
+fi
+
+resolve_repo_path() {
+    local input_path="$1"
+    if [[ -z "${input_path}" ]]; then
+        echo ""
+        return
+    fi
+    if [[ -d "${input_path}/.git" ]]; then
+        (cd "${input_path}" && pwd)
+        return
+    fi
+    if [[ -d "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
+        (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
+        return
+    fi
+    echo ""
+}
+
+choose_repo_interactive() {
+    mapfile -t repos < <(
+        find "${WORKSPACE_ROOT}" \
+            -path "${WORKSPACE_ROOT}/.venv" -prune -o \
+            -type d -name .git -print \
+        | sed 's|/.git$||' \
+        | sort
+    )
+
+    if [[ ${#repos[@]} -eq 0 ]]; then
+        _ot_log_error "No git repositories found under ${WORKSPACE_ROOT}"
+        exit 1
+    fi
+
+    echo "Available repositories:"
+    local i=1
+    for repo in "${repos[@]}"; do
+        printf '  %2d) %s\n' "${i}" "${repo#${WORKSPACE_ROOT}/}"
+        ((i++))
+    done
+
+    local choice
+    read -r -p "Select repository number: " choice
+    if [[ ! "${choice}" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#repos[@]} )); then
+        _ot_log_error "Invalid repository selection."
+        exit 1
+    fi
+
+    echo "${repos[$((choice - 1))]}"
+}
+
+collect_repo_modules() {
+    local repo="$1"
+    mapfile -t addon_paths < <(
+        find "${repo}" -mindepth 1 -maxdepth 3 -type f -name __manifest__.py \
+            | sed 's|/__manifest__.py$||' \
+            | sort
+    )
+
+    if [[ ${#addon_paths[@]} -eq 0 ]]; then
+        echo ""
+        return
+    fi
+
+    local modules=()
+    local addon
+    for addon in "${addon_paths[@]}"; do
+        modules+=("$(basename "${addon}")")
+    done
+
+    local joined
+    IFS=, read -r -a _dummy <<< ""
+    joined="$(IFS=,; echo "${modules[*]}")"
+    echo "${joined}"
+}
+
+get_addons_path() {
+    local addons_path
+    addons_path="$(WORKSPACE_ROOT="${WORKSPACE_ROOT}" "$PYTHON_BIN" - <<'PY'
+import os
+import json
+from pathlib import Path
+
+root = Path(os.environ["WORKSPACE_ROOT"])
+workspace_file = root / "odoo-dev.code-workspace"
+data = json.loads(workspace_file.read_text())
+addons = data["settings"]["odoo"]["addons"]
+print(addons.replace("${workspaceFolder}", str(root)))
+PY
+)"
+    echo "${addons_path}"
+}
+
+SELECTED_REPO="$(resolve_repo_path "${REPO_PATH}")"
+if [[ -z "${SELECTED_REPO}" ]]; then
+    SELECTED_REPO="$(choose_repo_interactive)"
+fi
+
+_ot_log_info "Selected repository: ${SELECTED_REPO#${WORKSPACE_ROOT}/}"
+
+DEFAULT_MODULES="$(collect_repo_modules "${SELECTED_REPO}")"
+if [[ -z "${DEFAULT_MODULES}" ]]; then
+    _ot_log_error "No module (__manifest__.py) found in selected repository."
+    exit 1
+fi
+
+if [[ -z "${INIT_MODULES}" ]]; then
+    _ot_log_info "Detected modules in repository:"
+    _ot_log_info "  ${DEFAULT_MODULES}"
+    read -r -p "Module List for --init : " INIT_MODULES
+    INIT_MODULES="${INIT_MODULES:-${DEFAULT_MODULES}}"
+fi
+
+if [[ -z "${TEST_MODULES}" ]]; then
+    read -r -p "Module List to use as test tag --test-tag : " TEST_MODULES
+    TEST_MODULES="${TEST_MODULES:-${INIT_MODULES}}"
+fi
+
+if [[ -z "${DB_SUFFIX}" ]]; then
+    DB_SUFFIX="$(date +%s)"
+fi
+
+ADDONS_PATH="$(get_addons_path)"
+DB_NAME="odooiottest${DB_SUFFIX}"
+
+CMD=(
+    "$PYTHON_BIN" "${ODOO_BIN}"
+    "--db_host" "localhost"
+    "--db_password" "odoo"
+    "--db_user" "odoo"
+    "--database" "${DB_NAME}"
+    "--addons-path" "${ADDONS_PATH}"
+    "--init" "${INIT_MODULES}"
+    "--test-tag" "${TEST_MODULES}"
+    "--stop-after-init"
+    "--with-demo"
+)
+
+_ot_log_info "Running Odoo tests with:"
+printf '  %q' "${CMD[@]}"
+echo
+
+if [[ "${DRY_RUN}" == true ]]; then
+    _ot_log_info "Dry-run enabled. Command not executed."
+    exit 0
+fi
+
+"${CMD[@]}"

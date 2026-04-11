@@ -154,12 +154,42 @@ function _ot_run_as_worker() {
 
 
 _ot_load_venv() {
-    if [[ -f "$WORKSPACE_ROOT/.venv/bin/activate" ]]; then
-        # shellcheck source=/dev/null
-        source "$WORKSPACE_ROOT/.venv/bin/activate"
-        _ot_log_debug "Virtual environment activated from $WORKSPACE_ROOT/.venv."
+    local activate_script
+    local expected_venv
+    local current_venv
+    local python_path
+
+    activate_script="$WORKSPACE_ROOT/.venv/bin/activate"
+    expected_venv="$(readlink -f "$WORKSPACE_ROOT/.venv" 2>/dev/null || realpath "$WORKSPACE_ROOT/.venv" 2>/dev/null || echo "$WORKSPACE_ROOT/.venv")"
+
+    if [[ ! -f "$activate_script" ]]; then
+        _ot_log_error "No virtual environment found at $WORKSPACE_ROOT/.venv."
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    source "$activate_script"
+
+    current_venv="$(readlink -f "${VIRTUAL_ENV:-}" 2>/dev/null || realpath "${VIRTUAL_ENV:-}" 2>/dev/null || echo "${VIRTUAL_ENV:-}")"
+    if [[ -z "${VIRTUAL_ENV:-}" || "$current_venv" != "$expected_venv" ]]; then
+        _ot_log_error "Virtual environment activation failed. Expected '$expected_venv' but got '${VIRTUAL_ENV:-<empty>}'."
+        return 1
+    fi
+
+    python_path="$(command -v python 2>/dev/null || true)"
+    if [[ -z "$python_path" || "$python_path" != "$expected_venv/bin/"* ]]; then
+        _ot_log_error "Virtual environment activation check failed: active python is '$python_path'."
+        return 1
+    fi
+
+    _ot_log_debug "Virtual environment activated from $expected_venv."
+
+    
+    PYTHON_CMD="$(command -v python 2>/dev/null || true)"
+    if [[ -n "$PYTHON_CMD" ]]; then
+        echo "[INFO] Active python executable: $PYTHON_CMD"
     else
-        _ot_log_error "No virtual environment found at $WORKSPACE_ROOT/.venv, skipping virtual environment activation."
+        _ot_log_warning "Python executable not found in PATH."
     fi
 }
 

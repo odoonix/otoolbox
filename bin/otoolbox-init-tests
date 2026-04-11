@@ -14,7 +14,6 @@
 #############################################################################
 set -e
 
-# Resolve the script's directory, handling symlinks and aliases
 function resolve_script_path() {
     local source="${BASH_SOURCE[0]}"
     while [[ -L "$source" ]]; do
@@ -26,11 +25,10 @@ function resolve_script_path() {
     echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
 }
 
-# Load common functions and variables
 SCRIPT_PATH=$(resolve_script_path)
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"  # preserved for compat
 source "$SCRIPT_PATH/otoolbox-common"
 
-# Parse command-line arguments
 VERBOSE=false
 DEBUG=false
 
@@ -38,17 +36,16 @@ function show_help() {
     cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Pull latest changes from all configured repositories.
+Initialize test directory structure for all addons in public repositories.
 
 OPTIONS:
   --help, -h      Show this help message and exit
   --verbose       Enable verbose output
-  --debug         Enable debug mode (set -x)
+  --debug         Enable debug mode
 
 EOF
 }
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --help|-h)
@@ -72,37 +69,42 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-########################################################################################
-# Pull latest changes from the repositories
-#
-# ORGANIZATIONS
-# PROTECTED_ORGANIZATIONS
-########################################################################################
-
 _ot_init
 
-for organization in "${ORGANIZATIONS[@]}"; do
-    if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
-        _ot_log_info "Pulling latest changes from $organization organization."
-        otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
-    else
-        _ot_log_warning "Repository $organization not found, skipping pull for $organization organization"
-    fi
-done
+if [[ -z "$PUBLIC_ORGANIZATION" ]]; then
+    _ot_log_error "PUBLIC_ORGANIZATION is not set."
+    exit 1
+fi
 
-for organization in "${PROTECTED_ORGANIZATIONS[@]}"; do
-    if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
-        _ot_log_info "Pulling latest changes from $organization organization"
-        # Run otoolbox command as the worker user to pull changes from the protected repositories.
-        # if the wokere user is the same as the current user, we can run the otoolbox command directly without sudo.
-        if [[ "$WORKER_USER" == "$CURRENT_USER" ]]; then
-            _ot_log_debug "Running otoolbox command directly as current user '$CURRENT_USER' for organization '$organization'."
-            otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
-        else
-            _ot_log_debug "Running otoolbox command as worker user '$WORKER_USER' for organization '$organization'."
-            _ot_run_as_worker otoolbox run update --tags "$organization" >> "$LOG_FILE" 2>&1
-        fi
-    else
-        _ot_log_warning "Repository $organization not found, skipping pull for $organization organization"
+WORKDIR="$WORKSPACE_ROOT"
+_ot_log_debug "Current directory is: $CURRENT_DIR"
+
+for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*/; do
+    if [[ -d "$dir" ]]; then
+        project="$(basename "$dir")"
+        _ot_log_info ""
+        _ot_log_info "===================================================================="
+        _ot_log_info "Repository: $project"
+        _ot_log_info "Path: $dir"
+        _ot_log_info "===================================================================="
+        cd "$dir"
+
+        for addon_dir in "$WORKDIR/$PUBLIC_ORGANIZATION/$project"/*; do
+            if [[ -d "$addon_dir" ]]; then
+                if [[ -f "$addon_dir/__manifest__.py" ]]; then
+                    addon_name="$(basename "$addon_dir")"
+                    _ot_log_info "Processing addon: $addon_name"
+
+                    # Ensure tests/__init__.py exists (remove if it is a directory by mistake)
+                    if [[ -d "$addon_dir/tests/__init__.py" ]]; then
+                        rm -fR "$addon_dir/tests/__init__.py"
+                    fi
+
+                    mkdir -p "$addon_dir/tests"
+                    touch "$addon_dir/tests/__init__.py"
+                    _ot_log_debug "Initialized tests/__init__.py for $addon_name"
+                fi
+            fi
+        done
     fi
 done

@@ -1,0 +1,131 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+SCRIPT_PATH=$(resolve_script_path)
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"  # preserved for compat
+source "$SCRIPT_PATH/otoolbox-common"
+
+VERBOSE=false
+DEBUG=false
+COMMIT_MESSAGE="bulk: automated commit"
+POSITIONAL_ARGS=()
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [MESSAGE]
+
+Commit all pending changes in configured organizations.
+
+OPTIONS:
+  --help, -h          Show this help message and exit
+  --verbose           Enable verbose output
+  --debug             Enable debug mode
+  -m, --message TEXT  Commit message (default: "bulk: automated commit")
+
+EXAMPLES:
+  $(basename "$0") -m "chore: sync updates"
+  $(basename "$0") "chore: sync updates"
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        -m|--message)
+            shift
+            if [[ -z "${1:-}" ]]; then
+                _ot_log_error "Missing value for --message"
+                exit 1
+            fi
+            COMMIT_MESSAGE="$1"
+            shift
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [[ ${#POSITIONAL_ARGS[@]} -gt 0 ]]; then
+    COMMIT_MESSAGE="${POSITIONAL_ARGS[*]}"
+fi
+
+_ot_init
+
+########################################################################################
+# Commit pending changes in all organizations
+########################################################################################
+ORGANIZATIONS=("${ORGANIZATIONS[@]:-${PUBLIC_ORGANIZATION:-}}" "odoo" "oca")
+
+for organization in "${ORGANIZATIONS[@]}"; do
+    [[ -z "$organization" ]] && continue
+    if [[ -d "$WORKSPACE_ROOT/$organization" ]]; then
+        _ot_log_info "Committing changes in $organization organization."
+        while IFS= read -r repo; do
+            if [[ -d "$repo/.git" ]]; then
+                cd "$repo" || continue
+                if [[ -n $(git status -s) ]]; then
+                    _ot_log_info "Committing in: ${repo#${WORKSPACE_ROOT}/}"
+                    git add -A >> "$LOG_FILE" 2>&1
+                    git commit -m "$COMMIT_MESSAGE" >> "$LOG_FILE" 2>&1
+                else
+                    _ot_log_debug "No changes in: ${repo#${WORKSPACE_ROOT}/}"
+                fi
+            fi
+        done < <(find "$WORKSPACE_ROOT/$organization" -maxdepth 1 -mindepth 1 -type d | sort)
+    else
+        _ot_log_warning "Organization $organization not found, skipping."
+    fi
+done
+

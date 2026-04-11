@@ -1,0 +1,264 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+function resolve_script_path() {
+        local source="${BASH_SOURCE[0]}"
+        while [[ -L "$source" ]]; do
+                local dir
+                dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+                source="$(readlink "$source")"
+                [[ $source != /* ]] && source="$dir/$source"
+        done
+        echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+
+VERBOSE=false
+DEBUG=false
+INSTALL_OCA_MAINTAINERS_TOOLS=0
+ADD_DOCS=0
+
+usage() {
+        cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Run pre-commit and generate addon documentation for public repositories.
+
+Options:
+    --help, -h                            Show this help message and exit
+    --verbose                             Enable verbose output
+    --debug                               Enable debug mode
+    -i, --install                         Install/update oca-maintainers-tools and others if needed
+    -d, --add-docs                        Create/add docs scaffold for each addon
+EOF
+}
+
+install_oca_maintainers_tools() {
+    echo "Installing/updating oca-maintainers-tools..."
+    if command -v pipx >/dev/null 2>&1; then
+        pipx install --force "oca-maintainers-tools@git+https://github.com/OCA/maintainer-tools.git"
+        return
+    fi
+
+    if command -v pip >/dev/null 2>&1; then
+        pip install --upgrade "oca-maintainers-tools@git+https://github.com/OCA/maintainer-tools.git"
+        return
+    fi
+
+    echo "Error: neither pipx nor pip is available for installing oca-maintainers-tools." >&2
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --verbose)
+            export VERBOSE=true
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            ;;
+        -i|--install)
+            INSTALL_OCA_MAINTAINERS_TOOLS=1
+            ;;
+        -d|--add-docs)
+            ADD_DOCS=1
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+    shift
+done
+
+_ot_init
+
+if [[ -z "$PUBLIC_ORGANIZATION" ]]; then
+    _ot_log_error "PUBLIC_ORGANIZATION is not set."
+    exit 1
+fi
+
+WORKDIR="$WORKSPACE_ROOT"
+
+
+# ... rest of the code remains the same ...
+
+# copy changes to the repo
+_ot_log_debug "Current directory is: $CURRENT_DIR"
+cd "$WORKDIR"
+
+TEMPLATE_TMP_DIR="$WORKSPACE_ROOT/.tmp"
+TEMPLATE_TMP_FILE="$TEMPLATE_TMP_DIR/gen_addon_readme.rst.jinja"
+
+mkdir -p "$TEMPLATE_TMP_DIR"
+{
+    echo '{#'
+    echo '   addon_name: the addon name from manifest'
+    echo '   authors: authors from manifest'
+    echo '   badges: badges ???'
+    echo '   branch: branch ???'
+    echo '   fragments: list of fragments file which is a fixed list'
+    echo '   manifest: the addon manifest file'
+    echo '   org_name: github organization name which is part of github path'
+    echo '   repo_name: the repository name which is part of github path'
+    echo '   development_status: development_status???'
+    echo '   source_digest: source_digest???'
+    echo $'   level3_underline: "~" if fragments_format == ".rst" else "-",'
+    echo ''
+    echo ''
+    echo ''
+    echo '   FRAGMENTS:'
+    echo ''
+    echo '   - DESCRIPTION'
+    echo '   - CONTEXT'
+    echo '   - INSTALL'
+    echo '   - CONFIGURE'
+    echo '   - USAGE'
+    echo '   - ROADMAP'
+    echo '   - CONTRIBUTORS'
+    echo '   - CREDITS'
+    echo '   - HISTORY'
+    echo ''
+    echo ''
+    echo '#}'
+    echo ''
+    echo ''
+    echo ''
+    echo "{%- macro fragment(name, title, sub='=') %}"
+    echo '{%- if name in fragments %}'
+    echo '{{- title }}'
+    echo '{{ sub * title|length }}'
+    echo ''
+    echo '{{ fragments[name] }}'
+    echo '{% endif %}'
+    echo '{%- endmacro -%}'
+    echo ''
+    echo ''
+    echo "{{ fragment('DESCRIPTION', 'Description') }}"
+    echo "{{ fragment('CONTEXT', 'Usecase') }}"
+    echo "{{ fragment('INSTALL', 'Installation') }}"
+    echo "{{ fragment('CONFIGURE', 'Configuration') }}"
+    echo "{{ fragment('USAGE', 'Usage') }}"
+    echo "{{ fragment('CONTRIBUTORS', 'Contributer') }}"
+    echo "{{ fragment('CREDITS', 'Credits') }}"
+    echo "{{ fragment('HISTORY', 'History') }}"
+} > "$TEMPLATE_TMP_FILE"
+
+# install or update maintainer tools if requested
+if [[ "$INSTALL_OCA_MAINTAINERS_TOOLS" -eq 1 ]]; then
+    install_oca_maintainers_tools
+fi
+
+
+#For each folder in moonsun (it must be part of a shielded project)
+for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
+    if [ -d "$dir" ]; then
+        project=$(basename "$dir")
+        _ot_log_info ""
+        _ot_log_info "===================================================================="
+        _ot_log_info "Repository: $project"
+        _ot_log_info "Path: $dir"
+        _ot_log_info "===================================================================="
+        cd "$dir"
+
+        if [[ "$ADD_DOCS" -eq 1 ]]; then
+            # Gererate readme for each addon
+            for addon_dir in "$dir"/*; do
+                _ot_log_debug "Checking addon directory: $addon_dir"
+                if [ -d "$addon_dir" ]; then
+                    _ot_log_debug "Found addon directory: $addon_dir"
+                    _ot_log_debug "Checking for manifest file in: $addon_dir/__manifest__.py"
+                    if [ -f "$addon_dir/__manifest__.py" ]; then
+                        _ot_log_debug "Found manifest file for addon: $addon_dir/__manifest__.py"
+                        addon_name=$(basename "$addon_dir")
+                        _ot_log_info "Processing addon: $addon_name"
+
+                        ####################################################################
+                        # Documents
+                        # commit and push changes
+                        # https://github.com/OCA/oca-addons-repo-template
+                        doc_files=( \
+                            "/readme/CONFIGURE" \
+                            "/readme/CONTEXT" \
+                            "/readme/CONTRIBUTORS" \
+                            "/readme/CREDITS" \
+                            "/readme/DESCRIPTION" \
+                            "/readme/HISTORY" \
+                            "/readme/INSTALL" \
+                            "/readme/ROADMAP" \
+                            "/readme/USAGE" \
+                            "/README" \
+                            "/doc/index"
+                        )
+                        doc_dirs=(\
+                            "/readme" \
+                            "/doc"
+                        )
+                        for doc_dir in "${doc_dirs[@]}"; do
+                            mkdir -p "$addon_dir/$doc_dir"
+                            _ot_log_debug "Ensured directory exists: $addon_dir/$doc_dir"
+                        done
+
+                        for doc_file in "${doc_files[@]}";do
+                            touch "${addon_dir}/${doc_file}.md"
+                            _ot_log_debug "Ensured file exists: ${addon_dir}/${doc_file}.md"
+                        done
+                    fi
+                fi
+            done
+        fi
+
+        #
+        #  Precommit
+        #
+        _ot_log_debug "Running pre-commit checks for $(pwd)"
+        if [ ! -f ".pre-commit-config.yaml" ]; then
+            _ot_log_warning "No .pre-commit-config.yaml found in $project, skipping pre-commit checks."
+            continue
+        fi
+        if pre-commit run -a >> "$LOG_FILE" 2>&1; then
+            _ot_log_info "Pre-commit checks completed for $project. Log saved to $LOG_FILE."
+        else
+            _ot_log_warning "Pre-commit checks failed for $project, continuing execution." 
+            _ot_log_warning "See $LOG_FILE for details."
+        fi
+
+        
+        #
+        # Generage customer readme
+        #
+        if [ -f "$TEMPLATE_TMP_FILE" ]; then
+            _ot_log_info "Generating customer readme for $project."
+            oca-gen-addon-readme \
+                --addons-dir="$dir" \
+                --branch=${ODOO_VERSION} \
+                --org-name=${SHIELDED_ORGANIZATION} \
+                --repo-name=$project \
+                --if-source-changed \
+                --keep-source-digest \
+                --convert-fragments-to-markdown \
+                --template-filename="$TEMPLATE_TMP_FILE"
+        fi
+    fi
+done

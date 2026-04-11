@@ -1,0 +1,217 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+
+
+
+########################################################################################
+#                                 Pre-requisites                                       #
+########################################################################################
+# maso, 2025: check if the current directory is workspace root. The workspace
+# root is the dirctory that contains the .venv/bin/bulk-pull.sh script (current script).
+# If not, change the current directory to the workspace root.
+#
+# The script may be a symbol link, we need to resolve the symbol link to get the actual
+# directory of the script.
+# We must store current direcotry before changing it to the workspace root, because
+# we need to return to the original directory after pulling changes from the
+# repositories even there is error.
+########################################################################################
+
+function customer_load_working_dir() {
+    # If CUSTOMER_ROOT_DIR is provided, ensure it's a directory and use it as script dir root.
+    if [[ -n "${CUSTOMER_ROOT_DIR-}" ]]; then
+        if [[ -d "$CUSTOMER_ROOT_DIR" ]]; then
+            if [[ -z "$SCRIPT_DIR" ]]; then
+                echo "Error: cannot resolve absolute path of CUSTOMER_ROOT_DIR: $CUSTOMER_ROOT_DIR" >&2
+                exit 1
+            fi
+        else
+            echo "Error: CUSTOMER_ROOT_DIR is set but is not a directory: $CUSTOMER_ROOT_DIR" >&2
+            exit 1
+        fi
+    else
+        CUSTOMER_ROOT_DIR=$(pwd)
+    fi
+
+
+
+    if [[ $# -lt 1 ]]; then
+
+        # discover all org/repo directories (exactly two levels deep) that are git repositories
+        mapfile -t _candidate_paths < <(find "$CUSTOMER_ROOT_DIR" -mindepth 2 -maxdepth 2 -type d -print 2>/dev/null | sort)
+
+        repos=()
+        for _p in "${_candidate_paths[@]}"; do
+            # relative form ORG/REPO
+            rel="${_p#"$CUSTOMER_ROOT_DIR"/}"
+            # ensure it's a git repository
+            if [[ -d "$_p/.git" ]] || git -C "$_p" rev-parse --git-dir >/dev/null 2>&1; then
+                repos+=("$rel")
+            fi
+        done
+
+        if [[ ${#repos[@]} -eq 0 ]]; then
+            echo "Error: no repositories found under $CUSTOMER_ROOT_DIR" >&2
+            exit 1
+        fi
+
+        # if only one repo, select it automatically
+        if [[ ${#repos[@]} -eq 1 ]]; then
+            REPO_INPUT="${repos[0]}"
+            ORG="${REPO_INPUT%%/*}"
+            REPO="${REPO_INPUT##*/}"
+            CLONE_URL="git@github.com:${ORG}/${REPO}.git"
+            CUSTOMER_DIR="$CUSTOMER_ROOT_DIR/$ORG/$REPO"
+        else
+            echo "Available repositories:"
+            for i in "${!repos[@]}"; do
+                printf "  %2d) %s\n" $((i+1)) "${repos[i]}"
+            done
+
+            while true; do
+                read -r -p "Select repository by number or enter ORG/REPO (q to abort): " sel
+                if [[ -z "$sel" ]]; then
+                    echo "Please enter a selection."
+                    continue
+                fi
+                if [[ "$sel" == "q" || "$sel" == "Q" ]]; then
+                    echo "Aborted."
+                    exit 1
+                fi
+
+                # numeric selection
+                if [[ "$sel" =~ ^[0-9]+$ ]]; then
+                    idx=$((sel-1))
+                    if (( idx >= 0 && idx < ${#repos[@]} )); then
+                        REPO_INPUT="${repos[idx]}"
+                        break
+                    else
+                        echo "Invalid number. Choose between 1 and ${#repos[@]}."
+                        continue
+                    fi
+                fi
+
+                # ORG/REPO text selection
+                if [[ "$sel" =~ ^[^/]+/[^/]+$ ]]; then
+                    # normalize and check it's in list
+                    found=false
+                    for r in "${repos[@]}"; do
+                        if [[ "$r" == "$sel" ]]; then
+                            REPO_INPUT="$sel"
+                            found=true
+                            break
+                        fi
+                    done
+                    if $found; then
+                        break
+                    else
+                        echo "Repository '$sel' not found under $CUSTOMER_ROOT_DIR."
+                        continue
+                    fi
+                fi
+
+                echo "Invalid input."
+            done
+
+            ORG="${REPO_INPUT%%/*}"
+            REPO="${REPO_INPUT##*/}"
+            CLONE_URL="git@github.com:${ORG}/${REPO}.git"
+            CUSTOMER_DIR="$CUSTOMER_ROOT_DIR/$ORG/$REPO"
+        fi
+
+
+    else
+        REPO_INPUT="$1"
+        ORG=""
+        REPO=""
+        CLONE_URL=""
+        if [[ "$REPO_INPUT" =~ ^git@github\.com:([^/]+)/([^/]+)\.git$ ]]; then
+            ORG="${BASH_REMATCH[1]}"
+            REPO="${BASH_REMATCH[2]}"
+            CLONE_URL="$REPO_INPUT"
+        elif [[ "$REPO_INPUT" =~ ^([^/]+)/([^/]+)$ ]]; then
+            ORG="${BASH_REMATCH[1]}"
+            REPO="${BASH_REMATCH[2]}"
+            CLONE_URL="git@github.com:${ORG}/${REPO}.git"
+        else
+            echo "Error: invalid repository format." >&2
+            exit 1
+        fi
+        CUSTOMER_DIR="$CUSTOMER_ROOT_DIR/$ORG/$REPO"
+    fi
+
+    # CUSTOMER_ROOT_DIR must not be one of SCRIPT_DIR or WORKSPACE_ROOT
+    if [[ "$CUSTOMER_ROOT_DIR" == "$SCRIPT_DIR" ]]; then
+        echo "$SCRIPT_DIR"
+        echo "Error: CUSTOMER_ROOT_DIR cannot be the same as SCRIPT_DIR: $SCRIPT_DIR" >&2
+        exit 1
+    fi
+    if [[ "$CUSTOMER_ROOT_DIR" == "$WORKSPACE_ROOT" ]]; then
+        echo "$WORKSPACE_ROOT"
+        echo "Error: CUSTOMER_ROOT_DIR cannot be the same as WORKSPACE_ROOT: $WORKSPACE_ROOT" >&2
+        exit 1
+    fi
+
+
+}
+
+
+
+function customer_init_working_dir() {
+    # Check if there is moonsun.env file in the current directory.
+    CUSTOMER_DIR="$1"
+    if [[ ! -f "$CUSTOMER_DIR/moonsun.env" ]]; then
+        echo "Warning: moonsun.env not found. The current folder may not be a Moonsun customer."
+        read -r -p "Are you sure this is a customer folder and you want to create this file? (y/N): " CONFIRM
+        if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+            touch "$CUSTOMER_DIR/moonsun.env"
+            echo "Created moonsun.env"
+        else
+            echo "Aborted."
+            exit 1
+        fi
+    fi
+}
+
+
+function customer_load_env_file() {
+    CUSTOMER_DIR="$1"
+    if [[ -f "$CUSTOMER_DIR/moonsun.env" ]]; then
+        source "$CUSTOMER_DIR/moonsun.env"
+    else
+        echo "Error: moonsun.env file not found in $CUSTOMER_DIR" >&2
+    fi
+}
+
+
+function customer_print_info() {
+    # Load remote branch names
+    BRANCH=$(git -C "$CUSTOMER_DIR" branch -r 2>/dev/null | sed 's/^[ *]*//;s/ ->.*$//' | sort)
+    # Load current branch name of the repository
+    CURRENT_BRANCH=$(git -C "$CUSTOMER_DIR" branch --show-current 2>/dev/null)
+    if [[ -n "$CURRENT_BRANCH" ]]; then
+        BRANCH="${BRANCH//$CURRENT_BRANCH/($CURRENT_BRANCH)}"
+    fi
+    echo
+    echo "==================================================="
+    echo "Customer Name   : $CUSTOMER_NAME"
+    echo "Odoo Branch     : $CUSTOMER_BRANCH"
+    echo "Working DIR     : $CUSTOMER_DIR"
+    echo "Current Branch  : $CURRENT_BRANCH"
+    echo "Branchs         : "
+    echo "$BRANCH"
+    echo "==================================================="
+    echo
+}

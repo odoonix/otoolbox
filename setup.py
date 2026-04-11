@@ -13,9 +13,18 @@ import sys
 
 def _platform_scripts():
     scripts = [
+        "bin/otoolbox-commit",
         "bin/otoolbox-common",
         "bin/otoolbox-doctor",
-        "bin/otoolbox-pull"
+        "bin/otoolbox-init-tests",
+        "bin/otoolbox-pre-commit",
+        "bin/otoolbox-pull",
+        "bin/otoolbox-push",
+        "bin/otoolbox-push-shielded",
+        "bin/otoolbox-repo-add-all",
+        "bin/otoolbox-repo-init",
+        "bin/otoolbox-sync-shielded",
+        "bin/otoolbox-tests-by-repo",
     ]
     if sys.platform.startswith("win"):
         scripts = [item + ".bat" for item in scripts]

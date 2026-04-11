@@ -1,0 +1,71 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+# Resolve the script's directory, handling symlinks and aliases
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+# Load common functions and variables
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+source "$SCRIPT_PATH/customer-common"
+
+_ot_init
+_ot_switch_to_worker
+customer_load_working_dir "$@"
+
+GIT_BIN="$(command -v git)"
+
+if ! "$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Error: not a git repository: $CUSTOMER_DIR" >&2
+    exit 1
+fi
+
+customer_init_working_dir "$CUSTOMER_DIR"
+customer_load_env_file "$CUSTOMER_DIR"
+
+cd "$CUSTOMER_DIR"
+BRANCH=$("$GIT_BIN" branch)
+customer_print_info
+
+# Prompt user for confirmation before proceeding
+if [ -t 0 ]; then
+    CURRENT_BRANCH="$("$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
+    echo "About to update customer software in '$CUSTOMER_DIR' (branch: $CURRENT_BRANCH)."
+    read -r -p "Are you sure you want to continue? [y/N] " answer
+    case "$answer" in
+        [Yy]|[Yy][Ee][Ss]) ;;
+        *) echo "Aborted by user." >&2; exit 0 ;;
+    esac
+else
+    echo "No interactive terminal detected. Aborting — confirmation required." >&2
+    exit 1
+fi
+
+
+"$GIT_BIN" pull
+"$GIT_BIN" submodule update --remote
+"$GIT_BIN" add -A
+"$GIT_BIN" commit -m "[UPD] submodule: update submodule to latest version"
+"$GIT_BIN" push

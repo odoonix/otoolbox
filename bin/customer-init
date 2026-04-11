@@ -1,0 +1,58 @@
+#!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
+
+# Resolve the script's directory, handling symlinks and aliases
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+}
+
+# Load common functions and variables
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+source "$SCRIPT_PATH/customer-common"
+
+_ot_init
+_ot_switch_to_worker
+customer_load_working_dir "$@"
+
+
+GIT_BIN="$(command -v git)"
+MKDIR_BIN="$(command -v mkdir)"
+
+
+"$MKDIR_BIN" -p "$CUSTOMER_ROOT_DIR/$ORG"
+
+if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone --recurse-submodules "$CLONE_URL")
+fi
+
+if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
+    echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
+    exit 1
+else
+    echo "Repository cloned successfully: $ORG/$REPO"
+fi
+
+customer_init_working_dir "$CUSTOMER_DIR"
+customer_load_env_file "$CUSTOMER_DIR"
+customer_print_info
