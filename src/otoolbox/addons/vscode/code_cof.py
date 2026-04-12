@@ -44,7 +44,15 @@ def set_workspace_conf_odoo_addons(context: Resource):
     path_list = ["${workspaceFolder}/odoo/odoo/addons"] + [
         "${workspaceFolder}/" + resource.path for resource in sorted_resources
     ]
-    _jsonpath_addons_expr.update(data, ",".join(path_list))
+    # Set addons path
+    settings = data.get("settings", {})
+    settings["odoo.addons"] = ",".join(path_list)
+    # Remove nested odoo if exists
+    if (isinstance(settings.get("odoo"), dict)):
+        settings.pop("odoo", None)
+    data["settings"] = settings
+
+    # Store configuration
     _store_data(context, data)
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
