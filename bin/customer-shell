@@ -99,3 +99,6 @@ _ot_log_info "Customer shell initialized. Current branch: $BRANCH"
 _ot_log_info "Customer directory: $CUSTOMER_DIR"
 _ot_log_info "Customer repositories: \n$REMOTE_REPO"
 
+SSH_PORT="${WORKER_SSH_PORT:-22}"
+_ot_log_debug "Opening SSH shell: $WORKER_USER@localhost port $SSH_PORT -> $CUSTOMER_DIR"
+ssh "${WORKER_USER}@localhost" -p "${SSH_PORT}" -t "cd '$CUSTOMER_DIR' && exec \$SHELL -l"
