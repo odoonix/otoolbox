@@ -164,6 +164,9 @@ function customer_load_working_dir() {
         exit 1
     fi
 
+    # add save working directory to global safe.directory config to avoid git warnings and errors when running as different users
+    git config --global --add safe.directory "$CUSTOMER_DIR"
+    _ot_run_as_worker git config --global --add safe.directory "$CUSTOMER_DIR"
 
 }
 
@@ -198,13 +201,13 @@ function customer_load_env_file() {
 
 function customer_print_info() {
     # Load remote branch names
-    BRANCH=$(git -C "$CUSTOMER_DIR" branch -r 2>/dev/null | sed 's/^[ *]*//;s/ ->.*$//' | sort)
+    export BRANCH=$(git -C "$CUSTOMER_DIR" branch -r 2>/dev/null | sed 's/^[ *]*//;s/ ->.*$//' | sort)
+    export REMOTE_REPO=$(git remote -v)
     # Load current branch name of the repository
     CURRENT_BRANCH=$(git -C "$CUSTOMER_DIR" branch --show-current 2>/dev/null)
     if [[ -n "$CURRENT_BRANCH" ]]; then
         BRANCH="${BRANCH//$CURRENT_BRANCH/($CURRENT_BRANCH)}"
     fi
-    echo
     echo "==================================================="
     echo "Customer Name   : $CUSTOMER_NAME"
     echo "Odoo Branch     : $CUSTOMER_BRANCH"
@@ -213,5 +216,7 @@ function customer_print_info() {
     echo "Branchs         : "
     echo "$BRANCH"
     echo "==================================================="
-    echo
+    echo "Remote Repositories:"
+    echo "$REMOTE_REPO"
+    echo "==================================================="
 }

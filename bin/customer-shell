@@ -1,89 +1,101 @@
 #!/bin/bash
+#############################################################################
+#                                                                           #
+# This file is part of the "ubuntu" module of the otoolbox project.         #
+#                                                                           #
+# This script is open-source and intended for automation purposes.          #
+# It is distributed in the hope that it will be useful, but WITHOUT         #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY        #
+# or FITNESS FOR A PARTICULAR PURPOSE.                                      #
+#                                                                           #
+# Use of this script is entirely at your own risk.                          #
+#                                                                           #
+# Copyright (c) The otoolbox contributors.                                  #
+#############################################################################
+set -e
 
-
-function customer_shell_is_sourced() {
-    [[ "${BASH_SOURCE[0]}" != "$0" ]]
+# Resolve the script's directory, handling symlinks and aliases
+function resolve_script_path() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -L "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    echo "$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
 }
 
+# Load common functions and variables
+SCRIPT_PATH=$(resolve_script_path)
+source "$SCRIPT_PATH/otoolbox-common"
+source "$SCRIPT_PATH/customer-common"
 
-function customer_shell_finish() {
-    local status="$1"
-    if customer_shell_is_sourced; then
-        return "$status"
-    fi
-    exit "$status"
+VERBOSE=false
+DEBUG=false
+POSITIONAL_ARGS=()
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [ORG/REPO]
+
+Open an interactive shell in a customer repository.
+
+OPTIONS:
+  --help, -h      Show this help message and exit
+  --verbose       Enable verbose output
+  --debug         Enable debug mode
+
+EOF
 }
 
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
 
-function customer_shell_main() {
-    local git_bin
-    local mkdir_bin
+_ot_init
 
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    source "$SCRIPT_DIR/bulk-common"
-    source "$SCRIPT_DIR/customer-common"
-
-    customer_load_working_dir "$@" || return 1
-
-    git_bin="$(command -v git)"
-    mkdir_bin="$(command -v mkdir)"
-
-    if [[ -z "$git_bin" ]]; then
-        echo "Error: git not found in PATH" >&2
-        return 1
-    fi
-    if [[ -z "$mkdir_bin" ]]; then
-        echo "Error: mkdir not found in PATH" >&2
-        return 1
-    fi
-
-    "$mkdir_bin" -p "$CUSTOMER_ROOT_DIR/$ORG"
-
-    if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-        (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$git_bin" clone "$CLONE_URL") || return 1
-    fi
-
-    if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-        echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
-        return 1
-    fi
-
-    customer_load_env_file "$CUSTOMER_DIR" || return 1
-
-    if customer_shell_is_sourced; then
-        if [[ "$WORKER_USER" != "$(whoami)" ]]; then
-            echo "Error: a sourced script can change the current directory, but it cannot change the current shell user to '$WORKER_USER'." >&2
-            echo "Run 'customer-shell' normally to open a worker shell, or source it only when WORKER_USER matches the current user." >&2
-            return 1
-        fi
-
-        cd "$CUSTOMER_DIR" || {
-            echo "Error: failed to change directory to $CUSTOMER_DIR" >&2
-            return 1
-        }
-
-        customer_print_info
-        return 0
-    fi
-
-    if [[ "$WORKER_USER" != "$(whoami)" ]]; then
-        if ! command -v sudo >/dev/null 2>&1; then
-            echo "Error: sudo is required to run as user '$WORKER_USER'." >&2
-            return 1
-        fi
-
-        exec sudo -u "$WORKER_USER" -H env CUSTOMER_DIR="$CUSTOMER_DIR" bash -lc 'cd "$CUSTOMER_DIR" || exit 1; exec bash -i'
-    fi
-
-    cd "$CUSTOMER_DIR" || {
-        echo "Error: failed to change directory to $CUSTOMER_DIR" >&2
-        return 1
-    }
-    exec bash -i
-    customer_print_info
-    echo "Tip: to keep this directory in the current shell, run: source customer-shell $*"
-}
+customer_load_working_dir "${POSITIONAL_ARGS[@]}"
+customer_init_working_dir "$CUSTOMER_DIR"
+customer_load_env_file "$CUSTOMER_DIR"
 
 
-customer_shell_main "$@"
-customer_shell_finish "$?"
+# Customer Info
+cd "$CUSTOMER_DIR"
+customer_print_info
+
+_ot_log_info "Customer shell initialized. Current branch: $BRANCH"
+_ot_log_info "Customer directory: $CUSTOMER_DIR"
+_ot_log_info "Customer repositories: \n$REMOTE_REPO"
+

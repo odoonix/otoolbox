@@ -93,14 +93,10 @@ def init(addon):
             title=f"Ubuntu utility script {script}",
             description="Install all required application in ubuntu.",
             init=[
-                utils.constructor_copy_resource(f"addons/ubuntu/bin/{script}"),
-                utils.chmod_executable,
-                utils.touch_file,
+                utils.delete_file,
             ],
             updat=[
-                utils.constructor_copy_resource(f"addons/ubuntu/{script}"),
-                utils.chmod_executable,
-                utils.touch_file,
+                utils.delete_file,
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_executable],

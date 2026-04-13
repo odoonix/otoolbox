@@ -80,8 +80,8 @@ for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*; do
         project="$(basename "$dir")"
         _ot_log_info "Pulling project: $project"
         cd "$dir"
-        git config --global --add safe.directory "$dir"
-        git pull >> "$LOG_FILE" 2>&1
+        _ot_run_as_worker git config --global --add safe.directory "$dir"
+        _ot_run_as_worker git pull >> "$LOG_FILE" 2>&1
     fi
 done
 
@@ -98,9 +98,9 @@ for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*; do
         project="$(basename "$dir")"
         _ot_log_info "Pushing changes to $SHIELDED_ORGANIZATION/$project"
         cd "$dir"
-        git config --global --add safe.directory "$dir"
-        git add . >> "$LOG_FILE" 2>&1
-        git commit -m "[SYNC] Update to the latest release on ${SYNC_DATE:-$(date +%Y-%m-%d)}" >> "$LOG_FILE" 2>&1 || true
-        git push >> "$LOG_FILE" 2>&1
+        _ot_run_as_worker git config --global --add safe.directory "$dir"
+        _ot_run_as_worker git add . >> "$LOG_FILE" 2>&1
+        _ot_run_as_worker git commit -m "[SYNC] Update to the latest release on ${SYNC_DATE:-$(date +%Y-%m-%d)}" >> "$LOG_FILE" 2>&1 || true
+        _ot_run_as_worker git push >> "$LOG_FILE" 2>&1
     fi
 done

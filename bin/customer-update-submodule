@@ -31,9 +31,62 @@ SCRIPT_PATH=$(resolve_script_path)
 source "$SCRIPT_PATH/otoolbox-common"
 source "$SCRIPT_PATH/customer-common"
 
+VERBOSE=false
+DEBUG=false
+POSITIONAL_ARGS=()
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [ORG/REPO]
+
+Update a customer repository and its git submodules to the latest version.
+
+OPTIONS:
+  --help, -h      Show this help message and exit
+  --verbose       Enable verbose output
+  --debug         Enable debug mode
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
 _ot_init
-_ot_switch_to_worker
-customer_load_working_dir "$@"
+_ot_switch_to_worker "${POSITIONAL_ARGS[@]}"
+customer_load_working_dir "${POSITIONAL_ARGS[@]}"
 
 GIT_BIN="$(command -v git)"
 
@@ -52,18 +105,18 @@ customer_print_info
 # Prompt user for confirmation before proceeding
 if [ -t 0 ]; then
     CURRENT_BRANCH="$("$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
-    echo "About to update customer software in '$CUSTOMER_DIR' (branch: $CURRENT_BRANCH)."
+    _ot_log_info "About to update customer software in '$CUSTOMER_DIR' (branch: $CURRENT_BRANCH)."
     read -r -p "Are you sure you want to continue? [y/N] " answer
     case "$answer" in
         [Yy]|[Yy][Ee][Ss]) ;;
-        *) echo "Aborted by user." >&2; exit 0 ;;
+        *) _ot_log_info "Aborted by user." >&2; exit 0 ;;
     esac
 else
     echo "No interactive terminal detected. Aborting — confirmation required." >&2
     exit 1
 fi
 
-
+_ot_log_debug "Starting customer update process in directory: $CUSTOMER_DIR"
 "$GIT_BIN" pull
 "$GIT_BIN" submodule update --remote
 "$GIT_BIN" add -A
