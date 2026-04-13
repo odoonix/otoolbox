@@ -13,6 +13,13 @@ import sys
 
 def _platform_scripts():
     scripts = [
+        "bin/customer-common",
+        "bin/customer-config",
+        "bin/customer-info",
+        "bin/customer-init",
+        "bin/customer-shell",
+        "bin/customer-update",
+        "bin/customer-update-submodule",
         "bin/otoolbox-commit",
         "bin/otoolbox-common",
         "bin/otoolbox-doctor",
