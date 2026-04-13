@@ -176,13 +176,13 @@ function customer_init_working_dir() {
     # Check if there is moonsun.env file in the current directory.
     CUSTOMER_DIR="$1"
     if [[ ! -f "$CUSTOMER_DIR/moonsun.env" ]]; then
-        echo "Warning: moonsun.env not found. The current folder may not be a Moonsun customer."
+        _ot_log_warning "moonsun.env not found. The current folder may not be a Moonsun customer."
         read -r -p "Are you sure this is a customer folder and you want to create this file? (y/N): " CONFIRM
         if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
-            touch "$CUSTOMER_DIR/moonsun.env"
-            echo "Created moonsun.env"
+            _ot_run_as_worker touch "$CUSTOMER_DIR/moonsun.env"
+            _ot_log_info "Created moonsun.env"
         else
-            echo "Aborted."
+            _ot_log_error "Aborted."
             exit 1
         fi
     fi
@@ -194,7 +194,7 @@ function customer_load_env_file() {
     if [[ -f "$CUSTOMER_DIR/moonsun.env" ]]; then
         source "$CUSTOMER_DIR/moonsun.env"
     else
-        echo "Error: moonsun.env file not found in $CUSTOMER_DIR" >&2
+        _ot_log_error "moonsun.env file not found in $CUSTOMER_DIR"
     fi
 }
 

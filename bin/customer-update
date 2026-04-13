@@ -31,31 +31,73 @@ SCRIPT_PATH=$(resolve_script_path)
 source "$SCRIPT_PATH/otoolbox-common"
 source "$SCRIPT_PATH/customer-common"
 
+VERBOSE=false
+DEBUG=false
+POSITIONAL_ARGS=()
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [ORG/REPO]
+
+Update a customer repository and its submodules.
+
+OPTIONS:
+  --help, -h      Show this help message and exit
+  --verbose       Enable verbose output
+  --debug         Enable debug mode
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
 _ot_init
-_ot_switch_to_worker
-customer_load_working_dir "$@"
 
-
-GIT_BIN="$(command -v git)"
-MKDIR_BIN="$(command -v mkdir)"
-
-
-"$MKDIR_BIN" -p "$CUSTOMER_ROOT_DIR/$ORG"
-
-if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone "$CLONE_URL")
-else
-    (cd "$CUSTOMER_ROOT_DIR/$ORG/$REPO" && git pull --recurse-submodules)
-    (cd "$CUSTOMER_ROOT_DIR/$ORG/$REPO" && git submodule update --init --recursive)
-fi
-
-if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-    echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
-    exit 1
-else
-    echo "Repository cloned successfully: $ORG/$REPO"
-fi
-
+customer_load_working_dir "${POSITIONAL_ARGS[@]}"
 customer_init_working_dir "$CUSTOMER_DIR"
 customer_load_env_file "$CUSTOMER_DIR"
+
+cd "$CUSTOMER_DIR"
 customer_print_info
+
+
+if [[ ! -d "$CUSTOMER_DIR/.git" ]]; then
+    _ot_log_error "Repository not found: $CUSTOMER_DIR. Attempting to clone..."
+    exit 58
+fi
+
+_ot_run_as_worker git pull --recurse-submodules
+_ot_run_as_worker git submodule update --init --recursive

@@ -31,26 +31,76 @@ SCRIPT_PATH=$(resolve_script_path)
 source "$SCRIPT_PATH/otoolbox-common"
 source "$SCRIPT_PATH/customer-common"
 
+VERBOSE=false
+DEBUG=false
+POSITIONAL_ARGS=()
+
+function show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [ORG/REPO]
+
+Initialize customer repository and clone it if missing.
+
+OPTIONS:
+  --help, -h      Show this help message and exit
+  --verbose       Enable verbose output
+  --debug         Enable debug mode
+
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL_ARGS+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
 _ot_init
-_ot_switch_to_worker
-customer_load_working_dir "$@"
 
 
-GIT_BIN="$(command -v git)"
-MKDIR_BIN="$(command -v mkdir)"
+customer_load_working_dir "${POSITIONAL_ARGS[@]}"
 
 
-"$MKDIR_BIN" -p "$CUSTOMER_ROOT_DIR/$ORG"
+_ot_run_as_worker mkdir -p "$CUSTOMER_DIR"
 
-if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-    (cd "$CUSTOMER_ROOT_DIR/$ORG" && "$GIT_BIN" clone --recurse-submodules "$CLONE_URL")
+if [[ ! -d "$CUSTOMER_DIR/.git" ]]; then
+    (cd "$CUSTOMER_DIR" && _ot_run_as_worker git clone --recurse-submodules "$CLONE_URL")
 fi
 
-if [[ ! -d "$CUSTOMER_ROOT_DIR/$ORG/$REPO/.git" ]]; then
-    echo "Error: repository not found or clone failed: $ORG/$REPO" >&2
+if [[ ! -d "$CUSTOMER_DIR/.git" ]]; then
+    _ot_log_error "Repository not found or clone failed: $ORG/$REPO"
     exit 1
 else
-    echo "Repository cloned successfully: $ORG/$REPO"
+    _ot_log_info "Repository cloned successfully: $ORG/$REPO"
 fi
 
 customer_init_working_dir "$CUSTOMER_DIR"

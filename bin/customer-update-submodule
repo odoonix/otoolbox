@@ -85,26 +85,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 _ot_init
-_ot_switch_to_worker "${POSITIONAL_ARGS[@]}"
+
 customer_load_working_dir "${POSITIONAL_ARGS[@]}"
-
-GIT_BIN="$(command -v git)"
-
-if ! "$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "Error: not a git repository: $CUSTOMER_DIR" >&2
-    exit 1
-fi
-
 customer_init_working_dir "$CUSTOMER_DIR"
 customer_load_env_file "$CUSTOMER_DIR"
 
 cd "$CUSTOMER_DIR"
-BRANCH=$("$GIT_BIN" branch)
 customer_print_info
 
 # Prompt user for confirmation before proceeding
 if [ -t 0 ]; then
-    CURRENT_BRANCH="$("$GIT_BIN" -C "$CUSTOMER_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
+    CURRENT_BRANCH="$(git -C "$CUSTOMER_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
     _ot_log_info "About to update customer software in '$CUSTOMER_DIR' (branch: $CURRENT_BRANCH)."
     read -r -p "Are you sure you want to continue? [y/N] " answer
     case "$answer" in
@@ -117,8 +108,8 @@ else
 fi
 
 _ot_log_debug "Starting customer update process in directory: $CUSTOMER_DIR"
-"$GIT_BIN" pull
-"$GIT_BIN" submodule update --remote
-"$GIT_BIN" add -A
-"$GIT_BIN" commit -m "[UPD] submodule: update submodule to latest version"
-"$GIT_BIN" push
+_ot_run_as_worker git pull
+_ot_run_as_worker git submodule update --remote
+_ot_run_as_worker git add -A
+_ot_run_as_worker git commit -m "[UPD] submodule: update submodule to latest version"
+_ot_run_as_worker git push
