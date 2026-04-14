@@ -12,7 +12,6 @@ from otoolbox import env
 from otoolbox import utils
 from otoolbox.constants import (
     RESOURCE_PRIORITY_ROOT,
-    RESOURCE_ENV_FILE,
     RESOURCE_ROOT,
     RESOURCE_TAGS_DOCUMENTATION,
     RESOURCE_TAGS_AUTO_UPDATE,
@@ -43,9 +42,12 @@ def init(addon):
         update=[utils.touch_file, help_utils.update_readme],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
-        tags=[RESOURCE_TAGS_DOCUMENTATION, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+        tags=[
+            RESOURCE_TAGS_DOCUMENTATION,
+            RESOURCE_TAGS_AUTO_UPDATE,
+            RESOURCE_TAGS_AUTO_VERIFY,
+        ],
     )
-
 
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,
@@ -57,7 +59,11 @@ def init(addon):
         update=[utils.touch_dir],
         destroy=[utils.delete_dir],
         verify=[utils.is_dir, utils.is_readable, utils.is_writable],
-        tags=[RESOURCE_TAGS_DOCUMENTATION, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+        tags=[
+            RESOURCE_TAGS_DOCUMENTATION,
+            RESOURCE_TAGS_AUTO_UPDATE,
+            RESOURCE_TAGS_AUTO_VERIFY,
+        ],
     )
 
     docs_data_path = "addons/help/data/docs"
@@ -72,8 +78,13 @@ def init(addon):
             update=[utils.constructor_copy_resource(f"{docs_data_path}/{doc_file}")],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_readable],
-            tags=[RESOURCE_TAGS_DOCUMENTATION, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+            tags=[
+                RESOURCE_TAGS_DOCUMENTATION,
+                RESOURCE_TAGS_AUTO_UPDATE,
+                RESOURCE_TAGS_AUTO_VERIFY,
+            ],
         )
+
 
 ###################################################################
 # Application entry point

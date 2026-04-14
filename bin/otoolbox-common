@@ -184,7 +184,7 @@ _ot_load_venv() {
 
     _ot_log_debug "Virtual environment activated from $expected_venv."
 
-    
+
     PYTHON_CMD="$(command -v python 2>/dev/null || true)"
     if [[ -n "$PYTHON_CMD" ]]; then
         echo "[INFO] Active python executable: $PYTHON_CMD"

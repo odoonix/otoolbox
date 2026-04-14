@@ -37,6 +37,7 @@ def _platform_scripts():
         scripts = [item + ".bat" for item in scripts]
     return scripts
 
+
 if __name__ == "__main__":
     try:
         setup(

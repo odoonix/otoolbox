@@ -16,9 +16,7 @@ from otoolbox.constants import (
 )
 from otoolbox import env
 from otoolbox import utils
-from otoolbox.constants import (
-    RESOURCE_TAGS_DOCUMENTATION
-)
+from otoolbox.constants import RESOURCE_TAGS_DOCUMENTATION
 from . import copilot_utils
 
 AGENT_FILES = [
@@ -71,11 +69,15 @@ def init(addon):
             title=f"Copilot agent file: {agent_file}",
             description=f"Copilot agent file for {agent_file.split('.')[0]}",
             init=[
-                utils.constructor_copy_resource(f"addons/copilot/data/agents/{agent_file}")
+                utils.constructor_copy_resource(
+                    f"addons/copilot/data/agents/{agent_file}"
+                )
             ],
             update=[
                 utils.touch_file,
-                utils.constructor_copy_resource(f"addons/copilot/data/agents/{agent_file}"),
+                utils.constructor_copy_resource(
+                    f"addons/copilot/data/agents/{agent_file}"
+                ),
             ],
             destroy=[utils.delete_file],
             verify=[utils.is_file, utils.is_readable],
@@ -90,20 +92,19 @@ def init(addon):
         description="Instructions for using copilot in the workspace",
         init=[
             utils.constructor_copy_resource(
-                f"addons/copilot/data/copilot-instructions.md"
+                "addons/copilot/data/copilot-instructions.md"
             )
         ],
         update=[
             utils.touch_file,
             utils.constructor_copy_resource(
-                f"addons/copilot/data/copilot-instructions.md"
+                "addons/copilot/data/copilot-instructions.md"
             ),
         ],
         destroy=[utils.delete_file],
         verify=[utils.is_file, utils.is_readable],
         tags=["copilot", "instructions", RESOURCE_TAGS_DOCUMENTATION],
     )
-
 
 
 def post_process(addon):

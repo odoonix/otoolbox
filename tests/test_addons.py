@@ -38,7 +38,9 @@ def test_sort_addons_by_dependencies_orders_dependency_first(monkeypatch):
 def test_sort_addons_by_dependencies_ignores_missing_dependencies(monkeypatch):
     module_map = {
         "otoolbox.addons.copilot": SimpleNamespace(
-            app=SimpleNamespace(__cli_name__="copilot", __depends_on__=["missing-addon"])
+            app=SimpleNamespace(
+                __cli_name__="copilot", __depends_on__=["missing-addon"]
+            )
         ),
         "otoolbox.addons.vscode": SimpleNamespace(
             app=SimpleNamespace(__cli_name__="vscode")

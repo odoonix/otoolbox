@@ -26,9 +26,21 @@ from otoolbox.constants import (
 )
 
 from otoolbox.addons.vscode import dev_env
-from otoolbox.addons.vscode import code_cof
 from otoolbox.addons.vscode import odools_conf
-from otoolbox.addons.vscode.extensions import set_recommanded_extensions, verify_recommanded_extensions
+from otoolbox.addons.vscode.odoo_conf import (
+    set_workspace_conf_odoo_addons,
+    rebuile_folder_config,
+    set_odoo_bin,
+    is_odoo_bin_set,
+    set_editor_setting,
+    is_editor_setting_set,
+    set_python_setting,
+    is_python_setting_set
+)
+from otoolbox.addons.vscode.extensions import (
+    set_recommanded_extensions,
+    verify_recommanded_extensions,
+)
 
 
 ###################################################################
@@ -70,20 +82,29 @@ def init(addon):
         "done through this file",
         init=[
             utils.constructor_copy_resource("addons/vscode/data/workspace.json"),
-            code_cof.set_workspace_conf_odoo_addons,
-            code_cof.rebuile_folder_config,
+            set_workspace_conf_odoo_addons,
+            rebuile_folder_config,
             set_recommanded_extensions,
+            set_odoo_bin,
+            set_editor_setting,
+            set_python_setting,
         ],
         update=[
-            code_cof.set_workspace_conf_odoo_addons,
-            code_cof.rebuile_folder_config,
+            set_workspace_conf_odoo_addons,
+            rebuile_folder_config,
             set_recommanded_extensions,
+            set_odoo_bin,
+            set_editor_setting,
+            set_python_setting,
         ],
         destroy=[utils.delete_file],
         verify=[
-            utils.is_file, 
+            utils.is_file,
             utils.is_readable,
-            verify_recommanded_extensions
+            verify_recommanded_extensions,
+            is_odoo_bin_set,
+            is_editor_setting_set,
+            is_python_setting_set
         ],
         tags=["vscode"],
     )
@@ -121,18 +142,18 @@ def init(addon):
         init=[
             utils.touch_file,
             utils.constructor_add_text_line("dotenv"),
-            dev_env.pyenv_install
+            dev_env.pyenv_install,
         ],
         update=[
-            utils.touch_file, 
+            utils.touch_file,
             utils.constructor_add_text_line("dotenv"),
-            dev_env.pyenv_install
+            dev_env.pyenv_install,
         ],
         destroy=[utils.delete_file],
         verify=[
-            utils.is_file, 
+            utils.is_file,
             utils.is_readable,
-            utils.constructor_contains_text("dotenv")
+            utils.constructor_contains_text("dotenv"),
         ],
         tags=["vscode", "python", "venv"],
         priority=RESOURCE_PRIORITY_DEFAULT,

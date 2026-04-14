@@ -1,12 +1,5 @@
-
 import os
-import logging
-import subprocess
-import sys
-from pathlib import Path
-from urllib.parse import urlparse
 
-from dotenv import dotenv_values
 
 from otoolbox.base import Resource
 from otoolbox import env
@@ -14,25 +7,18 @@ import json
 from otoolbox.constants import (
     PROCESS_SUCCESS,
     PROCESS_FAIL,
-    PROCESS_WAR,
     PROCESS_EMPTY_MESSAGE,
 )
 
 
-
-
-
-
-
 def add_python_testing_config(context: Resource):
-    """ This function check configuration in VSCode workspace setting file and
+    """This function check configuration in VSCode workspace setting file and
     enable python testing if not enabled. It also add some default configuration for pytest.
     """
     file_path = env.get_workspace_path(context.path)
     assert os.path.isfile(
         file_path
     ), f"File {file_path} doesn't exist or isn't readable"
-
 
     # Hre is a jeson configuration for pytest.
     # Must check if there is in the file_path and if not add it.
@@ -51,9 +37,8 @@ def add_python_testing_config(context: Resource):
 
     # Remove nested python.testing.pytestEnabled if exists
     settings = config.get("settings", {})
-    if (
-        isinstance(settings.get("python"), dict)
-        and isinstance(settings["python"].get("testing"), dict)
+    if isinstance(settings.get("python"), dict) and isinstance(
+        settings["python"].get("testing"), dict
     ):
         settings["python"]["testing"].pop("pytestEnabled", None)
         settings["python"]["testing"].pop("pytestArgs", None)
@@ -67,13 +52,11 @@ def add_python_testing_config(context: Resource):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
 
-
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-
 def verify_python_testing_config(context: Resource):
-    """ This function check configuration in VSCode workspace setting file and return success 
+    """This function check configuration in VSCode workspace setting file and return success
     if python testing is enabled and configured correctly for pytest, otherwise return fail.
     """
     file_path = env.get_workspace_path(context.path)
@@ -92,7 +75,14 @@ def verify_python_testing_config(context: Resource):
     pytest_args = settings.get("python.testing.pytestArgs")
     unittest_enabled = settings.get("python.testing.unittestEnabled")
 
-    if pytest_enabled is True and pytest_args == ["--tb=short", "-v"] and unittest_enabled is False:
+    if (
+        pytest_enabled is True
+        and pytest_args == ["--tb=short", "-v"]
+        and unittest_enabled is False
+    ):
         return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
     else:
-        return PROCESS_FAIL, "Python testing configuration is not set correctly. Please run the init process to set it up."
+        return (
+            PROCESS_FAIL,
+            "Python testing configuration is not set correctly. Please run the init process to set it up.",
+        )

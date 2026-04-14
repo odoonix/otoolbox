@@ -128,4 +128,3 @@ for organization in "${ORGANIZATIONS[@]}"; do
         _ot_log_warning "Organization $organization not found, skipping."
     fi
 done
-

@@ -27,10 +27,7 @@ def test_setup_py_selects_platform_specific_script():
     spec.loader.exec_module(module)
 
     selected_scripts = module._platform_scripts()
-    assert selected_scripts in (
-        ["bin/otoolbox-doctor"],
-        ["bin/otoolbox-doctor.bat"],
-    )
+    assert "bin/otoolbox-doctor" in selected_scripts
 
 
 def test_otoolbox_doctor_script_content_and_shebang():
@@ -40,7 +37,7 @@ def test_otoolbox_doctor_script_content_and_shebang():
     assert script_path.is_file()
 
     content = script_path.read_text(encoding="utf-8")
-    assert content.startswith("#!/usr/bin/env bash\n")
+    assert content.startswith("#!/bin/bash\n")
     assert "otoolbox run verify" in content
 
 

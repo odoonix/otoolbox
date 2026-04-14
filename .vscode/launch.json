@@ -12,19 +12,23 @@
             "type": "pickString",
             "description": "Select command-line arguments",
             "options": [
-                "run update --help",
+                "run --help",
+                "run init --help",
                 "run init --tags copilot",
-                "ubuntu init",
+                "run update --help",
                 "run update --tags odools.toml",
                 "run update --tags README.rst",
                 "run update --tags documentation",
                 "run update --tags ubuntu",
                 "run update --tags unitest",
                 "run update --tags requirements.txt",
+                "run update --tags odoo-dev.code-workspace",
+                "run verify --help",
+                "run verify --tags git",
+                "run verify --tags odoo-dev.code-workspace",
+                "repo --help",
                 "repo list",
                 "repo sync-shielded",
-                "run verify --tags git",
-                "run update --tags odoo-dev.code-workspace"
             ],
             "default": "run update --help"
         }

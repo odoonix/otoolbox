@@ -32,7 +32,7 @@ results = loader.run_suite(suite, global_report=registry._assertion_report)
 ```python
 def make_suite(module_names, position='at_install'):
     """Creates a test suite for specified modules
-    
+
     - Filters by position ('at_install' or 'post_install')
     - Applies test tag filtering
     - Returns OdooSuite with sorted tests
@@ -40,7 +40,7 @@ def make_suite(module_names, position='at_install'):
 
 def run_suite(suite, global_report=None):
     """Executes the test suite
-    
+
     - Marks module.current_test and threading.testing
     - Uses OdooTestResult for result tracking
     - Handles test retry logic
@@ -113,7 +113,7 @@ def browse_ref(self, xid):
 
 def with_user(self, login):
     """Context manager to switch user temporarily"""
-    
+
 def patch(self, obj, key, val):
     """Patch object attribute with automatic cleanup"""
 
@@ -162,9 +162,9 @@ self.cr.execute('ROLLBACK TO SAVEPOINT test_%d' % self._savepoint_id)
 class TestWeb(HttpCase):
     def test_tour(self):
         self.start_tour('/web', 'web_tour_name')
-        
+
     def test_javascript(self):
-        self.browser_js('/path', 'console.log("test")', 
+        self.browser_js('/path', 'console.log("test")',
                         ready='document.readyState === "complete"')
 ```
 
@@ -277,7 +277,7 @@ def test_conditional(self):
 # Disable retry for a specific test
 def test_no_retry(self):
     self._retry = False
-    
+
 # Disable retry for a method
 test_method._retry = False
 ```
@@ -315,7 +315,7 @@ class OdooTestResult:
     - skipped: int
     - stats: defaultdict(Stat)  # Performance stats per test
     - shouldStop: bool
-    
+
     def total_errors_count()
     def startTest(test)
     def stopTest(test)
@@ -363,7 +363,7 @@ class TestRules(TransactionCase):
         # One-time setup for all test methods
         ObjCateg = cls.env['test_access_right.obj_categ']
         cls.categ = ObjCateg.create({'name': 'Food'})
-        
+
         # Create access rules
         cls.env['ir.rule'].create({
             'name': 'Forbid negatives',
@@ -416,7 +416,7 @@ def test_query_optimization(self):
         records = self.env['model'].search([...])
         for record in records:
             _ = record.field_name
-    
+
     # Different counts per user
     with self.assertQueryCount(admin=3, demo=5):
         self.env['model'].search([...])
@@ -427,7 +427,7 @@ def test_query_optimization(self):
 def test_record_values(self):
     record1 = self.env['model'].create({'name': 'Test', 'value': 10})
     record2 = self.env['model'].create({'name': 'Test2', 'value': 20})
-    
+
     self.assertRecordValues([record1, record2], [
         {'name': 'Test', 'value': 10.0, 'active': True},
         {'name': 'Test2', 'value': 20.0, 'active': True},
@@ -495,7 +495,7 @@ def test_query_count(self):
     with self.assertQueryCount(default=5, admin=3, demo=7):
         # Count queries by user
         self.env['model'].search([...])
-        
+
     # Or assert queries contain specific patterns
     with self.assertQueriesContain(['SELECT', 'FROM model']):
         self.env['model'].search([...])

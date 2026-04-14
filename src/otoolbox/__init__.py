@@ -190,6 +190,7 @@ def command_run(
 # Launch application if called directly
 ###################################################################
 
+
 def _load_application():
     dotenv.load_dotenv(".env")
     addons_list = addons.get_all_addons()
@@ -218,9 +219,11 @@ def _load_application():
         if hasattr(package, "post_process"):
             package.post_process(package)
 
+
 def _main():
     _load_application()
     app()
+
 
 if __name__ == "__main__":
     _main()

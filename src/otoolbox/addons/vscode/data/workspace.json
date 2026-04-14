@@ -117,13 +117,13 @@
             90
         ],
         "search.exclude": {
-            "**/__pycache__": true,
+            "**/__pycache__/**": true,
             "**/.venv/**": true,
             "**/.tmp/**": true,
             "**/moonsunsoft/**": true
         },
         "files.exclude": {
-            "**/__pycache__": true
+            "**/__pycache__/**": true
         },
         "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
         "python.languageServer": "Pylance",

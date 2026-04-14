@@ -24,11 +24,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
 try:
     import dotenv
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     dotenv = None
-
 
 
 # ---------------------------------------------------------------------------
@@ -43,7 +43,6 @@ def _load_env_variable(key, default=None):
     return value
 
 
-
 ROOT = Path(__file__).resolve().parent
 if dotenv:
     dotenv.load_dotenv(ROOT / ".env", override=True)
@@ -53,6 +52,7 @@ TARGET_REPOSITORIES = _load_env_variable("TARGET_REPOSITORIES", default=["odooni
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _is_odoonix_test_file(path: Path) -> bool:
     return (
@@ -228,6 +228,7 @@ def _parse_odoo_test_output(stdout: str, stderr: str) -> dict:
 # Pytest collector / items
 # ---------------------------------------------------------------------------
 
+
 class OdooAddonTestItem(pytest.Item):
     """One Odoo test method, executed via odoo-bin."""
 
@@ -239,7 +240,9 @@ class OdooAddonTestItem(pytest.Item):
     def runtest(self) -> None:
         addon_name = _addon_from_test_path(Path(str(self.path)))
 
-        odoo_bin = Path(os.environ.get("ODOO_BIN", str(ROOT / "odoo" / "odoo" / "odoo-bin")))
+        odoo_bin = Path(
+            os.environ.get("ODOO_BIN", str(ROOT / "odoo" / "odoo" / "odoo-bin"))
+        )
         db_name = os.environ.get("ODOO_TEST_DB", "test_odoonix")
         db_host = os.environ.get("ODOO_DB_HOST", "localhost")
         db_user = os.environ.get("ODOO_DB_USER", "odoo")
@@ -250,7 +253,9 @@ class OdooAddonTestItem(pytest.Item):
         test_tag = f"/{addon_name}:{self.class_name}.{self.method_name}"
 
         # Set random name for DB to avoid conflicts, but allow overriding via env var for debugging.
-        db_name = f"{db_name}_{os.getpid()}" if "ODOO_TEST_DB" not in os.environ else db_name
+        db_name = (
+            f"{db_name}_{os.getpid()}" if "ODOO_TEST_DB" not in os.environ else db_name
+        )
 
         # Delete test db if exists to ensure a clean slate (odoo-bin doesn't always do this with --stop-after-init)
         subprocess.run(
@@ -259,9 +264,12 @@ class OdooAddonTestItem(pytest.Item):
                 "db",
                 "drop",
                 db_name,
-                "--db_host", db_host,
-                "--db_user", db_user,
-                "--db_password", db_password,
+                "--db_host",
+                db_host,
+                "--db_user",
+                db_user,
+                "--db_password",
+                db_password,
                 "--force",
             ],
             cwd=str(ROOT),
@@ -274,17 +282,27 @@ class OdooAddonTestItem(pytest.Item):
             str(odoo_bin),
             "--test-enable",
             "--stop-after-init",
-            "-d", db_name,
-            "--db_host", db_host,
-            "--db_user", db_user,
-            "--db_password", db_password,
-            "--http-port", http_port,
-            "--addons-path", addons_path,
-            "--init", addon_name,
-            "--test-tags", test_tag,
+            "-d",
+            db_name,
+            "--db_host",
+            db_host,
+            "--db_user",
+            db_user,
+            "--db_password",
+            db_password,
+            "--http-port",
+            http_port,
+            "--addons-path",
+            addons_path,
+            "--init",
+            addon_name,
+            "--test-tags",
+            test_tag,
         ]
 
-        result = subprocess.run(cmd, cwd=str(ROOT), text=True, capture_output=True, check=False)
+        result = subprocess.run(
+            cmd, cwd=str(ROOT), text=True, capture_output=True, check=False
+        )
 
         parsed = _parse_odoo_test_output(result.stdout, result.stderr)
         summary = parsed.get("summary")
@@ -296,7 +314,9 @@ class OdooAddonTestItem(pytest.Item):
                 or summary["errors"] > 0
             )
         else:
-            failed = result.returncode != 0 or _check_odoo_test_output(result.stdout, result.stderr)
+            failed = result.returncode != 0 or _check_odoo_test_output(
+                result.stdout, result.stderr
+            )
 
         if failed:
             summary_text = summary["line"] if summary else "summary not found in output"
@@ -304,15 +324,18 @@ class OdooAddonTestItem(pytest.Item):
             issues = parsed.get("issues", [])
             error_lines = parsed.get("error_lines", [])
 
-            started_text = "\n".join(
-                f"- {item['module']} :: {item['test']}"
-                for item in started
-            ) or "- none"
+            started_text = (
+                "\n".join(f"- {item['module']} :: {item['test']}" for item in started)
+                or "- none"
+            )
 
-            issues_text = "\n\n".join(
-                f"[{item['kind']}] {item['module']} :: {item['test']}\n{item['block']}"
-                for item in issues
-            ) or "none"
+            issues_text = (
+                "\n\n".join(
+                    f"[{item['kind']}] {item['module']} :: {item['test']}\n{item['block']}"
+                    for item in issues
+                )
+                or "none"
+            )
 
             error_lines_text = "\n".join(error_lines[-30:]) or "none"
 

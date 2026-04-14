@@ -60,7 +60,7 @@ def set_addons_paths(context: Resource):
 
     """
     # Get list of target repostiory TARGET_REPOSITORIES which is an array
-    # of string like "odoo" or "moonsunsoft". This is an environment 
+    # of string like "odoo" or "moonsunsoft". This is an environment
     # variable that can be set in .env file.
     # eg: TARGET_REPOSITORIES=("odoo" "moonsunsoft")
     target_repositories = env.get_env_variable("TARGET_REPOSITORIES", [])

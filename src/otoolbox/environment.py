@@ -57,10 +57,9 @@ class Environment:
         assert path, "Path is requried"
         return os.path.join(self.get_workspace(), *path)
 
-
     def get_env_variable(self, name, default=None):
         """Get environment variable
-        
+
         Loads .env file in workspace and get the variable value.
         If the variable is not found, return default value.
         """

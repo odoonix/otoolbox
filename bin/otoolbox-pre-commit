@@ -240,11 +240,11 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
         if pre-commit run -a >> "$LOG_FILE" 2>&1; then
             _ot_log_info "Pre-commit checks completed for $project. Log saved to $LOG_FILE."
         else
-            _ot_log_warning "Pre-commit checks failed for $project, continuing execution." 
+            _ot_log_warning "Pre-commit checks failed for $project, continuing execution."
             _ot_log_warning "See $LOG_FILE for details."
         fi
 
-        
+
         #
         # Generage customer readme
         #
