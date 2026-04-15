@@ -110,10 +110,17 @@ def set_odoo_bin(context: Resource):
 # editor settings
 ############################################################################################
 _editor_config = {
+    # Formmating settings
     "editor.defaultFormatter": "ms-python.autopep8",
+    
+    # Word wrap settings
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 88,
     "editor.rulers": [88, 90],
+    
+    # links and clickable urls
+    "editor.links": true,
+    "editor.multiCursorModifier": "ctrlCmd",
 }
 
 def set_editor_setting(context: Resource):
@@ -143,11 +150,20 @@ def is_editor_setting_set(context: Resource):
 # python settings
 ############################################################################################
 _python_config = {
+    # Analysis
     "python.analysis.autoImportCompletions": True,
     "python.analysis.enableSyncServer": True,
     "python.analysis.supportAllPythonDocuments": True,
+
+    # Interpreter settings
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+    # Linting settings
+    "python.linting.enabled": True,
+    "python.linting.pylintEnabled": True,
     "python.languageServer": "Pylance",
+
+    # Terminal and VENV settings
     "python.terminal.activateEnvInCurrentTerminal": True,
 }
 def set_python_setting(context: Resource):
