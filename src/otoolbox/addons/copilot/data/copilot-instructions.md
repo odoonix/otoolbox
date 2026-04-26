@@ -89,3 +89,19 @@
 - `python.analysis` search excludes `**/moonsunsoft/**` in workspace settings; use direct file paths when needed.
 - For module-specific behavior, read the nearest addon/repo `README.md` before coding.
 - Never commit secrets used by connectors; keep credentials in environment/config.
+
+## Quality gates to prevent recurring issues
+- Language baseline:
+  - Write all code, comments, docstrings, and test descriptions in English by default.
+  - Use Persian only when explicitly requested by the task owner.
+- Ruff/quality baseline for Python and tests:
+  - Keep lines at `<= 88` chars (`E501`).
+  - Prefer `isinstance(x, A | B)` over tuple style (`UP038`).
+  - Avoid ambiguous one-letter names except conventional counters (`E741`).
+  - Remove unused loop variables or prefix with `_` when intentionally unused (`B007`).
+  - Remove unused local assignments (`F841`).
+  - Keep helper and test-builder functions below complexity threshold; extract helpers early (`C901`).
+- Validation flow before handoff:
+  - First run focused checks on touched files.
+  - Then run repo-wide checks only after focused checks pass.
+  - Keep behavior and tests aligned with current implementation semantics; update test expectations when APIs intentionally changed.
