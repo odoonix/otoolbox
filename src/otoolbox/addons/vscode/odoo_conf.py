@@ -112,8 +112,8 @@ def set_odoo_bin(context: Resource):
 _editor_config = {
     # Formmating settings
     "editor.defaultFormatter": "ms-python.autopep8",
-    "editor.insertSpaces": true,
-    "editor.detectIndentation": true,
+    "editor.insertSpaces": True,
+    "editor.detectIndentation": True,
     "editor.tabSize": 4,
     
     # Word wrap settings
@@ -122,7 +122,7 @@ _editor_config = {
     "editor.rulers": [88, 90],
     
     # links and clickable urls
-    "editor.links": true,
+    "editor.links": True,
     "editor.multiCursorModifier": "ctrlCmd",
 }
 

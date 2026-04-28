@@ -91,11 +91,7 @@ else
     _ot_log_info "Skipping pull phase (--no-pull enabled)."
 fi
 
-if [[ "$WORKER_USER" == "$CURRENT_USER" ]]; then
-    otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
-else
-    _ot_run_as_worker otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
-fi
+_ot_run_as_worker otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
 
 for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*/; do
     if [[ -d "$dir" ]]; then

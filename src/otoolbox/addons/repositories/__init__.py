@@ -358,8 +358,7 @@ def command_sync_shielded():
         result = utils.call_process_safe(
             [
                 "rsync",
-                "-a",
-                "--no-times",
+                "-r",
                 "-v",
                 "--delete",
                 "--exclude",
