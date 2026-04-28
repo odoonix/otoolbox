@@ -359,6 +359,7 @@ def command_sync_shielded():
             [
                 "rsync",
                 "-a",
+                "--no-times",
                 "-v",
                 "--delete",
                 "--exclude",
