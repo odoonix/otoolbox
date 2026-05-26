@@ -29,7 +29,7 @@ function resolve_script_path() {
 # Load common functions and variables
 SCRIPT_PATH=$(resolve_script_path)
 source "$SCRIPT_PATH/otoolbox-common"
-source "$SCRIPT_DIR/customer-common"
+source "$SCRIPT_PATH/customer-common"
 
 _ot_init
 _ot_switch_to_worker

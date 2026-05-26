@@ -365,6 +365,8 @@ def command_sync_shielded():
                 ".git",
                 "--exclude",
                 "otoolbox.toml",
+                "--exclude",
+                ".ruff_cache",
                 source_path + "/",
                 target_path + "/",
             ],
