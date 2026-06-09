@@ -35,7 +35,7 @@ from otoolbox.addons.vscode.odoo_conf import (
     set_editor_setting,
     is_editor_setting_set,
     set_python_setting,
-    is_python_setting_set
+    is_python_setting_set,
 )
 from otoolbox.addons.vscode.extensions import (
     set_recommanded_extensions,
@@ -104,7 +104,7 @@ def init(addon):
             verify_recommanded_extensions,
             is_odoo_bin_set,
             is_editor_setting_set,
-            is_python_setting_set
+            is_python_setting_set,
         ],
         tags=["vscode"],
     )
