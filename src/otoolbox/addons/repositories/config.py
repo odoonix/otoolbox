@@ -43,7 +43,7 @@ def _add_repo_to_resources(item):
             "title": item.get("repository"),
             "description": """Automaticaly added resources from git.""",
             "init": [
-                git.git_add_safe_directory, 
+                git.git_add_safe_directory,
                 git.git_clone,
                 git.git_worktree_prune,
                 git.git_worktree_create,
@@ -59,9 +59,7 @@ def _add_repo_to_resources(item):
                 git.git_pull,
                 utils.touch_dir,
             ],
-            "destroy": [
-                utils.delete_dir
-            ],
+            "destroy": [utils.delete_dir],
             "verify": [
                 utils.is_dir,
                 utils.is_readable,

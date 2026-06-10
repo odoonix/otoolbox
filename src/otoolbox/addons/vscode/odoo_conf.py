@@ -1,4 +1,5 @@
 import json
+import os
 
 from otoolbox import env
 from otoolbox.base import Resource

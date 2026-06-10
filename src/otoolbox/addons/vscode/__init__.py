@@ -13,7 +13,6 @@ ensuring a seamless development experience in Odoo projects.
 
 import subprocess
 import dotenv
-
 import typer
 # from typing_extensions import Annotated
 

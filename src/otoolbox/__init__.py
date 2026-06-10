@@ -193,13 +193,15 @@ def command_run(
     Run step processors on resources which are filterd by tags.
     """
     tags = tags if isinstance(tags, List) else []
-    env.context.update({
-        "tags": tags, 
-        "step": steps,
-        "ssh_auth": ssh_auth,
-        "git_repositories_policy": git_repositories_policy,
-        "git_repositories_root": git_repositories_root
-    })
+    env.context.update(
+        {
+            "tags": tags,
+            "step": steps,
+            "ssh_auth": ssh_auth,
+            "git_repositories_policy": git_repositories_policy,
+            "git_repositories_root": git_repositories_root,
+        }
+    )
 
     result = (
         env.resources.filter(lambda resource: resource.has_tag(*tags))

@@ -80,12 +80,12 @@ def _get_repo_path(context: Resource):
         repo_path = env.get_workspace_path(context.path)
     else:
         git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
-        assert git_repositories_root, "Root path of repositories is required set GIT_REPOSITORIES_ROOT"
-        repo_path = env.get_workspace_path(
-            git_repositories_root,
-            context.path
-        )
+        assert (
+            git_repositories_root
+        ), "Root path of repositories is required set GIT_REPOSITORIES_ROOT"
+        repo_path = env.get_workspace_path(git_repositories_root, context.path)
     return repo_path
+
 
 def _is_git_repository(repository_path):
     if not os.path.isdir(repository_path):
@@ -128,7 +128,9 @@ def _get_branch_name_from_path(path):
     )
     if result.returncode:
         raise RuntimeError(result.stderr)
-    return next((line.strip() for line in result.stdout.splitlines() if line.strip()), "")
+    return next(
+        (line.strip() for line in result.stdout.splitlines() if line.strip()), ""
+    )
 
 
 ######################################################################################
@@ -136,6 +138,7 @@ def _get_branch_name_from_path(path):
 # Resource processors are used to process resources from the workspace. The resource #
 # must be a git repository.                                                          #
 ######################################################################################
+
 
 def git_link_to_repositoires_root(context: Resource):
     # Get root path
@@ -193,22 +196,19 @@ def git_worktree_create(context: Resource):
     git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
     assert git_repository_policy, "Policy is required"
     if git_repository_policy == "standalone":
-        _logger.debug("Repository policy is standalone, using single worktree for each repo")
+        _logger.debug(
+            "Repository policy is standalone, using single worktree for each repo"
+        )
         return PROCESS_SUCCESS, _get_branch_name(context=context)
-    
+
     # Load path (root repository and workspace)
     git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
     assert git_repositories_root, "Policy is required"
-    git_repository_root = env.get_workspace_path(
-        git_repositories_root,
-        context.path
-    )
-    context_path = env.get_workspace_path(
-        context.path
-    )
+    git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
+    context_path = env.get_workspace_path(context.path)
 
-    repo_path = _get_repo_path(context)
-    context_pat = env.get_workspace_path(context.path)
+    # repo_path = _get_repo_path(context)
+    # context_pat = env.get_workspace_path(context.path)
 
     if _is_git_repository(context_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)
@@ -217,13 +217,13 @@ def git_worktree_create(context: Resource):
     )
     result = utils.call_process_safe(
         [
-            GIT_COMMAND, 
-            "worktree", 
+            GIT_COMMAND,
+            "worktree",
             "add",
-            context_path, # repository path
-            "origin/" + branch_name
+            context_path,  # repository path
+            "origin/" + branch_name,
         ],
-        cwd=git_repository_root, # root repository
+        cwd=git_repository_root,  # root repository
     )
 
     if result.returncode:
@@ -235,11 +235,7 @@ def git_worktree_prune(context: Resource):
     """Remove a git worktree for the given branch."""
     cwd = _get_repo_path(context)
     result = utils.call_process_safe(
-        [
-            GIT_COMMAND, 
-            "worktree", 
-            "prune"
-        ],
+        [GIT_COMMAND, "worktree", "prune"],
         cwd=cwd,
     )
 
@@ -255,7 +251,7 @@ def git_clone(context: Resource):
     if _is_git_repository(repo_path):
         _logger.debug("Repository exist")
         return PROCESS_SUCCESS, "Repository is ready, create a new worktree"
-    
+
     # Clone
     folder = Path(repo_path)
     organization_path = folder.parent
@@ -265,7 +261,7 @@ def git_clone(context: Resource):
         [
             GIT_COMMAND,
             "clone",
-            # Clone main branch. 
+            # Clone main branch.
             # "--branch",
             # branch_name,
             (

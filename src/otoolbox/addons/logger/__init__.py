@@ -8,6 +8,7 @@ Resources:
 
 NOTE: logger must be configured via the .env or command line arguments
 """
+
 import os
 import logging
 import sys
