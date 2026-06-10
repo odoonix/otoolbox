@@ -1,10 +1,13 @@
-from jsonpath_ng import parse
 import json
-import os
 
 from otoolbox import env
 from otoolbox.base import Resource
-from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+from otoolbox.constants import (
+    PROCESS_SUCCESS,
+    PROCESS_EMPTY_MESSAGE,
+    PROCESS_WAR,
+    PROCESS_FAIL,
+)
 
 
 def _load_config(context: Resource):
@@ -19,13 +22,7 @@ def _load_config(context: Resource):
 def _save_config(context: Resource, config):
     file_path = env.get_workspace_path(context.path)
     with open(file_path, "w", encoding="utf-8") as workspace_file:
-        json.dump(
-            config, 
-            workspace_file, 
-            indent=4, 
-            sort_keys=True
-        )
-
+        json.dump(config, workspace_file, indent=4, sort_keys=True)
 
 
 ############################################################################################
@@ -66,34 +63,38 @@ def set_workspace_conf_odoo_addons(context: Resource):
 def rebuile_folder_config(context: Resource):
     """Set folders in workspace configuration"""
     data = _load_config(context)
-    data["folders"] = [{
-        "path": ".", 
-        "name": f"Odoo {env.context.get('odoo_version')}"
-    }]
+    data["folders"] = [{"path": ".", "name": f"Odoo {env.context.get('odoo_version')}"}]
     _save_config(context, data)
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
-
 
 
 ############################################################################################
 # odoo.bin
 ############################################################################################
 
+
 def is_odoo_bin_set(context: Resource):
     config = _load_config(context)
 
     settings = config.get("settings", {})
-    
+
     odoo_bin = settings["odoo.bin"]
     if not odoo_bin:
-        return PROCESS_FAIL, "Odoo bin path is not set. \"odoo_bin\" should be set in the workspace configuration file."
+        return (
+            PROCESS_FAIL,
+            'Odoo bin path is not set. "odoo_bin" should be set in the workspace configuration file.',
+        )
 
     if not odoo_bin.endswith("/odoo/odoo/odoo-bin"):
-        return PROCESS_WAR, "Odoo bin path seems not be set correctly. Please make sure the path is correct and the odoo-bin file exists."
+        return (
+            PROCESS_WAR,
+            "Odoo bin path seems not be set correctly. Please make sure the path is correct and the odoo-bin file exists.",
+        )
 
     # Save config
     _save_config(context, config)
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
 
 def set_odoo_bin(context: Resource):
     config = _load_config(context)
@@ -106,8 +107,6 @@ def set_odoo_bin(context: Resource):
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
-
-
 ############################################################################################
 # editor settings
 ############################################################################################
@@ -117,16 +116,15 @@ _editor_config = {
     "editor.insertSpaces": True,
     "editor.detectIndentation": True,
     "editor.tabSize": 4,
-    
     # Word wrap settings
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 88,
     "editor.rulers": [88, 90],
-    
     # links and clickable urls
     "editor.links": True,
     "editor.multiCursorModifier": "ctrlCmd",
 }
+
 
 def set_editor_setting(context: Resource):
     config = _load_config(context)
@@ -145,10 +143,12 @@ def is_editor_setting_set(context: Resource):
 
     for key, value in _editor_config.items():
         if key not in settings:
-            return PROCESS_WAR, f"Editor setting '{key}' is not set. Expected: {key}: {value}"
+            return (
+                PROCESS_WAR,
+                f"Editor setting '{key}' is not set. Expected: {key}: {value}",
+            )
 
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
-
 
 
 ############################################################################################
@@ -159,18 +159,17 @@ _python_config = {
     "python.analysis.autoImportCompletions": True,
     "python.analysis.enableSyncServer": True,
     "python.analysis.supportAllPythonDocuments": True,
-
     # Interpreter settings
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-
     # Linting settings
     "python.linting.enabled": True,
     "python.linting.pylintEnabled": True,
     "python.languageServer": "Pylance",
-
     # Terminal and VENV settings
     "python.terminal.activateEnvInCurrentTerminal": True,
 }
+
+
 def set_python_setting(context: Resource):
     config = _load_config(context)
 
@@ -188,7 +187,9 @@ def is_python_setting_set(context: Resource):
 
     for key, value in _python_config.items():
         if key not in settings:
-            return PROCESS_WAR, f"Python setting '{key}' is not set. Expected: {key}: {value}"
+            return (
+                PROCESS_WAR,
+                f"Python setting '{key}' is not set. Expected: {key}: {value}",
+            )
 
     return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
-

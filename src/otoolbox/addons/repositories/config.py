@@ -20,7 +20,6 @@ from otoolbox.constants import RESOURCE_PRIORITY_ROOT
 from otoolbox.addons.repositories import git
 from otoolbox.addons.repositories.constants import (
     REPOSITORIES_PATH,
-    RESOURCE_REPOSITORIES_PATH,
 )
 
 
@@ -222,7 +221,7 @@ def _load_repository_list():
     if data:
         repo_list = json.loads(data)
     else:
-        data = env.resource_string(RESOURCE_REPOSITORIES_PATH, package_name=__name__)
+        data = env.resource_string("addons/repositories/data/repositories.json")
         repo_list = json.loads(data)
 
     workspace_repo_list = _discover_workspace_repositories()
