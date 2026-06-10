@@ -8,7 +8,7 @@ Resources:
 
 NOTE: logger must be configured via the .env or command line arguments
 """
-
+import os
 import logging
 import sys
 import dotenv
@@ -61,6 +61,8 @@ def init(addon):
     )
 
     # Logging
+    if not os.path.isdir(LOG_FOLDER):
+        os.makedirs(LOG_FOLDER)
     file_handler = logging.FileHandler(
         filename=env.get_workspace_path(LOG_FOLDER, LOG_FILE)
     )

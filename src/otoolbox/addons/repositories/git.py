@@ -1,6 +1,9 @@
 import logging
 import subprocess
 import os
+import shutil
+import uuid
+from pathlib import Path
 
 from otoolbox import env
 from otoolbox import utils
@@ -70,12 +73,62 @@ def _get_branch_name(context: Resource):
     )
 
 
+def _get_repo_path(context: Resource):
+    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
+    repo_path = ""
+    if git_repository_policy == "standalone":
+        repo_path = env.get_workspace_path(context.path)
+    else:
+        git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
+        assert git_repositories_root, "Root path of repositories is required set GIT_REPOSITORIES_ROOT"
+        repo_path = env.get_workspace_path(
+            git_repositories_root,
+            context.path
+        )
+    return repo_path
+
 def _is_git_repository(repository_path):
     if not os.path.isdir(repository_path):
         return False
 
     git_path = os.path.join(repository_path, ".git")
-    return os.path.isdir(git_path) or os.path.isfile(git_path)
+    return (
+        # is a main repository worktree
+        os.path.isdir(git_path)
+        # is a git worktree, where .git is a file containing the path to
+        # the main repository
+        or os.path.isfile(git_path)
+    )
+
+
+def _is_path_in_root(path, root_path):
+    try:
+        normalized_path = os.path.abspath(path)
+        normalized_root = os.path.abspath(root_path)
+        return os.path.commonpath([normalized_path, normalized_root]) == normalized_root
+    except ValueError:
+        return False
+
+
+def _run_git(command, cwd):
+    result = utils.call_process_safe([GIT_COMMAND, *command], cwd=cwd)
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return result
+
+
+def _create_random_branch_name():
+    return f"otoolbox_{uuid.uuid4().hex}"
+
+
+def _get_branch_name_from_path(path):
+    result = utils.call_process_safe(
+        [GIT_COMMAND, "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=path,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return next((line.strip() for line in result.stdout.splitlines() if line.strip()), "")
 
 
 ######################################################################################
@@ -84,27 +137,93 @@ def _is_git_repository(repository_path):
 # must be a git repository.                                                          #
 ######################################################################################
 
+def git_link_to_repositoires_root(context: Resource):
+    # Get root path
+    path_root = env.get_env_variable("GIT_REPOSITORIES_ROOT", "~/Repositories")
+    path_root = os.path.abspath(os.path.expanduser(path_root))
 
-def git_clone(context: Resource):
-    """Clone the git repository from github"""
+    # git path
+    repository = context.path
+    repo_path = env.get_workspace_path(context.path)
+    repository_root_path = os.path.join(path_root, repository)
+    branch_name = (
+        context.branch if context.branch else env.get_env_variable("ODOO_VERSION")
+    )
+    assert branch_name, "Branch name is required"
+
+    # if repo_path is in path_root then return sucess
+    if _is_path_in_root(repo_path, path_root):
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+
+    if not _is_git_repository(repo_path):
+        raise RuntimeError(f"Not a git repository: {repo_path}")
+
+    if not _is_git_repository(repository_root_path):
+        random_branch_name = _create_random_branch_name()
+        _run_git(["checkout", "-B", random_branch_name], cwd=repo_path)
+
+        repository_root_parent = os.path.dirname(repository_root_path)
+        if not os.path.isdir(repository_root_parent):
+            os.makedirs(repository_root_parent, exist_ok=True)
+
+        shutil.move(repo_path, repository_root_path)
+    else:
+        root_branch_name = _get_branch_name_from_path(repository_root_path)
+        if root_branch_name == branch_name:
+            random_branch_name = _create_random_branch_name()
+            _run_git(["checkout", "-B", random_branch_name], cwd=repository_root_path)
+
+    context_path = env.get_workspace_path(context.path)
+    if not _is_git_repository(context_path):
+        _run_git(
+            [
+                "worktree",
+                "add",
+                context_path,
+                f"origin/{branch_name}",
+            ],
+            cwd=repository_root_path,
+        )
+
+    return PROCESS_SUCCESS, _get_branch_name(context=context)
+
+
+def git_worktree_create(context: Resource):
+    """Create a git worktree for the given branch."""
+    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
+    assert git_repository_policy, "Policy is required"
+    if git_repository_policy == "standalone":
+        _logger.debug("Repository policy is standalone, using single worktree for each repo")
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+    
+    # Load path (root repository and workspace)
+    git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
+    assert git_repositories_root, "Policy is required"
+    git_repository_root = env.get_workspace_path(
+        git_repositories_root,
+        context.path
+    )
+    context_path = env.get_workspace_path(
+        context.path
+    )
+
+    repo_path = _get_repo_path(context)
+    context_pat = env.get_workspace_path(context.path)
+
+    if _is_git_repository(context_path):
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
     branch_name = (
         context.branch if context.branch else env.context.get("odoo_version", "18.0")
     )
-    cwd = env.get_workspace_path(context.parent)
-
     result = utils.call_process_safe(
         [
-            GIT_COMMAND,
-            "clone",
-            "--branch",
-            branch_name,
-            (
-                GIT_ADDRESS_HTTPS
-                if not env.context.get("ssh_git", True)
-                else GIT_ADDRESS_SSH
-            ).format(path=context.path),
+            GIT_COMMAND, 
+            "worktree", 
+            "add",
+            context_path, # repository path
+            "origin/" + branch_name
         ],
-        cwd=cwd,
+        cwd=git_repository_root, # root repository
     )
 
     if result.returncode:
@@ -112,11 +231,61 @@ def git_clone(context: Resource):
     return PROCESS_SUCCESS, _get_branch_name(context=context)
 
 
+def git_worktree_prune(context: Resource):
+    """Remove a git worktree for the given branch."""
+    cwd = _get_repo_path(context)
+    result = utils.call_process_safe(
+        [
+            GIT_COMMAND, 
+            "worktree", 
+            "prune"
+        ],
+        cwd=cwd,
+    )
+
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, "All prunable worktree are removed"
+
+
+def git_clone(context: Resource):
+    """Clone the git repository from github"""
+    # Check the repository
+    repo_path = _get_repo_path(context)
+    if _is_git_repository(repo_path):
+        _logger.debug("Repository exist")
+        return PROCESS_SUCCESS, "Repository is ready, create a new worktree"
+    
+    # Clone
+    folder = Path(repo_path)
+    organization_path = folder.parent
+    if not os.path.isdir(organization_path):
+        os.makedirs(organization_path)
+    result = utils.call_process_safe(
+        [
+            GIT_COMMAND,
+            "clone",
+            # Clone main branch. 
+            # "--branch",
+            # branch_name,
+            (
+                GIT_ADDRESS_HTTPS
+                if not env.context.get("ssh_git", True)
+                else GIT_ADDRESS_SSH
+            ).format(path=context.path),
+        ],
+        cwd=organization_path,
+    )
+
+    if result.returncode:
+        raise RuntimeError(result.stderr)
+    return PROCESS_SUCCESS, "Repository is cloned"
+
+
 def git_pull(context: Resource):
     """Pull the git repository from github"""
     cwd = env.get_workspace_path(context.path)
     result = utils.call_process_safe([GIT_COMMAND, "pull"], cwd=cwd)
-
     if result.returncode:
         raise RuntimeError(result.stderr)
     return PROCESS_SUCCESS, _get_branch_name(context=context)
@@ -129,10 +298,9 @@ def git_checkout(context: Resource):
         context.branch if context.branch else env.context.get("odoo_version", "18.0")
     )
     result = utils.call_process_safe([GIT_COMMAND, "checkout", branch_name], cwd=cwd)
-
     if result.returncode:
         raise RuntimeError(result.stderr)
-    return PROCESS_SUCCESS, _get_branch_name(context=context)
+    return PROCESS_SUCCESS, "Repo is checked out"
 
 
 def git_add_safe_directory(context: Resource):

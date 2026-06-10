@@ -29,6 +29,10 @@
                 "repo --help",
                 "repo list",
                 "repo sync-shielded",
+                "run init --tags 'odoonix/connector'",
+                "repo add 'odoonix/sms'",
+                "repo add 'odoonix/product'",
+                "repo add 'odoo/design-themes'",
             ],
             "default": "run update --help"
         }

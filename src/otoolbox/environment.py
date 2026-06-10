@@ -55,7 +55,8 @@ class Environment:
     def get_workspace_path(self, *path):
         """Gets subfolder/file with in workspace"""
         assert path, "Path is requried"
-        return os.path.join(self.get_workspace(), *path)
+        path = os.path.join(self.get_workspace(), *path)
+        return os.path.abspath(path)
 
     def get_env_variable(self, name, default=None):
         """Get environment variable

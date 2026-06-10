@@ -16,7 +16,6 @@ ext_configs = {
     "extensions": {
         "recommendations": [
             "odoo.odoo",
-            "github.copilot",
             "github.copilot-chat",
             "ms-python.autopep8",
             "ms-python.python",

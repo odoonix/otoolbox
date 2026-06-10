@@ -9,6 +9,8 @@ from otoolbox.constants import PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 def _load_config(context: Resource):
     file_path = env.get_workspace_path(context.path)
+    if not os.path.isfile(file_path):
+        return {}
     with open(file_path, "r", encoding="utf-8") as f:
         config = json.load(f)
     return config

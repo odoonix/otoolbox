@@ -43,15 +43,26 @@ def _add_repo_to_resources(item):
             "parent": item.get("organization"),
             "title": item.get("repository"),
             "description": """Automaticaly added resources from git.""",
-            "init": [git.git_add_safe_directory, git.git_clone],
+            "init": [
+                git.git_add_safe_directory, 
+                git.git_clone,
+                git.git_worktree_prune,
+                git.git_worktree_create,
+                git.git_link_to_repositoires_root,
+                git.git_checkout,
+            ],
             "enable_in_runtime": item.get("enable_in_runtime", True),
             "update": [
                 git.git_add_safe_directory,
+                git.git_worktree_prune,
+                git.git_link_to_repositoires_root,
                 git.git_checkout,
                 git.git_pull,
                 utils.touch_dir,
             ],
-            "destroy": [utils.delete_dir],
+            "destroy": [
+                utils.delete_dir
+            ],
             "verify": [
                 utils.is_dir,
                 utils.is_readable,

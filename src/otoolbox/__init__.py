@@ -170,12 +170,36 @@ def command_run(
             envvar="SSH_AUTH",
         ),
     ] = True,
+    git_repositories_policy: Annotated[
+        str,
+        typer.Option(
+            prompt="Using single worktre for each repository?",
+            help="In standalone a worktree is use for each repositry. In othre case"
+            "multiple worktree are using with a single repository.",
+            envvar="GIT_REPOSITORIES_POLICY",
+        ),
+    ] = "standalone",
+    git_repositories_root: Annotated[
+        str,
+        typer.Option(
+            prompt="Using single worktre for each repository?",
+            help="In standalone a worktree is use for each repositry. In othre case"
+            "multiple worktree are using with a single repository.",
+            envvar="GIT_REPOSITORIES_ROOT",
+        ),
+    ] = "../main",
 ):
     """
     Run step processors on resources which are filterd by tags.
     """
     tags = tags if isinstance(tags, List) else []
-    env.context.update({"tags": tags, "step": steps, "ssh_auth": ssh_auth})
+    env.context.update({
+        "tags": tags, 
+        "step": steps,
+        "ssh_auth": ssh_auth,
+        "git_repositories_policy": git_repositories_policy,
+        "git_repositories_root": git_repositories_root
+    })
 
     result = (
         env.resources.filter(lambda resource: resource.has_tag(*tags))
