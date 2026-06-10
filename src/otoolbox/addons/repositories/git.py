@@ -132,6 +132,24 @@ def _get_branch_name_from_path(path):
         (line.strip() for line in result.stdout.splitlines() if line.strip()), ""
     )
 
+def _is_git_repository_main(repository_path):
+    if not os.path.isdir(repository_path):
+        return False
+
+    git_path = os.path.join(repository_path, ".git")
+    if not os.path.isdir(git_path):
+        return False
+    
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repository_path), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip() == "true"
+    except subprocess.CalledProcessError:
+        return False
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -155,7 +173,12 @@ def git_link_to_repositoires_root(context: Resource):
     assert branch_name, "Branch name is required"
 
     # if repo_path is in path_root then return sucess
-    if _is_path_in_root(repo_path, path_root):
+    c_repo_path = _get_repo_path(context)
+    if (
+        _is_path_in_root(c_repo_path, path_root)
+        and not _is_git_repository_main(repo_path)
+        and _is_git_repository_main(repository_root_path)
+    ):
         return PROCESS_SUCCESS, _get_branch_name(context=context)
 
     if not _is_git_repository(repo_path):
@@ -176,17 +199,23 @@ def git_link_to_repositoires_root(context: Resource):
             random_branch_name = _create_random_branch_name()
             _run_git(["checkout", "-B", random_branch_name], cwd=repository_root_path)
 
-    context_path = env.get_workspace_path(context.path)
-    if not _is_git_repository(context_path):
-        _run_git(
-            [
-                "worktree",
-                "add",
-                context_path,
-                f"origin/{branch_name}",
-            ],
-            cwd=repository_root_path,
-        )
+    shutil.rmtree(repo_path)
+    _run_git(
+        [
+            "worktree",
+            "prune",
+        ],
+        cwd=repository_root_path,
+    )
+    _run_git(
+        [
+            "worktree",
+            "add",
+            repo_path,
+            f"origin/{branch_name}",
+        ],
+        cwd=repository_root_path,
+    )
 
     return PROCESS_SUCCESS, _get_branch_name(context=context)
 
