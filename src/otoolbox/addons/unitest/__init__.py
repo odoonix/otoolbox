@@ -13,7 +13,6 @@ Tags: unitest
 
 import typer
 import dotenv
-import os
 
 from otoolbox import env
 from otoolbox import utils

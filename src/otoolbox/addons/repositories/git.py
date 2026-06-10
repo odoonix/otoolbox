@@ -132,6 +132,7 @@ def _get_branch_name_from_path(path):
         (line.strip() for line in result.stdout.splitlines() if line.strip()), ""
     )
 
+
 def _is_git_repository_main(repository_path):
     if not os.path.isdir(repository_path):
         return False
@@ -139,7 +140,7 @@ def _is_git_repository_main(repository_path):
     git_path = os.path.join(repository_path, ".git")
     if not os.path.isdir(git_path):
         return False
-    
+
     try:
         result = subprocess.run(
             ["git", "-C", str(repository_path), "rev-parse", "--is-inside-work-tree"],
@@ -150,6 +151,7 @@ def _is_git_repository_main(repository_path):
         return result.stdout.strip() == "true"
     except subprocess.CalledProcessError:
         return False
+
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -244,6 +246,20 @@ def git_worktree_create(context: Resource):
     branch_name = (
         context.branch if context.branch else env.context.get("odoo_version", "18.0")
     )
+
+    # Get root path
+    path_root = env.get_env_variable("GIT_REPOSITORIES_ROOT", "~/Repositories")
+    path_root = os.path.abspath(os.path.expanduser(path_root))
+
+    # git path
+    repository = context.path
+    repository_root_path = os.path.join(path_root, repository)
+    root_branch_name = _get_branch_name_from_path(repository_root_path)
+
+    if root_branch_name == branch_name:
+        random_branch_name = _create_random_branch_name()
+        _run_git(["checkout", "-B", random_branch_name], cwd=repository_root_path)
+
     result = utils.call_process_safe(
         [
             GIT_COMMAND,
