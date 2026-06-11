@@ -76,14 +76,14 @@ def _get_branch_name(context: Resource):
 def _get_repo_path(context: Resource):
     git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
     repo_path = ""
-    if git_repository_policy == "standalone":
-        repo_path = env.get_workspace_path(context.path)
-    else:
+    if _use_multi_worktree():
         git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
         assert (
             git_repositories_root
         ), "Root path of repositories is required set GIT_REPOSITORIES_ROOT"
         repo_path = env.get_workspace_path(git_repositories_root, context.path)
+    else:
+        repo_path = env.get_workspace_path(context.path)
     return repo_path
 
 
@@ -152,6 +152,12 @@ def _is_git_repository_main(repository_path):
     except subprocess.CalledProcessError:
         return False
 
+
+def _use_multi_worktree():
+    """Check if should use a single repository with multi worktree"""
+    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
+    assert git_repository_policy, "Policy is required"
+    return git_repository_policy != "standalone"
 
 ######################################################################################
 #                             Resource Processors                                    #
@@ -224,9 +230,7 @@ def git_link_to_repositoires_root(context: Resource):
 
 def git_worktree_create(context: Resource):
     """Create a git worktree for the given branch."""
-    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
-    assert git_repository_policy, "Policy is required"
-    if git_repository_policy == "standalone":
+    if not _use_multi_worktree():
         _logger.debug(
             "Repository policy is standalone, using single worktree for each repo"
         )
@@ -238,8 +242,6 @@ def git_worktree_create(context: Resource):
     git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
     context_path = env.get_workspace_path(context.path)
 
-    # repo_path = _get_repo_path(context)
-    # context_pat = env.get_workspace_path(context.path)
 
     if _is_git_repository(context_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)

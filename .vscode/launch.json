@@ -17,6 +17,7 @@
                 "run init",
                 "run init --tags copilot",
                 "run update --help",
+                "run update",
                 "run update --tags odools.toml",
                 "run update --tags README.rst",
                 "run update --tags documentation",
