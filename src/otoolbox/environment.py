@@ -68,7 +68,7 @@ class Environment:
         if os.path.isfile(dotenv_path):
             dotenv.load_dotenv(dotenv_path)
         value = os.environ.get(name, default)
-        if isinstance(default, list):
+        if isinstance(default, list) and isinstance(value, str):
             value = value.split(",")
         return value
 

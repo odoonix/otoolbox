@@ -46,14 +46,46 @@ def init(addon):
     )
     env.add_resource(
         priority=RESOURCE_PRIORITY_ROOT,
+        path=".env~",
+        parent=RESOURCE_ROOT,
+        title="Envirenments Variables Template",
+        description="The env variables file template",
+        init=[
+            utils.constructor_copy_resource("addons/workspace/data/env")
+        ],
+        update=[
+            utils.constructor_copy_resource("addons/workspace/data/env")
+        ],
+        destroy=[utils.delete_file],
+        verify=[
+            utils.is_file, 
+            utils.is_readable, 
+            utils.is_writable,
+        ],
+        tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
+    )
+    env.add_resource(
+        priority=RESOURCE_PRIORITY_ROOT,
         path=RESOURCE_ENV_FILE,
         parent=RESOURCE_ROOT,
         title="Envirenments Variables",
-        description="The env variables file",
-        init=[utils.touch_file, utils.set_to_env_all],
-        update=[utils.set_to_env_all],
+        description="The env variables file is a readonly file. Fill the file to "
+        "controll the workspace behavior",
+        init=[
+            utils.touch_file,
+            # .env is readonly file
+        ],
+        update=[
+            # .env is readonly file
+        ],
         destroy=[utils.delete_file],
-        verify=[utils.is_file, utils.is_readable, utils.is_writable],
+        verify=[
+            utils.is_file, 
+            utils.is_readable, 
+            utils.is_writable,
+            # Checking Variables
+
+        ],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
     env.add_resource(

@@ -1,0 +1,41 @@
+# Git
+#-----------------------------------------------------------------------------
+SSH_AUTH="yes"
+GIT_REPOSITORIES_POLICY="multi-worktrees"
+GIT_REPOSITORIES_ROOT="/home/maso/Repositories"
+
+# Git Organization
+ORGANIZATIONS=("odoonix" "oca" "odoo")
+
+# Recommanded Repositories
+REPOSITORIES=()
+
+
+
+
+# Protected Git
+#-----------------------------------------------------------------------------
+WORKER_USER="worker"
+
+# Git organizations
+PROTECTED_ORGANIZATIONS=("moonsun")
+
+# Recommanded Repositories
+PROTECTED_REPOSITORIES=()
+
+
+
+# Python
+#-----------------------------------------------------------------------------
+VENV_PATH=".venv"
+
+
+
+# Odoo
+#-----------------------------------------------------------------------------
+# Set Odoo Version
+# Odoo has many major branches such as 19.0, 18.0 and 17.0. Each workspace can
+# works on an specific version of odoo. This variable controlle the version.
+ODOO_VERSION="17.0"
+
+
