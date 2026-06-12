@@ -74,7 +74,6 @@ def _get_branch_name(context: Resource):
 
 
 def _get_repo_path(context: Resource):
-    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
     repo_path = ""
     if _use_multi_worktree():
         git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
@@ -166,6 +165,7 @@ def _use_multi_worktree():
     assert git_repository_policy, "Policy is required"
     return git_repository_policy != "standalone"
 
+
 ######################################################################################
 #                             Resource Processors                                    #
 # Resource processors are used to process resources from the workspace. The resource #
@@ -253,7 +253,6 @@ def git_worktree_create(context: Resource):
     assert git_repositories_root, "Policy is required"
     git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
     context_path = env.get_workspace_path(context.path)
-
 
     if _is_git_repository(context_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)

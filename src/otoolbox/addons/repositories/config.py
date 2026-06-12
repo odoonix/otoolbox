@@ -104,9 +104,8 @@ def _discover_workspace_repositories():
         for repository_entry in sorted(
             os.scandir(organization_entry.path), key=lambda entry: entry.name
         ):
-            if (
-                repository_entry.is_dir()
-                and git._is_git_repository(repository_entry.path)
+            if repository_entry.is_dir() and git._is_git_repository(
+                repository_entry.path
             ):
                 repo_list.append(
                     {

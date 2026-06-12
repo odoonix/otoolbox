@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import dotenv_values
 
 from otoolbox.base import Resource
 from otoolbox import env

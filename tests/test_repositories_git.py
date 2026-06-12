@@ -90,7 +90,9 @@ def test_git_link_to_repositories_root_noop_when_workspace_is_worktree(
             else ("17.0" if name == "ODOO_VERSION" else default)
         ),
     )
-    monkeypatch.setattr(git, "_is_git_worktree", lambda path: path == workspace_repo_path)
+    monkeypatch.setattr(
+        git, "_is_git_worktree", lambda path: path == workspace_repo_path
+    )
     monkeypatch.setattr(
         git, "_is_git_repository_main", lambda path: path == root_repo_path
     )

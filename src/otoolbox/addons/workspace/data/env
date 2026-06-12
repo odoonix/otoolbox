@@ -37,5 +37,3 @@ VENV_PATH=".venv"
 # Odoo has many major branches such as 19.0, 18.0 and 17.0. Each workspace can
 # works on an specific version of odoo. This variable controlle the version.
 ODOO_VERSION="17.0"
-
-

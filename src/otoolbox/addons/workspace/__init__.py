@@ -50,16 +50,12 @@ def init(addon):
         parent=RESOURCE_ROOT,
         title="Envirenments Variables Template",
         description="The env variables file template",
-        init=[
-            utils.constructor_copy_resource("addons/workspace/data/env")
-        ],
-        update=[
-            utils.constructor_copy_resource("addons/workspace/data/env")
-        ],
+        init=[utils.constructor_copy_resource("addons/workspace/data/env")],
+        update=[utils.constructor_copy_resource("addons/workspace/data/env")],
         destroy=[utils.delete_file],
         verify=[
-            utils.is_file, 
-            utils.is_readable, 
+            utils.is_file,
+            utils.is_readable,
             utils.is_writable,
         ],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
@@ -80,11 +76,10 @@ def init(addon):
         ],
         destroy=[utils.delete_file],
         verify=[
-            utils.is_file, 
-            utils.is_readable, 
+            utils.is_file,
+            utils.is_readable,
             utils.is_writable,
             # Checking Variables
-
         ],
         tags=[RESOURCE_TAGS_ENV, RESOURCE_TAGS_AUTO_UPDATE, RESOURCE_TAGS_AUTO_VERIFY],
     )
