@@ -164,7 +164,7 @@ function customer_load_working_dir() {
         exit 1
     fi
 
-    # add save working directory to global safe.directory config to avoid git warnings and errors 
+    # add save working directory to global safe.directory config to avoid git warnings and errors
     # when running as different users
     if ! git config --global --get-all safe.directory | grep -qxF "$CUSTOMER_DIR"; then
         git config --global --add safe.directory "$CUSTOMER_DIR"
