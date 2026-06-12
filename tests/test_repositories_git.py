@@ -68,3 +68,95 @@ def test_get_branch_name_uses_abbrev_ref_and_returns_clean_output(
     assert calls["command"] == ["git", "rev-parse", "--abbrev-ref", "HEAD"]
     assert calls["cwd"] == str(tmp_path / "moonsunsoft" / "payment")
     assert branch_name == "17.0"
+
+
+def test_git_link_to_repositories_root_noop_when_workspace_is_worktree(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment", branch="17.0")
+
+    workspace_repo_path = str(tmp_path / "moonsunsoft" / "payment")
+    root_base = str(tmp_path / "central")
+    root_repo_path = str(tmp_path / "central" / "moonsunsoft" / "payment")
+
+    monkeypatch.setattr(git, "_use_multi_worktree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "get_env_variable",
+        lambda name, default=None: (
+            root_base
+            if name == "GIT_REPOSITORIES_ROOT"
+            else ("17.0" if name == "ODOO_VERSION" else default)
+        ),
+    )
+    monkeypatch.setattr(git, "_is_git_worktree", lambda path: path == workspace_repo_path)
+    monkeypatch.setattr(
+        git, "_is_git_repository_main", lambda path: path == root_repo_path
+    )
+    monkeypatch.setattr(git, "_get_branch_name", lambda context: "17.0")
+
+    run_git_calls = []
+    monkeypatch.setattr(
+        git,
+        "_run_git",
+        lambda command, cwd: run_git_calls.append((command, cwd)),
+    )
+
+    result, message = git.git_link_to_repositoires_root(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == "17.0"
+    assert run_git_calls == []
+
+
+def test_git_link_to_repositories_root_creates_worktree_when_missing(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment", branch="17.0")
+
+    workspace_repo_path = str(tmp_path / "moonsunsoft" / "payment")
+    root_base = str(tmp_path / "central")
+    root_repo_path = str(tmp_path / "central" / "moonsunsoft" / "payment")
+
+    monkeypatch.setattr(git, "_use_multi_worktree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "get_env_variable",
+        lambda name, default=None: (
+            root_base
+            if name == "GIT_REPOSITORIES_ROOT"
+            else ("17.0" if name == "ODOO_VERSION" else default)
+        ),
+    )
+    monkeypatch.setattr(git, "_is_git_worktree", lambda path: False)
+    monkeypatch.setattr(
+        git,
+        "_is_git_repository_main",
+        lambda path: path == root_repo_path,
+    )
+    monkeypatch.setattr(
+        git,
+        "_is_git_repository",
+        lambda path: path == root_repo_path,
+    )
+    monkeypatch.setattr(git, "_get_branch_name_from_path", lambda path: "main")
+    monkeypatch.setattr(git, "_get_branch_name", lambda context: "17.0")
+
+    run_git_calls = []
+
+    def fake_run_git(command, cwd):
+        run_git_calls.append((command, cwd))
+        return SimpleNamespace(returncode=0, stderr="")
+
+    monkeypatch.setattr(git, "_run_git", fake_run_git)
+
+    result, message = git.git_link_to_repositoires_root(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == "17.0"
+    assert run_git_calls == [
+        (["worktree", "prune"], root_repo_path),
+        (["worktree", "add", workspace_repo_path, "origin/17.0"], root_repo_path),
+    ]

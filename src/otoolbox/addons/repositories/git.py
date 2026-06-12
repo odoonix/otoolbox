@@ -153,6 +153,13 @@ def _is_git_repository_main(repository_path):
         return False
 
 
+def _is_git_worktree(repository_path):
+    """Return True only for linked worktrees where .git is a file."""
+    if not os.path.isdir(repository_path):
+        return False
+    return os.path.isfile(os.path.join(repository_path, ".git"))
+
+
 def _use_multi_worktree():
     """Check if should use a single repository with multi worktree"""
     git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
@@ -167,6 +174,9 @@ def _use_multi_worktree():
 
 
 def git_link_to_repositoires_root(context: Resource):
+    if not _use_multi_worktree():
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+
     # Get root path
     path_root = env.get_env_variable("GIT_REPOSITORIES_ROOT", "~/Repositories")
     path_root = os.path.abspath(os.path.expanduser(path_root))
@@ -180,16 +190,16 @@ def git_link_to_repositoires_root(context: Resource):
     )
     assert branch_name, "Branch name is required"
 
-    # if repo_path is in path_root then return sucess
-    c_repo_path = _get_repo_path(context)
-    if (
-        _is_path_in_root(c_repo_path, path_root)
-        and not _is_git_repository_main(repo_path)
-        and _is_git_repository_main(repository_root_path)
-    ):
+    # Nothing to do when the workspace repository is already a linked worktree.
+    if _is_git_worktree(repo_path) and _is_git_repository_main(repository_root_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)
 
-    if not _is_git_repository(repo_path):
+    if _is_git_repository_main(repo_path) and _is_path_in_root(repo_path, path_root):
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+
+    if not _is_git_repository(repo_path) and not _is_git_repository_main(
+        repository_root_path
+    ):
         raise RuntimeError(f"Not a git repository: {repo_path}")
 
     if not _is_git_repository(repository_root_path):
@@ -207,7 +217,9 @@ def git_link_to_repositoires_root(context: Resource):
             random_branch_name = _create_random_branch_name()
             _run_git(["checkout", "-B", random_branch_name], cwd=repository_root_path)
 
-    shutil.rmtree(repo_path)
+    if os.path.exists(repo_path):
+        shutil.rmtree(repo_path)
+
     _run_git(
         [
             "worktree",
