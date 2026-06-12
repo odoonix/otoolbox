@@ -10,19 +10,29 @@ from otoolbox.addons.repositories import git
 def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     context = SimpleNamespace(path="moonsunsoft/payment")
-    calls = {}
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
+    calls = []
 
     def fake_call_process_safe(command, cwd=None, **kwargs):
-        calls["command"] = command
-        calls["cwd"] = cwd
+        calls.append({"command": command, "cwd": cwd})
+        if command[:5] == ["git", "config", "--global", "--get-all", "safe.directory"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
         return SimpleNamespace(returncode=0, stderr="")
 
     monkeypatch.setattr(git.utils, "call_process_safe", fake_call_process_safe)
 
     result, message = git.git_add_safe_directory(context)
 
-    expected_path = str(tmp_path / "moonsunsoft" / "payment")
-    assert calls["command"] == [
+    assert calls[0]["command"] == [
+        "git",
+        "config",
+        "--global",
+        "--get-all",
+        "safe.directory",
+    ]
+    assert calls[0]["cwd"] == str(tmp_path)
+    assert calls[1]["command"] == [
         "git",
         "config",
         "--global",
@@ -30,7 +40,7 @@ def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path)
         "safe.directory",
         expected_path,
     ]
-    assert calls["cwd"] == str(tmp_path)
+    assert calls[1]["cwd"] == str(tmp_path)
     assert result == PROCESS_SUCCESS
     assert expected_path in message
 
@@ -38,15 +48,39 @@ def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path)
 def test_git_add_safe_directory_raises_on_error(monkeypatch, tmp_path):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     context = SimpleNamespace(path="moonsunsoft/payment")
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
 
     monkeypatch.setattr(
         git.utils,
         "call_process_safe",
-        lambda *args, **kwargs: SimpleNamespace(returncode=1, stderr="boom"),
+        lambda *args, **kwargs: SimpleNamespace(returncode=1, stdout="", stderr="boom"),
     )
 
     with pytest.raises(RuntimeError, match="boom"):
         git.git_add_safe_directory(context)
+
+
+def test_git_add_safe_directory_skips_when_already_exists(monkeypatch, tmp_path):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
+    calls = []
+
+    def fake_call_process_safe(command, cwd=None, **kwargs):
+        calls.append(command)
+        if command[:5] == ["git", "config", "--global", "--get-all", "safe.directory"]:
+            return SimpleNamespace(returncode=0, stdout=f"{expected_path}\n", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(git.utils, "call_process_safe", fake_call_process_safe)
+
+    result, message = git.git_add_safe_directory(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == f"safe.directory already exists: {expected_path}"
+    assert calls == [["git", "config", "--global", "--get-all", "safe.directory"]]
 
 
 def test_get_branch_name_uses_abbrev_ref_and_returns_clean_output(

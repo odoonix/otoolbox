@@ -359,7 +359,29 @@ def git_checkout(context: Resource):
 
 def git_add_safe_directory(context: Resource):
     """Add repository path to global git safe.directory list."""
-    repository_path = env.get_workspace_path(context.path)
+    repository_path = _get_repo_path(context=context)
+
+    # Check existing safe.directory values to avoid duplicate entries.
+    check_result = utils.call_process_safe(
+        [
+            GIT_COMMAND,
+            "config",
+            "--global",
+            "--get-all",
+            "safe.directory",
+        ],
+        cwd=env.get_workspace(),
+    )
+    if check_result.returncode not in (0, 1):
+        raise RuntimeError(check_result.stderr)
+
+    existing_paths = {
+        line.strip() for line in check_result.stdout.splitlines() if line.strip()
+    }
+    if repository_path in existing_paths:
+        return PROCESS_SUCCESS, f"safe.directory already exists: {repository_path}"
+
+    # Add to the confiuration
     result = utils.call_process_safe(
         [
             GIT_COMMAND,
