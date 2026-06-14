@@ -25,7 +25,7 @@ WORKER_USER="worker"
 
 
 # Protected Repositories
-# Protected organization is where our customer keep and manage codes. We 
+# Protected organization is where our customer keep and manage codes. We
 # paln to protect our company from thaire. So, git histories are removed
 # and then push to theair organization. list them here
 PROTECTED_ORGANIZATIONS=("moonsunsoft")
