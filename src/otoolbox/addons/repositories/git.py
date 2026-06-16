@@ -8,7 +8,12 @@ from pathlib import Path
 from otoolbox import env
 from otoolbox import utils
 from otoolbox.base import Resource
-from otoolbox.constants import PROCESS_SUCCESS, PROCESS_FAIL, PROCESS_EMPTY_MESSAGE
+from otoolbox.constants import (
+    PROCESS_SUCCESS,
+    PROCESS_FAIL,
+    PROCESS_WAR,
+    PROCESS_EMPTY_MESSAGE
+)
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
     GIT_ADDRESS_SSH,
@@ -417,3 +422,23 @@ def is_repository_branch_match_with_odoo_version(context: Resource):
         PROCESS_FAIL,
         f"Repository branch '{branch_name}' does not match with Odoo version '{odoo_version}'.",
     )
+
+
+def is_not_empty_odoo_addons_repository(context: Resource):
+    """Check repository contains at least one Odoo addon.
+
+    An Odoo addon is considered valid when a subdirectory contains
+    a ``__manifest__.py`` file.
+    """
+    repository_path = env.get_workspace_path(context.path)
+
+    if not os.path.isdir(repository_path):
+        return PROCESS_FAIL, f"Repository path does not exist: {repository_path}"
+
+    for current_root, dirnames, filenames in os.walk(repository_path):
+        # Skip VCS internals for faster scan and to avoid false positives.
+        dirnames[:] = [dirname for dirname in dirnames if dirname != ".git"]
+        if current_root != repository_path and "__manifest__.py" in filenames:
+            return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
+    return PROCESS_WAR, "There is no Odoo addon in the repository"

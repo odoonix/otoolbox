@@ -28,6 +28,7 @@ from otoolbox import utils
 from otoolbox.constants import (
     RESOURCE_PRIORITY_ROOT,
     RESOURCE_TAGS_GIT,
+    PROCESS_SUCCESS,
 )
 
 from otoolbox.addons.repositories.constants import (
@@ -35,7 +36,10 @@ from otoolbox.addons.repositories.constants import (
     RESOURCE_REPOSITORIES_PATH,
 )
 from otoolbox.addons.repositories import config, util
-
+from otoolbox.addons.repositories.export import (
+    export_console_table,
+    export_console_list
+)
 ###################################################################
 # Utils
 ###################################################################
@@ -82,32 +86,42 @@ app.__cli_name__ = "repo"
 
 
 @app.command(name="list")
-def command_list():
+def command_list(
+    format: Annotated[
+        str,
+        typer.Option(
+            help="Export list of repositories in many format."
+        ),
+    ] = "table",
+    odoo_addon_folder: Annotated[
+        bool,
+        typer.Option(
+            help="Filter empty odoo repositoires."
+        ),
+    ] = True,
+):
     """Print list of repositories"""
-    table = Table(title="Repositories")
-    table.add_column("Parent", justify="left", style="cyan", no_wrap=True)
-    table.add_column("Title", justify="left", style="green", no_wrap=True)
-    table.add_column("Mirror", justify="left", style="green", no_wrap=True)
-    table.add_column("Tags", justify="left", style="green", no_wrap=True)
-
     repo_list = env.resources.filter(
         lambda resource: resource.has_tag(RESOURCE_TAGS_GIT)
     )
-    for repo in repo_list:
-        table.add_row(
-            repo.parent,
-            repo.title,
-            "{repository}/{organization}".format(
-                repository=repo.linked_shielded_repository,
-                organization=repo.linked_shielded_organization,
-            )
-            if repo.has_mirror
-            else "N/A",
-            ", ".join([str(tag) for tag in repo.tags]),
-        )
 
-    console = Console()
-    console.print(table)
+    if odoo_addon_folder:
+        repo_list = repo_list.filter(
+            lambda resource: git.is_not_empty_odoo_addons_repository(
+                resource
+            )[0] == PROCESS_SUCCESS
+        )
+    
+
+    if format == "table":
+        export_console_table(repo_list)
+        return
+    
+    if format == "list":
+        export_console_list(repo_list)
+        return
+
+    raise Exception(f"Fromate {format} not suportet")
 
 
 @app.command(name="add")

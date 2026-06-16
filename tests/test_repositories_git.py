@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from otoolbox import env
-from otoolbox.constants import PROCESS_SUCCESS
+from otoolbox.constants import PROCESS_SUCCESS, PROCESS_WAR
 from otoolbox.addons.repositories import git
 
 
@@ -196,3 +196,35 @@ def test_git_link_to_repositories_root_creates_worktree_when_missing(
         (["worktree", "prune"], root_repo_path),
         (["worktree", "add", workspace_repo_path, "origin/17.0"], root_repo_path),
     ]
+
+
+def test_is_not_empty_odoo_addons_repository_success_when_manifest_in_subdir(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    repo_path = tmp_path / "moonsunsoft" / "payment"
+    addon_path = repo_path / "payment_gateway"
+    addon_path.mkdir(parents=True)
+    (addon_path / "__manifest__.py").write_text("{}", encoding="utf-8")
+
+    result, message = git.is_not_empty_odoo_addons_repository(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == ""
+
+
+def test_is_not_empty_odoo_addons_repository_warn_when_no_manifest_in_subdir(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    repo_path = tmp_path / "moonsunsoft" / "payment"
+    repo_path.mkdir(parents=True)
+    # Manifest at repository root does not define an addon folder.
+    (repo_path / "__manifest__.py").write_text("{}", encoding="utf-8")
+
+    result, message = git.is_not_empty_odoo_addons_repository(context)
+
+    assert result == PROCESS_WAR
+    assert message == "There is no Odoo addon in the repository"
