@@ -72,15 +72,19 @@ def addons_list(
 
     if csv_file:
         with open(
-            f"db.module.template_{csv_file}.csv", "w", newline="", encoding="utf-8"
+            f"db.module.template{csv_file}.csv", "w", newline="", encoding="utf-8"
         ) as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["id", "name", "repository_url", "active"])
+            writer.writerow(["id", "name", "repository_id/id", "website", "active"])
             for resource in addons_list:
                 writer.writerow(
                     [
                         resource.name,
                         resource.name,
+                        "db_repo_{organization}_{repository}".format(
+                            organization=resource.organization,
+                            repository=resource.repository,
+                        ),
                         (
                             # resource.website or
                             f"https://github.com/{resource.organization}/{resource.repository}"
@@ -98,7 +102,7 @@ def addons_list(
                     [
                         f"{resource.name}_{branch.replace('.', '_')}",
                         resource.name,
-                        branch.replace(".", "_"),
+                        "vw_db_" + branch.replace(".", "_"),
                         1,
                     ]
                 )

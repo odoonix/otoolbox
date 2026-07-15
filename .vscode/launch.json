@@ -33,6 +33,7 @@
                 "repo add 'odoonix/social'",
                 "repo add 'odoonix/product'",
                 "repo add 'odoo/design-themes'",
+                "repo export-repo-list --output='db-repo-list.csv'"
             ],
             "default": "run update --help"
         }

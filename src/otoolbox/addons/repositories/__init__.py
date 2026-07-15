@@ -15,6 +15,7 @@ import os
 # import json
 from typing import List
 import re
+import csv
 
 import dotenv
 import typer
@@ -518,6 +519,63 @@ def command_load_csv_file(
     util.repository_list_csv_to_json(
         csv_file_path=csv_file, json_file_path=reposiotires_path
     )
+
+
+@app.command("export")
+def command_export_repositories_list(
+    csv_file: Annotated[
+        str,
+        typer.Option("--csv", help="CSV file name."),
+    ] = None,
+):
+    """ Export list of repositories to import in odoo"""
+    # 1. get list of all repositories
+    # 2. create a list  id, name, git_url
+    #   id    : db_repo_{organization}_{repository}
+    #   name  : {organization}/{repository}
+    #   git_ur: ??
+    # 3. store in outpu in format of csv
+
+
+    repo_list = env.resources.filter(
+        lambda resource: resource.has_tag("repository")
+    )
+    rows = [
+        (
+            # id
+            "db_repo_{organization}_{repository}".format(
+                repository=repo.repository,
+                organization=repo.organization,
+            ),
+            # name
+            "{organization}/{repository}".format(
+                repository=repo.repository,
+                organization=repo.organization,
+            ),
+            # git_url
+            "git@github.com/{organization}/{repository}.git".format(
+                repository=repo.repository,
+                organization=repo.organization,
+            )
+        ) for repo in repo_list 
+    ]
+
+    # Console reperesentation
+    table = Table(title="Repositories")
+    table.add_column("id", justify="left", style="cyan", no_wrap=True)
+    table.add_column("name", justify="left", style="green", no_wrap=True)
+    table.add_column("git_url", justify="left", style="green", no_wrap=True)
+    for row in rows:
+        table.add_row(*row)
+    console = Console()
+    console.print(table)
+
+    # store in output
+    if csv_file:
+        with open(csv_file, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["id", "name", "git_url"])
+            writer.writerows(rows)
 
 
 ###################################################################

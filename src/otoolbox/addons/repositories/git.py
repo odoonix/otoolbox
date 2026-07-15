@@ -225,7 +225,7 @@ def git_link_to_repositoires_root(context: Resource):
 def git_worktree_create(context: Resource):
     """Create a git worktree for the given branch."""
     git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
-    assert git_repository_policy, "Policy is required"
+    assert git_repository_policy, "Policy is required, set GIT_REPOSITORIES_POLICY environment variable"
     if git_repository_policy == "standalone":
         _logger.debug(
             "Repository policy is standalone, using single worktree for each repo"
@@ -234,7 +234,7 @@ def git_worktree_create(context: Resource):
 
     # Load path (root repository and workspace)
     git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
-    assert git_repositories_root, "Policy is required"
+    assert git_repositories_root, "Root path is required, set GIT_REPOSITORIES_ROOT environment variable"
     git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
     context_path = env.get_workspace_path(context.path)
 
