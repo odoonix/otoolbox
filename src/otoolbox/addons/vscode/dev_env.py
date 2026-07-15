@@ -16,8 +16,6 @@ def pyenv_create(context: Resource):
     It install and init .venv to the workspace. It also install all required
     tools for the development env. All odoo dependencies are installed
     in the .venv.
-
-
     """
     result = subprocess.run(
         [

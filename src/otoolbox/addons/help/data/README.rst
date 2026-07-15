@@ -136,7 +136,7 @@ Customer Repositories
     CONTINUE_ON_EXCEPTION="True"
     SSH_AUTH="True"
     PUBLIC_ORGANIZATION="odoonix"
-    SHIELDED_ORGANIZATION="moonsunsoft"
+    PROTECTED_ORGANIZATIONS=("moonsunsoft")
     WORKER_USER="worker"
     CUSTOMER_ROOT_DIR="/path/to/folder/Customers"
 

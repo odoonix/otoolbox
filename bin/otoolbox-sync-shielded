@@ -76,32 +76,52 @@ done
 
 _ot_init
 
-if [[ -z "$SHIELDED_ORGANIZATION" ]]; then
-    _ot_log_error "SHIELDED_ORGANIZATION is not set."
+
+function _sync_shilded_organization(){
+    SHIELDED_ORGANIZATION=$1
+    if [[ -z "$SHIELDED_ORGANIZATION" ]]; then
+        _ot_log_error "SHIELDED_ORGANIZATION is not set."
+        exit 1
+    fi
+
+    if [[ "$NO_PULL" != "true" ]]; then
+        _ot_log_info "Running otoolbox-pull before sync..."
+        pull_args=()
+        [[ "$DEBUG" == "true" ]] && pull_args+=("--debug")
+        [[ "$DEBUG" != "true" && "$VERBOSE" == "true" ]] && pull_args+=("--verbose")
+        "$SCRIPT_PATH/otoolbox-pull" "${pull_args[@]}"
+    else
+        _ot_log_info "Skipping pull phase (--no-pull enabled)."
+    fi
+
+    _ot_run_as_worker otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
+
+    for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*/; do
+        if [[ -d "$dir" ]]; then
+            project="$(basename "$dir")"
+            _ot_log_info "Processing project: $project"
+            _ot_log_info "Pushing changes to $SHIELDED_ORGANIZATION/$project"
+
+            _ot_run_as_worker git -C "$dir" pull >> "$LOG_FILE" 2>&1
+            _ot_run_as_worker git -C "$dir" add . >> "$LOG_FILE" 2>&1
+            _ot_run_as_worker git -C "$dir" commit -m "[SYNC] Update to the latest release on ${SYNC_DATE:-$(date +%Y-%m-%d)}" >> "$LOG_FILE" 2>&1 || true
+            _ot_run_as_worker git -C "$dir" push >> "$LOG_FILE" 2>&1
+        fi
+    done
+}
+
+
+
+
+if [[ -z "${PROTECTED_ORGANIZATIONS-}" ]]; then
+    _ot_log_error "PROTECTED_ORGANIZATIONS is not set. Please define it with one or more organization names."
     exit 1
 fi
 
-if [[ "$NO_PULL" != "true" ]]; then
-    _ot_log_info "Running otoolbox-pull before sync..."
-    pull_args=()
-    [[ "$DEBUG" == "true" ]] && pull_args+=("--debug")
-    [[ "$DEBUG" != "true" && "$VERBOSE" == "true" ]] && pull_args+=("--verbose")
-    "$SCRIPT_PATH/otoolbox-pull" "${pull_args[@]}"
-else
-    _ot_log_info "Skipping pull phase (--no-pull enabled)."
-fi
+# convert to array (handles both single value and space-separated list)
+read -r -a _protected_orgs <<< "$PROTECTED_ORGANIZATIONS"
 
-_ot_run_as_worker otoolbox repo sync-shielded >> "$LOG_FILE" 2>&1
-
-for dir in "$WORKSPACE_ROOT/$SHIELDED_ORGANIZATION"/*/; do
-    if [[ -d "$dir" ]]; then
-        project="$(basename "$dir")"
-        _ot_log_info "Processing project: $project"
-        _ot_log_info "Pushing changes to $SHIELDED_ORGANIZATION/$project"
-
-        _ot_run_as_worker git -C "$dir" pull >> "$LOG_FILE" 2>&1
-        _ot_run_as_worker git -C "$dir" add . >> "$LOG_FILE" 2>&1
-        _ot_run_as_worker git -C "$dir" commit -m "[SYNC] Update to the latest release on ${SYNC_DATE:-$(date +%Y-%m-%d)}" >> "$LOG_FILE" 2>&1 || true
-        _ot_run_as_worker git -C "$dir" push >> "$LOG_FILE" 2>&1
-    fi
+for _org in "${_protected_orgs[@]}"; do
+    _ot_log_info "Processing shielded organization: $_org"
+    _sync_shilded_organization "$_org"
 done

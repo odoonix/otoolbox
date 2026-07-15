@@ -1,0 +1,51 @@
+# Git
+#-----------------------------------------------------------------------------
+SSH_AUTH="yes"
+GIT_REPOSITORIES_POLICY="multi-worktrees"
+GIT_REPOSITORIES_ROOT="/home/maso/Repositories"
+
+# Which repository is target
+TARGET_REPOSITORIES="odoonix"
+
+# Git Organization
+ORGANIZATIONS=("odoonix" "oca" "odoo")
+
+# Recommanded Repositories
+REPOSITORIES=()
+
+
+
+
+# Protected Git
+#-----------------------------------------------------------------------------
+
+# Worker user
+# This user is used to work with shielded organizations.
+WORKER_USER="worker"
+
+
+# Protected Repositories
+# Protected organization is where our customer keep and manage codes. We
+# paln to protect our company from thaire. So, git histories are removed
+# and then push to theair organization. list them here
+PROTECTED_ORGANIZATIONS=("moonsunsoft")
+
+
+
+# Python
+#-----------------------------------------------------------------------------
+VENV_PATH=".venv"
+
+
+
+# Odoo
+#-----------------------------------------------------------------------------
+# Set Odoo Version
+# Odoo has many major branches such as 19.0, 18.0 and 17.0. Each workspace can
+# works on an specific version of odoo. This variable controlle the version.
+ODOO_VERSION="17.0"
+
+
+# Customers
+#-----------------------------------------------------------------------------
+CUSTOMER_ROOT_DIR="../customers"

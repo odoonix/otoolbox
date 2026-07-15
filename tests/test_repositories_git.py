@@ -3,26 +3,36 @@ from types import SimpleNamespace
 import pytest
 
 from otoolbox import env
-from otoolbox.constants import PROCESS_SUCCESS
+from otoolbox.constants import PROCESS_SUCCESS, PROCESS_WAR
 from otoolbox.addons.repositories import git
 
 
 def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     context = SimpleNamespace(path="moonsunsoft/payment")
-    calls = {}
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
+    calls = []
 
     def fake_call_process_safe(command, cwd=None, **kwargs):
-        calls["command"] = command
-        calls["cwd"] = cwd
+        calls.append({"command": command, "cwd": cwd})
+        if command[:5] == ["git", "config", "--global", "--get-all", "safe.directory"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
         return SimpleNamespace(returncode=0, stderr="")
 
     monkeypatch.setattr(git.utils, "call_process_safe", fake_call_process_safe)
 
     result, message = git.git_add_safe_directory(context)
 
-    expected_path = str(tmp_path / "moonsunsoft" / "payment")
-    assert calls["command"] == [
+    assert calls[0]["command"] == [
+        "git",
+        "config",
+        "--global",
+        "--get-all",
+        "safe.directory",
+    ]
+    assert calls[0]["cwd"] == str(tmp_path)
+    assert calls[1]["command"] == [
         "git",
         "config",
         "--global",
@@ -30,7 +40,7 @@ def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path)
         "safe.directory",
         expected_path,
     ]
-    assert calls["cwd"] == str(tmp_path)
+    assert calls[1]["cwd"] == str(tmp_path)
     assert result == PROCESS_SUCCESS
     assert expected_path in message
 
@@ -38,15 +48,39 @@ def test_git_add_safe_directory_executes_expected_command(monkeypatch, tmp_path)
 def test_git_add_safe_directory_raises_on_error(monkeypatch, tmp_path):
     monkeypatch.setitem(env.context, "path", str(tmp_path))
     context = SimpleNamespace(path="moonsunsoft/payment")
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
 
     monkeypatch.setattr(
         git.utils,
         "call_process_safe",
-        lambda *args, **kwargs: SimpleNamespace(returncode=1, stderr="boom"),
+        lambda *args, **kwargs: SimpleNamespace(returncode=1, stdout="", stderr="boom"),
     )
 
     with pytest.raises(RuntimeError, match="boom"):
         git.git_add_safe_directory(context)
+
+
+def test_git_add_safe_directory_skips_when_already_exists(monkeypatch, tmp_path):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    expected_path = str(tmp_path / "moonsunsoft" / "payment")
+    monkeypatch.setattr(git, "_get_repo_path", lambda context: expected_path)
+    calls = []
+
+    def fake_call_process_safe(command, cwd=None, **kwargs):
+        calls.append(command)
+        if command[:5] == ["git", "config", "--global", "--get-all", "safe.directory"]:
+            return SimpleNamespace(returncode=0, stdout=f"{expected_path}\n", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(git.utils, "call_process_safe", fake_call_process_safe)
+
+    result, message = git.git_add_safe_directory(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == f"safe.directory already exists: {expected_path}"
+    assert calls == [["git", "config", "--global", "--get-all", "safe.directory"]]
 
 
 def test_get_branch_name_uses_abbrev_ref_and_returns_clean_output(
@@ -68,3 +102,129 @@ def test_get_branch_name_uses_abbrev_ref_and_returns_clean_output(
     assert calls["command"] == ["git", "rev-parse", "--abbrev-ref", "HEAD"]
     assert calls["cwd"] == str(tmp_path / "moonsunsoft" / "payment")
     assert branch_name == "17.0"
+
+
+def test_git_link_to_repositories_root_noop_when_workspace_is_worktree(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment", branch="17.0")
+
+    workspace_repo_path = str(tmp_path / "moonsunsoft" / "payment")
+    root_base = str(tmp_path / "central")
+    root_repo_path = str(tmp_path / "central" / "moonsunsoft" / "payment")
+
+    monkeypatch.setattr(git, "_use_multi_worktree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "get_env_variable",
+        lambda name, default=None: (
+            root_base
+            if name == "GIT_REPOSITORIES_ROOT"
+            else ("17.0" if name == "ODOO_VERSION" else default)
+        ),
+    )
+    monkeypatch.setattr(
+        git, "_is_git_worktree", lambda path: path == workspace_repo_path
+    )
+    monkeypatch.setattr(
+        git, "_is_git_repository_main", lambda path: path == root_repo_path
+    )
+    monkeypatch.setattr(git, "_get_branch_name", lambda context: "17.0")
+
+    run_git_calls = []
+    monkeypatch.setattr(
+        git,
+        "_run_git",
+        lambda command, cwd: run_git_calls.append((command, cwd)),
+    )
+
+    result, message = git.git_link_to_repositoires_root(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == "17.0"
+    assert run_git_calls == []
+
+
+def test_git_link_to_repositories_root_creates_worktree_when_missing(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment", branch="17.0")
+
+    workspace_repo_path = str(tmp_path / "moonsunsoft" / "payment")
+    root_base = str(tmp_path / "central")
+    root_repo_path = str(tmp_path / "central" / "moonsunsoft" / "payment")
+
+    monkeypatch.setattr(git, "_use_multi_worktree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "get_env_variable",
+        lambda name, default=None: (
+            root_base
+            if name == "GIT_REPOSITORIES_ROOT"
+            else ("17.0" if name == "ODOO_VERSION" else default)
+        ),
+    )
+    monkeypatch.setattr(git, "_is_git_worktree", lambda path: False)
+    monkeypatch.setattr(
+        git,
+        "_is_git_repository_main",
+        lambda path: path == root_repo_path,
+    )
+    monkeypatch.setattr(
+        git,
+        "_is_git_repository",
+        lambda path: path == root_repo_path,
+    )
+    monkeypatch.setattr(git, "_get_branch_name_from_path", lambda path: "main")
+    monkeypatch.setattr(git, "_get_branch_name", lambda context: "17.0")
+
+    run_git_calls = []
+
+    def fake_run_git(command, cwd):
+        run_git_calls.append((command, cwd))
+        return SimpleNamespace(returncode=0, stderr="")
+
+    monkeypatch.setattr(git, "_run_git", fake_run_git)
+
+    result, message = git.git_link_to_repositoires_root(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == "17.0"
+    assert run_git_calls == [
+        (["worktree", "prune"], root_repo_path),
+        (["worktree", "add", workspace_repo_path, "origin/17.0"], root_repo_path),
+    ]
+
+
+def test_is_not_empty_odoo_addons_repository_success_when_manifest_in_subdir(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    repo_path = tmp_path / "moonsunsoft" / "payment"
+    addon_path = repo_path / "payment_gateway"
+    addon_path.mkdir(parents=True)
+    (addon_path / "__manifest__.py").write_text("{}", encoding="utf-8")
+
+    result, message = git.is_not_empty_odoo_addons_repository(context)
+
+    assert result == PROCESS_SUCCESS
+    assert message == ""
+
+
+def test_is_not_empty_odoo_addons_repository_warn_when_no_manifest_in_subdir(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setitem(env.context, "path", str(tmp_path))
+    context = SimpleNamespace(path="moonsunsoft/payment")
+    repo_path = tmp_path / "moonsunsoft" / "payment"
+    repo_path.mkdir(parents=True)
+    # Manifest at repository root does not define an addon folder.
+    (repo_path / "__manifest__.py").write_text("{}", encoding="utf-8")
+
+    result, message = git.is_not_empty_odoo_addons_repository(context)
+
+    assert result == PROCESS_WAR
+    assert message == "There is no Odoo addon in the repository"

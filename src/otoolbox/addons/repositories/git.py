@@ -8,7 +8,12 @@ from pathlib import Path
 from otoolbox import env
 from otoolbox import utils
 from otoolbox.base import Resource
-from otoolbox.constants import PROCESS_SUCCESS, PROCESS_FAIL, PROCESS_EMPTY_MESSAGE
+from otoolbox.constants import (
+    PROCESS_SUCCESS,
+    PROCESS_FAIL,
+    PROCESS_WAR,
+    PROCESS_EMPTY_MESSAGE
+)
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
     GIT_ADDRESS_SSH,
@@ -74,16 +79,15 @@ def _get_branch_name(context: Resource):
 
 
 def _get_repo_path(context: Resource):
-    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
     repo_path = ""
-    if git_repository_policy == "standalone":
-        repo_path = env.get_workspace_path(context.path)
-    else:
+    if _use_multi_worktree():
         git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
         assert (
             git_repositories_root
         ), "Root path of repositories is required set GIT_REPOSITORIES_ROOT"
         repo_path = env.get_workspace_path(git_repositories_root, context.path)
+    else:
+        repo_path = env.get_workspace_path(context.path)
     return repo_path
 
 
@@ -153,6 +157,20 @@ def _is_git_repository_main(repository_path):
         return False
 
 
+def _is_git_worktree(repository_path):
+    """Return True only for linked worktrees where .git is a file."""
+    if not os.path.isdir(repository_path):
+        return False
+    return os.path.isfile(os.path.join(repository_path, ".git"))
+
+
+def _use_multi_worktree():
+    """Check if should use a single repository with multi worktree"""
+    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
+    assert git_repository_policy, "Policy is required"
+    return git_repository_policy != "standalone"
+
+
 ######################################################################################
 #                             Resource Processors                                    #
 # Resource processors are used to process resources from the workspace. The resource #
@@ -161,6 +179,9 @@ def _is_git_repository_main(repository_path):
 
 
 def git_link_to_repositoires_root(context: Resource):
+    if not _use_multi_worktree():
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+
     # Get root path
     path_root = env.get_env_variable("GIT_REPOSITORIES_ROOT", "~/Repositories")
     path_root = os.path.abspath(os.path.expanduser(path_root))
@@ -174,16 +195,16 @@ def git_link_to_repositoires_root(context: Resource):
     )
     assert branch_name, "Branch name is required"
 
-    # if repo_path is in path_root then return sucess
-    c_repo_path = _get_repo_path(context)
-    if (
-        _is_path_in_root(c_repo_path, path_root)
-        and not _is_git_repository_main(repo_path)
-        and _is_git_repository_main(repository_root_path)
-    ):
+    # Nothing to do when the workspace repository is already a linked worktree.
+    if _is_git_worktree(repo_path) and _is_git_repository_main(repository_root_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)
 
-    if not _is_git_repository(repo_path):
+    if _is_git_repository_main(repo_path) and _is_path_in_root(repo_path, path_root):
+        return PROCESS_SUCCESS, _get_branch_name(context=context)
+
+    if not _is_git_repository(repo_path) and not _is_git_repository_main(
+        repository_root_path
+    ):
         raise RuntimeError(f"Not a git repository: {repo_path}")
 
     if not _is_git_repository(repository_root_path):
@@ -201,7 +222,9 @@ def git_link_to_repositoires_root(context: Resource):
             random_branch_name = _create_random_branch_name()
             _run_git(["checkout", "-B", random_branch_name], cwd=repository_root_path)
 
-    shutil.rmtree(repo_path)
+    if os.path.exists(repo_path):
+        shutil.rmtree(repo_path)
+
     _run_git(
         [
             "worktree",
@@ -224,9 +247,7 @@ def git_link_to_repositoires_root(context: Resource):
 
 def git_worktree_create(context: Resource):
     """Create a git worktree for the given branch."""
-    git_repository_policy = env.get_env_variable("GIT_REPOSITORIES_POLICY")
-    assert git_repository_policy, "Policy is required, set GIT_REPOSITORIES_POLICY environment variable"
-    if git_repository_policy == "standalone":
+    if not _use_multi_worktree():
         _logger.debug(
             "Repository policy is standalone, using single worktree for each repo"
         )
@@ -237,9 +258,6 @@ def git_worktree_create(context: Resource):
     assert git_repositories_root, "Root path is required, set GIT_REPOSITORIES_ROOT environment variable"
     git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
     context_path = env.get_workspace_path(context.path)
-
-    # repo_path = _get_repo_path(context)
-    # context_pat = env.get_workspace_path(context.path)
 
     if _is_git_repository(context_path):
         return PROCESS_SUCCESS, _get_branch_name(context=context)
@@ -346,7 +364,29 @@ def git_checkout(context: Resource):
 
 def git_add_safe_directory(context: Resource):
     """Add repository path to global git safe.directory list."""
-    repository_path = env.get_workspace_path(context.path)
+    repository_path = _get_repo_path(context=context)
+
+    # Check existing safe.directory values to avoid duplicate entries.
+    check_result = utils.call_process_safe(
+        [
+            GIT_COMMAND,
+            "config",
+            "--global",
+            "--get-all",
+            "safe.directory",
+        ],
+        cwd=env.get_workspace(),
+    )
+    if check_result.returncode not in (0, 1):
+        raise RuntimeError(check_result.stderr)
+
+    existing_paths = {
+        line.strip() for line in check_result.stdout.splitlines() if line.strip()
+    }
+    if repository_path in existing_paths:
+        return PROCESS_SUCCESS, f"safe.directory already exists: {repository_path}"
+
+    # Add to the confiuration
     result = utils.call_process_safe(
         [
             GIT_COMMAND,
@@ -382,3 +422,23 @@ def is_repository_branch_match_with_odoo_version(context: Resource):
         PROCESS_FAIL,
         f"Repository branch '{branch_name}' does not match with Odoo version '{odoo_version}'.",
     )
+
+
+def is_not_empty_odoo_addons_repository(context: Resource):
+    """Check repository contains at least one Odoo addon.
+
+    An Odoo addon is considered valid when a subdirectory contains
+    a ``__manifest__.py`` file.
+    """
+    repository_path = env.get_workspace_path(context.path)
+
+    if not os.path.isdir(repository_path):
+        return PROCESS_FAIL, f"Repository path does not exist: {repository_path}"
+
+    for current_root, dirnames, filenames in os.walk(repository_path):
+        # Skip VCS internals for faster scan and to avoid false positives.
+        dirnames[:] = [dirname for dirname in dirnames if dirname != ".git"]
+        if current_root != repository_path and "__manifest__.py" in filenames:
+            return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
+
+    return PROCESS_WAR, "There is no Odoo addon in the repository"

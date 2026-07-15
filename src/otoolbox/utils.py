@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import dotenv_values
 
 from otoolbox.base import Resource
 from otoolbox import env
@@ -272,42 +271,6 @@ def delete_dir(context: Resource):
 def __is_not_primitive(value):
     primitive_types = (int, float, str, bool, type(None))
     return not isinstance(value, primitive_types)
-
-
-def set_to_env(path, key, value):
-    """Adds new environment variable to the .env file and optionally to the current
-    process environment."""
-
-    if __is_not_primitive(value):
-        return
-    key = key.upper()
-    value = str(value)
-
-    if key in ["PATH"]:
-        _logger.warning(
-            "Forbiden to change Linux default environment variables: %s", key
-        )
-        return
-
-    env_vars = dotenv_values(path)
-    env_vars[key] = value
-
-    # Write all variables back to the .env file
-    with open(path, "w", encoding="utf8") as f:
-        for k, v in env_vars.items():
-            f.write(f'{k}="{v}"\n')
-
-    # Optionally, update the current process environment
-    os.environ[key] = str(value)
-
-
-def set_to_env_all(context: Resource):
-    """Adds all environment variables to the .env file and optionally to the current
-    process environment."""
-    path = env.get_workspace_path(context.path)
-    for k, v in env.context.items():
-        set_to_env(path, k, v)
-    return PROCESS_SUCCESS, PROCESS_EMPTY_MESSAGE
 
 
 def print_result(result=None):

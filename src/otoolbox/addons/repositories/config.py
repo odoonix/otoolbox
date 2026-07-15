@@ -66,6 +66,7 @@ def _add_repo_to_resources(item):
                 utils.has_otoolbox_toml,
                 git.is_git_repository,
                 git.is_repository_branch_match_with_odoo_version,
+                git.is_not_empty_odoo_addons_repository
             ],
             "tags": tags,
             "branch": item.get("branch"),
@@ -104,11 +105,9 @@ def _discover_workspace_repositories():
         for repository_entry in sorted(
             os.scandir(organization_entry.path), key=lambda entry: entry.name
         ):
-            if not repository_entry.is_dir():
-                continue
-
-            git_dir = os.path.join(repository_entry.path, ".git")
-            if os.path.isdir(git_dir):
+            if repository_entry.is_dir() and git._is_git_repository(
+                repository_entry.path
+            ):
                 repo_list.append(
                     {
                         "repository": repository_entry.name,

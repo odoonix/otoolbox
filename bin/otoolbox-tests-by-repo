@@ -122,11 +122,23 @@ resolve_repo_path() {
         echo ""
         return
     fi
+    # Git default worktree
     if [[ -d "${input_path}/.git" ]]; then
         (cd "${input_path}" && pwd)
         return
     fi
+    # Git worktree
+    if [[ -f "${input_path}/.git" ]]; then
+        (cd "${input_path}" && pwd)
+        return
+    fi
+    # Git default worktree
     if [[ -d "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
+        (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
+        return
+    fi
+    # Git worktree
+    if [[ -f "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
         (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
         return
     fi
@@ -137,13 +149,13 @@ choose_repo_interactive() {
     mapfile -t repos < <(
         find "${WORKSPACE_ROOT}" \
             -path "${WORKSPACE_ROOT}/.venv" -prune -o \
-            -type d -name .git -print \
+            -name .git -print \
         | sed 's|/.git$||' \
         | sort
     )
 
     if [[ ${#repos[@]} -eq 0 ]]; then
-        _ot_log_error "No git repositories found under ${WORKSPACE_ROOT}"
+        _ot_log_error "No repositories found under ${WORKSPACE_ROOT}"
         exit 1
     fi
 
@@ -196,17 +208,27 @@ import os
 import json
 from pathlib import Path
 
-root = Path(os.environ["WORKSPACE_ROOT"])
+root = Path("/home/maso/Projects/19.0")
 workspace_file = root / "odoo-dev.code-workspace"
 data = json.loads(workspace_file.read_text())
-addons = data["settings"]["odoo"]["addons"]
+addons = None
+try:
+    addons = data["settings"]["odoo"]["addons"]
+except Exception:
+    pass
+try:
+    if not addons:
+        addons = data["settings"]["odoo.addons"]
+except Exception:
+    pass
+
 print(addons.replace("${workspaceFolder}", str(root)))
 PY
 )"
     echo "${addons_path}"
 }
-
 SELECTED_REPO="$(resolve_repo_path "${REPO_PATH}")"
+echo $SELECTED_REPO
 if [[ -z "${SELECTED_REPO}" ]]; then
     SELECTED_REPO="$(choose_repo_interactive)"
 fi
