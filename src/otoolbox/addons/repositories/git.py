@@ -12,7 +12,7 @@ from otoolbox.constants import (
     PROCESS_SUCCESS,
     PROCESS_FAIL,
     PROCESS_WAR,
-    PROCESS_EMPTY_MESSAGE
+    PROCESS_EMPTY_MESSAGE,
 )
 from otoolbox.addons.repositories.constants import (
     GIT_ADDRESS_HTTPS,
@@ -255,7 +255,9 @@ def git_worktree_create(context: Resource):
 
     # Load path (root repository and workspace)
     git_repositories_root = env.get_env_variable("GIT_REPOSITORIES_ROOT")
-    assert git_repositories_root, "Root path is required, set GIT_REPOSITORIES_ROOT environment variable"
+    assert (
+        git_repositories_root
+    ), "Root path is required, set GIT_REPOSITORIES_ROOT environment variable"
     git_repository_root = env.get_workspace_path(git_repositories_root, context.path)
     context_path = env.get_workspace_path(context.path)
 

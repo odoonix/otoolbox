@@ -12,7 +12,6 @@ package offers a reliable and streamlined solution for maintenance operations.
 
 import os
 
-# import json
 from typing import List
 import re
 import csv
@@ -36,10 +35,10 @@ from otoolbox.addons.repositories.constants import (
     REPOSITORIES_PATH,
     RESOURCE_REPOSITORIES_PATH,
 )
-from otoolbox.addons.repositories import config, util
+from otoolbox.addons.repositories import config, util, git
 from otoolbox.addons.repositories.export import (
     export_console_table,
-    export_console_list
+    export_console_list,
 )
 ###################################################################
 # Utils
@@ -88,17 +87,12 @@ app.__cli_name__ = "repo"
 
 @app.command(name="list")
 def command_list(
-    format: Annotated[
-        str,
-        typer.Option(
-            help="Export list of repositories in many format."
-        ),
+    output_format: Annotated[
+        str, typer.Option(help="Export list of repositories in many format.")
     ] = "table",
     odoo_addon_folder: Annotated[
         bool,
-        typer.Option(
-            help="Filter empty odoo repositoires."
-        ),
+        typer.Option(help="Filter empty odoo repositoires."),
     ] = True,
 ):
     """Print list of repositories"""
@@ -108,21 +102,19 @@ def command_list(
 
     if odoo_addon_folder:
         repo_list = repo_list.filter(
-            lambda resource: git.is_not_empty_odoo_addons_repository(
-                resource
-            )[0] == PROCESS_SUCCESS
+            lambda resource: git.is_not_empty_odoo_addons_repository(resource)[0]
+            == PROCESS_SUCCESS
         )
-    
 
-    if format == "table":
+    if output_format == "table":
         export_console_table(repo_list)
         return
-    
-    if format == "list":
+
+    if output_format == "list":
         export_console_list(repo_list)
         return
 
-    raise Exception(f"Fromate {format} not suportet")
+    raise Exception(f"Fromate {output_format} not suportet")
 
 
 @app.command(name="add")
@@ -542,7 +534,7 @@ def command_export_repositories_list(
         typer.Option("--csv", help="CSV file name."),
     ] = None,
 ):
-    """ Export list of repositories to import in odoo"""
+    """Export list of repositories to import in odoo"""
     # 1. get list of all repositories
     # 2. create a list  id, name, git_url
     #   id    : db_repo_{organization}_{repository}
@@ -550,10 +542,7 @@ def command_export_repositories_list(
     #   git_ur: ??
     # 3. store in outpu in format of csv
 
-
-    repo_list = env.resources.filter(
-        lambda resource: resource.has_tag("repository")
-    )
+    repo_list = env.resources.filter(lambda resource: resource.has_tag("repository"))
     rows = [
         (
             # id
@@ -570,8 +559,9 @@ def command_export_repositories_list(
             "git@github.com/{organization}/{repository}.git".format(
                 repository=repo.repository,
                 organization=repo.organization,
-            )
-        ) for repo in repo_list 
+            ),
+        )
+        for repo in repo_list
     ]
 
     # Console reperesentation
