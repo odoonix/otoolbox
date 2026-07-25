@@ -58,15 +58,15 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-                --verbose)
-                        export VERBOSE=true
-                        shift
-                        ;;
-                --debug)
-                        export VERBOSE=true
-                        export DEBUG=true
-                        shift
-                        ;;
+        --verbose)
+            export VERBOSE=true
+            shift
+            ;;
+        --debug)
+            export VERBOSE=true
+            export DEBUG=true
+            shift
+            ;;
         --repo)
             REPO_PATH="$2"
             shift 2
@@ -122,22 +122,16 @@ resolve_repo_path() {
         echo ""
         return
     fi
-    # Git default worktree
     if [[ -d "${input_path}/.git" ]]; then
         (cd "${input_path}" && pwd)
         return
     fi
-    # Git worktree
-    if [[ -f "${input_path}/.git" ]]; then
-        (cd "${input_path}" && pwd)
-        return
-    fi
-    # Git default worktree
+    # main work tree
     if [[ -d "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
         (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
         return
     fi
-    # Git worktree
+    # linked worktree
     if [[ -f "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
         (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
         return
@@ -155,7 +149,7 @@ choose_repo_interactive() {
     )
 
     if [[ ${#repos[@]} -eq 0 ]]; then
-        _ot_log_error "No repositories found under ${WORKSPACE_ROOT}"
+        _ot_log_error "No git repositories found under ${WORKSPACE_ROOT}"
         exit 1
     fi
 
@@ -208,7 +202,9 @@ import os
 import json
 from pathlib import Path
 
-root = Path("/home/maso/Projects/19.0")
+root_str = os.environ['WORKSPACE_ROOT'] or ''
+root_str = root_str.strip()
+root = Path(root_str)
 workspace_file = root / "odoo-dev.code-workspace"
 data = json.loads(workspace_file.read_text())
 addons = None
@@ -222,13 +218,13 @@ try:
 except Exception:
     pass
 
-print(addons.replace("${workspaceFolder}", str(root)))
+print(addons.replace("${workspaceFolder}", root_str))
 PY
 )"
     echo "${addons_path}"
 }
+
 SELECTED_REPO="$(resolve_repo_path "${REPO_PATH}")"
-echo $SELECTED_REPO
 if [[ -z "${SELECTED_REPO}" ]]; then
     SELECTED_REPO="$(choose_repo_interactive)"
 fi
@@ -268,9 +264,13 @@ CMD=(
     "--database" "${DB_NAME}"
     "--addons-path" "${ADDONS_PATH}"
     "--init" "${INIT_MODULES}"
+    "--test-enable"
     "--test-tag" "${TEST_MODULES}"
     "--stop-after-init"
-    "--with-demo"
+    "--http-port" "8889"
+    "--no-http"
+    "--no-database-list"
+    "--without-demo=all"
 )
 
 _ot_log_info "Running Odoo tests with:"
