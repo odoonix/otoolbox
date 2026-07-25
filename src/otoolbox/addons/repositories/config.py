@@ -66,7 +66,7 @@ def _add_repo_to_resources(item):
                 utils.has_otoolbox_toml,
                 git.is_git_repository,
                 git.is_repository_branch_match_with_odoo_version,
-                git.is_not_empty_odoo_addons_repository
+                git.is_not_empty_odoo_addons_repository,
             ],
             "tags": tags,
             "branch": item.get("branch"),

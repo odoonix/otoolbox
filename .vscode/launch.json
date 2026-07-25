@@ -40,6 +40,7 @@
                 "repo list",
                 "repo list --format=table",
                 "repo list --format=list",
+                "repo export-repo-list --output='db-repo-list.csv'"
             ],
             "default": "run update --help"
         }
