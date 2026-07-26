@@ -60,7 +60,7 @@ def _convert_addon_to_resources(item):
     return item
 
 
-def load_addon_resources():
+def load_addon_resources(*args, **kwargs):
     """Load the resources for all addons dynamically.
 
     Each addon is added as a resource in the workspace.
