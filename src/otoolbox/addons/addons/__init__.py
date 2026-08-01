@@ -79,7 +79,7 @@ def _export_odoo_db_module_module(addons_list, csv_file):
         for resource in addons_list:
             writer.writerow(
                 [
-                    f"{resource.name}_{branch.replace('.', '_')}",
+                    f"{resource.name}__{branch.replace('.', '_')}",
                     resource.name,
                     "vw_db_" + branch.replace(".", "_"),
                     1,
@@ -140,7 +140,6 @@ def addons_list(
 
     if csv_file:
         _export_odoo_db_module_template(addons_list, csv_file)
-        _export_odoo_db_module_module(addons_list, csv_file)
         _export_odoo_db_module_module(addons_list, csv_file)
 
 
