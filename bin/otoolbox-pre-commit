@@ -32,6 +32,7 @@ VERBOSE=false
 DEBUG=false
 INSTALL_OCA_MAINTAINERS_TOOLS=0
 ADD_DOCS=0
+REPO_PATH=false
 
 usage() {
         cat << EOF
@@ -40,11 +41,12 @@ Usage: $(basename "$0") [OPTIONS]
 Run pre-commit and generate addon documentation for public repositories.
 
 Options:
-    --help, -h                            Show this help message and exit
-    --verbose                             Enable verbose output
-    --debug                               Enable debug mode
-    -i, --install                         Install/update oca-maintainers-tools and others if needed
-    -d, --add-docs                        Create/add docs scaffold for each addon
+    --help, -h          Show this help message and exit
+    --verbose           Enable verbose output
+    --debug             Enable debug mode
+    -r, --repo PATH     Repository path (absolute or relative to workspace)
+    -i, --install       Install/update oca-maintainers-tools and others if needed
+    -d, --add-docs      Create/add docs scaffold for each addon
 EOF
 }
 
@@ -68,16 +70,24 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --verbose)
             export VERBOSE=true
+            shift
             ;;
         --debug)
             export VERBOSE=true
             export DEBUG=true
+            shift
             ;;
         -i|--install)
-            INSTALL_OCA_MAINTAINERS_TOOLS=1
+            export INSTALL_OCA_MAINTAINERS_TOOLS=1
+            shift
             ;;
         -d|--add-docs)
-            ADD_DOCS=1
+            export ADD_DOCS=1
+            shift
+            ;;
+        -r|--repo)
+            export REPO_PATH="$2"
+            shift 2
             ;;
         -h|--help)
             usage
@@ -89,15 +99,11 @@ while [[ $# -gt 0 ]]; do
             exit 2
             ;;
     esac
-    shift
 done
 
 _ot_init
 
-if [[ -z "$PUBLIC_ORGANIZATION" ]]; then
-    _ot_log_error "PUBLIC_ORGANIZATION is not set."
-    exit 1
-fi
+
 
 WORKDIR="$WORKSPACE_ROOT"
 
@@ -111,6 +117,8 @@ cd "$WORKDIR"
 TEMPLATE_TMP_DIR="$WORKSPACE_ROOT/.tmp"
 TEMPLATE_TMP_FILE="$TEMPLATE_TMP_DIR/gen_addon_readme.rst.jinja"
 
+
+_ot_log_info "Loading default repository template"
 mkdir -p "$TEMPLATE_TMP_DIR"
 {
     echo '{#'
@@ -171,8 +179,33 @@ if [[ "$INSTALL_OCA_MAINTAINERS_TOOLS" -eq 1 ]]; then
 fi
 
 
-#For each folder in moonsun (it must be part of a shielded project)
-for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
+
+resolve_repo_path() {
+    local input_path="$1"
+    if [[ -z "${input_path}" ]]; then
+        echo ""
+        return
+    fi
+    if [[ -d "${input_path}/.git" ]]; then
+        (cd "${input_path}" && pwd)
+        return
+    fi
+    # main work tree
+    if [[ -d "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
+        (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
+        return
+    fi
+    # linked worktree
+    if [[ -f "${WORKSPACE_ROOT}/${input_path}/.git" ]]; then
+        (cd "${WORKSPACE_ROOT}/${input_path}" && pwd)
+        return
+    fi
+    echo ""
+}
+
+
+function pre_commit_process(){
+    dir="$1"
     if [ -d "$dir" ]; then
         project=$(basename "$dir")
         _ot_log_info ""
@@ -241,7 +274,9 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
             _ot_log_info "Pre-commit checks completed for $project. Log saved to $LOG_FILE."
         else
             _ot_log_warning "Pre-commit checks failed for $project, continuing execution."
-            _ot_log_warning "See $LOG_FILE for details."
+
+            [[ "$VERBOSE" == "true" ]] && cat $LOG_FILE
+            [[ "$VERBOSE" == "false" ]] && _ot_log_warning "See $LOG_FILE for details."
         fi
 
 
@@ -261,4 +296,21 @@ for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
                 --template-filename="$TEMPLATE_TMP_FILE"
         fi
     fi
-done
+}
+
+
+if [[ "$REPO_PATh" != "false" ]]; then
+    _ot_log_info "Runnig pre-commit on $REPO_PATH"
+    SELECTED_REPO="$(resolve_repo_path "${REPO_PATH}")"
+    pre_commit_process $SELECTED_REPO
+else
+    if [[ -z "$PUBLIC_ORGANIZATION" ]]; then
+        _ot_log_error "PUBLIC_ORGANIZATION is not set. See the .env file in the working directory"
+        exit 1
+    fi
+    _ot_log_info "Runnig pre-commit on public organization"
+    #For each folder in moonsun (it must be part of a shielded project)
+    for dir in "$WORKDIR/$PUBLIC_ORGANIZATION"/*; do
+        pre_commit_process $dir
+    done
+fi
